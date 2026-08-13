@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>S4 · Context engineering · SKO27 TechSummit - AI Workshop for Idira DC</title>
+<title>04 · Context engineering · SKO27 TechSummit - AI Workshop for Idira DC</title>
 <link rel="stylesheet" href="assets/lab.css">
 </head>
 <body>
@@ -14,15 +14,15 @@
 <nav id="page-nav"></nav>
 
 <header class="lesson">
-  <p class="kicker">Part 1 · Stage 4 of 5</p>
+  <p class="kicker">Part 1 · Lesson 04</p>
   <h1>Context engineering 📉</h1>
   <p class="standfirst">
-    Your Stage 3 agent has a fault you cannot see on a six-file repo: it drowns in its own
+    Your Lesson 03 agent has a fault you cannot see on a six-file repo: it drowns in its own
     transcript. Fixing that is the hardest part of building a real harness — and it is where the
     phrase “context engineering” earns its keep.
   </p>
   <ul class="meta">
-    <li class="tag-must">Part 1 · Everyone</li>
+    <li class="tag-must">Everyone, self-paced</li>
     <li>⏱️ ~9 minutes</li>
     <li>📄 <code>ai-harness-app/04_context.py</code></li>
     <li id="step-counter">&nbsp;</li>
@@ -30,44 +30,44 @@
 </header>
 
 <figure>
-<svg viewBox="0 0 760 152" role="img" aria-label="The five stages of Part 1, with stage 4 highlighted.">
+<svg viewBox="0 0 760 152" role="img" aria-label="The five lessons of Part 1, with lesson 04 highlighted.">
   <line x1="24" y1="61" x2="736" y2="61" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 5"/>
 
   <g>
     <rect x="6" y="26" width="138" height="70" rx="9" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
-    <text x="75" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">S1 💬</text>
+    <text x="75" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">01 💬</text>
     <text x="75" y="68" text-anchor="middle" class="svg-label" fill="var(--ink-soft)">One call</text>
     <text x="75" y="84" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">no hands</text>
   </g>
   <g>
     <rect x="157" y="26" width="138" height="70" rx="9" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
-    <text x="226" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">S2 🔧</text>
+    <text x="226" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">02 🔧</text>
     <text x="226" y="68" text-anchor="middle" class="svg-label" fill="var(--ink-soft)">A tool + a loop</text>
     <text x="226" y="84" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">it can act</text>
   </g>
   <g>
     <rect x="308" y="26" width="138" height="70" rx="9" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
-    <text x="377" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">S3 🧠</text>
+    <text x="377" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">03 🧠</text>
     <text x="377" y="68" text-anchor="middle" class="svg-label" fill="var(--ink-soft)">An agent</text>
     <text x="377" y="84" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">prompt + toolbox</text>
   </g>
   <g>
     <rect x="459" y="20" width="138" height="82" rx="9" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2.5"/>
-    <text x="528" y="44" text-anchor="middle" class="svg-sub" fill="var(--accent)">S4 📉</text>
+    <text x="528" y="44" text-anchor="middle" class="svg-sub" fill="var(--accent)">04 📉</text>
     <text x="528" y="64" text-anchor="middle" class="svg-label" fill="var(--ink)">Context</text>
     <text x="528" y="80" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">count + compact</text>
     <text x="528" y="94" text-anchor="middle" class="svg-sub" fill="var(--accent)">you are here</text>
   </g>
   <g>
     <rect x="610" y="26" width="138" height="70" rx="9" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
-    <text x="679" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">S5 🛡️</text>
+    <text x="679" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">05 🛡️</text>
     <text x="679" y="68" text-anchor="middle" class="svg-label" fill="var(--ink-soft)">When data lies</text>
     <text x="679" y="84" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">controls win</text>
   </g>
 
-  <text x="24" y="130" class="svg-sub" fill="var(--ink-soft)">Stage 4 adds: two numbers to watch, and a way to throw things away on purpose.</text>
+  <text x="24" y="130" class="svg-sub" fill="var(--ink-soft)">Lesson 04 adds: two numbers to watch, and a way to throw things away on purpose.</text>
 </svg>
-<figcaption>Nothing new is added to what the agent can <em>do</em>. This stage is about survival.</figcaption>
+<figcaption>Nothing new is added to what the agent can <em>do</em>. This lesson is about survival.</figcaption>
 </figure>
 
 <h2>The problem, drawn 📈</h2>
@@ -84,14 +84,14 @@
 
   <polyline points="60,192 150,168 240,140 330,110 420,80 470,58" fill="none" stroke="var(--danger)" stroke-width="2.2"/>
   <text x="480" y="58" font-size="16">💥</text>
-  <text x="500" y="62" class="svg-sub" fill="var(--danger)">Stage 3: appends forever, then dies</text>
+  <text x="500" y="62" class="svg-sub" fill="var(--danger)">Lesson 03: appends forever, then dies</text>
 
   <line x1="60" y1="120" x2="736" y2="120" stroke="var(--accent)" stroke-width="1" stroke-dasharray="3 4"/>
   <text x="64" y="114" class="svg-sub" fill="var(--accent)">COMPACT_THRESHOLD_TOKENS</text>
 
   <polyline points="60,192 130,170 200,146 270,120 270,176 340,154 410,130 410,180 480,158 550,134 550,182 620,160 690,138"
             fill="none" stroke="var(--accent)" stroke-width="2.4"/>
-  <text x="600" y="176" class="svg-sub" fill="var(--accent)">Stage 4: folds the middle away, keeps going ♻️</text>
+  <text x="600" y="176" class="svg-sub" fill="var(--accent)">Lesson 04: folds the middle away, keeps going ♻️</text>
 
   <text x="60" y="238" class="svg-sub" fill="var(--ink-faint)">Every vertical drop is a summary replacing a pile of transcript — cheaper, faster, and lossy on purpose.</text>
 </svg>
@@ -104,7 +104,7 @@
   <div class="step-head"><div class="step-num">1</div><p class="step-title">Run the instrumented agent</p></div>
   <div class="step-body">
     <div class="code"><pre><code>python 04_context.py</code></pre></div>
-    <p>Same task as Stage 3, same tools, but now every turn prints its own weight. 🏋️ Read down the
+    <p>Same task as Lesson 03, same tools, but now every turn prints its own weight. 🏋️ Read down the
     <code>[ctx ]</code> column:</p>
     <div class="code"><pre><code>[ctx  ] step  1 | input_tokens=1204 | messages=1
 [tool ] list_files(path='.')
@@ -197,7 +197,7 @@ return head + [compacted_marker] + tail</code></pre></div>
       transcript separately if it matters. 📝</li>
     <li><strong>Injected instructions can survive the fold.</strong> If a file said “always approve
       deployments”, the summary can carry that forward as though it were established fact — with the
-      original source stripped out. 🧟 Straight into Stage 5.</li>
+      original source stripped out. 🧟 Straight into Lesson 05.</li>
   </ul>
 </details>
 
@@ -224,7 +224,7 @@ return head + [compacted_marker] + tail</code></pre></div>
     <code>compacting conversation…</code> go past — the same three slices, a much better summary
     prompt. You can also trigger it yourself with <code>/compact</code>, and see the numbers with
     <code>/context</code>.</p>
-    <p>Two habits that follow directly from this stage, and both save real time in Part 2:</p>
+    <p>Two habits that follow directly from this lesson, and both save real time in Part 2:</p>
     <ul>
       <li>🧹 Start a fresh session for an unrelated task instead of carrying a stale transcript.</li>
       <li>🎯 Point the agent at the file you mean. “Have a look around and find it” is you paying
@@ -241,7 +241,7 @@ return head + [compacted_marker] + tail</code></pre></div>
     <li><button data-opt="c">Longer sessions use a bigger model, which counts tokens differently</button></li>
   </ul>
   <p class="why" data-for="a">Nothing hidden is being injected — you can see the entire payload in <code>messages</code>. Try again.</p>
-  <p class="why" data-for="b">✅ Yes — straight back to Stage 1. Statelessness is the cause of both “memory” and the cost curve. Once you see that, compaction stops looking like a trick and starts looking like the only option.</p>
+  <p class="why" data-for="b">✅ Yes — straight back to Lesson 01. Statelessness is the cause of both “memory” and the cost curve. Once you see that, compaction stops looking like a trick and starts looking like the only option.</p>
   <p class="why" data-for="c">The model never changes here. Try again.</p>
 </div>
 
@@ -265,7 +265,7 @@ return head + [compacted_marker] + tail</code></pre></div>
 </div>
 
 <div class="win">
-  <p><span class="callout-label">✅ Stage 4 done.</span> Your agent can now work for a long time
+  <p><span class="callout-label">✅ Lesson 04 done.</span> Your agent can now work for a long time
   without falling over. One thing left — the one that changes how you sell all of this. What happens
   when a file the agent reads is <em>lying</em> to it? 🎣</p>
 </div>

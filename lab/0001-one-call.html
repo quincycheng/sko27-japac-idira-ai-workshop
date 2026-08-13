@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>S1 · One call to a model · SKO27 TechSummit - AI Workshop for Idira DC</title>
+<title>01 · One call to a model · SKO27 TechSummit - AI Workshop for Idira DC</title>
 <link rel="stylesheet" href="assets/lab.css">
 </head>
 <body>
@@ -14,14 +14,14 @@
 <nav id="page-nav"></nav>
 
 <header class="lesson">
-  <p class="kicker">Part 1 · Stage 1 of 5</p>
+  <p class="kicker">Part 1 · Lesson 01</p>
   <h1>One call to a model ⚛️</h1>
   <p class="standfirst">
     Before you use an AI agent, spend twenty minutes finding out what one actually is. It starts
     here, with about fifteen lines of Python and a model that cannot do anything at all.
   </p>
   <ul class="meta">
-    <li class="tag-must">Part 1 · Everyone</li>
+    <li class="tag-must">Everyone</li>
     <li>⏱️ ~8 minutes</li>
     <li>📄 <code>ai-harness-app/01_bare_call.py</code></li>
     <li id="step-counter">&nbsp;</li>
@@ -35,7 +35,7 @@
   <p><span class="callout-label">🎯 What Part 1 is for.</span> In Part 2 you will point Claude Code
   at a vulnerable app and watch it work. That is much less unnerving — and much easier to explain to
   a customer — once you have seen the whole thing built out of parts you recognise. Five short
-  stages, five small Python files, no framework, nothing hidden.</p>
+  lessons, five small Python files, no framework, nothing hidden.</p>
 </div>
 
 <h2>Where we are going</h2>
@@ -54,7 +54,7 @@
     <text x="94" y="86" text-anchor="middle" class="svg-label" fill="var(--ink)">A model call</text>
     <text x="94" y="106" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">text in, text out</text>
     <text x="94" y="122" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">no memory, no hands</text>
-    <text x="94" y="162" text-anchor="middle" class="svg-sub" fill="var(--accent)">Stage 1 · you are here</text>
+    <text x="94" y="162" text-anchor="middle" class="svg-sub" fill="var(--accent)">Lesson 01 · you are here</text>
   </g>
 
   <g>
@@ -63,7 +63,7 @@
     <text x="290" y="86" text-anchor="middle" class="svg-label" fill="var(--ink)">Prompt engineering</text>
     <text x="290" y="106" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">a role, rules,</text>
     <text x="290" y="122" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">a shape for the answer</text>
-    <text x="290" y="162" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">Stages 1 and 3</text>
+    <text x="290" y="162" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">Lessons 01 and 03</text>
   </g>
 
   <g>
@@ -72,7 +72,7 @@
     <text x="486" y="86" text-anchor="middle" class="svg-label" fill="var(--ink)">Context engineering</text>
     <text x="486" y="106" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">deciding what it sees</text>
     <text x="486" y="122" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">at the moment it works</text>
-    <text x="486" y="162" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">Stage 4</text>
+    <text x="486" y="162" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">Lesson 04</text>
   </g>
 
   <g>
@@ -81,7 +81,7 @@
     <text x="674" y="86" text-anchor="middle" class="svg-label" fill="var(--ink)">An AI harness</text>
     <text x="674" y="106" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">loop + tools + limits</text>
     <text x="674" y="122" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">= Claude Code</text>
-    <text x="674" y="162" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">Stages 2 and 5</text>
+    <text x="674" y="162" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">Lessons 02 and 05</text>
   </g>
 
   <line x1="181" y1="84" x2="201" y2="84" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#ev)"/>
@@ -98,7 +98,7 @@
 
 <h2>Get set up ⚙️</h2>
 
-<p>Three things, in one terminal window. If you already did Part 2's Lesson 1 in this window, you
+<p>Three things, in one terminal window. If you already did Part 2's Lesson 06 in this window, you
 can skip straight to the steps.</p>
 
 <div class="step">
@@ -134,7 +134,7 @@ export AWS_REGION=us-east-1</code></pre></div>
 $env:AWS_REGION="us-east-1"</code></pre></div>
     </div>
     <p>Your prompt should now start with <code>(.venv)</code>. 👀 Then move into the folder these
-    five stages live in:</p>
+    five lessons live in:</p>
     <div class="code"><pre><code>cd ai-harness-app</code></pre></div>
     <div class="warn">
       <p><span class="callout-label">🙋 <code>No module named anthropic</code>?</span> Your virtual
@@ -163,7 +163,7 @@ stop_reason : end_turn
 input_tokens : 21
 output_tokens: 78</code></pre></div>
     <p>Look at <code>stop_reason</code>. It says <code>end_turn</code> — “I finished talking.”
-    Remember that word; in Stage 2 it changes, and that change <em>is</em> the agent.</p>
+    Remember that word; in Lesson 02 it changes, and that change <em>is</em> the agent.</p>
   </div>
 </div>
 
@@ -175,13 +175,13 @@ rest of the day.</p>
 <details>
   <summary>1 · One line decides which AI you are talking to</summary>
   <div class="code"><pre><code>from config import MODEL, client</code></pre></div>
-  <p class="track-why">Every one of the five stages starts with this line and never mentions a
+  <p class="track-why">Every one of the five lessons starts with this line and never mentions a
   vendor again. <code>config.py</code> is the only file that knows you are on <strong>Amazon
   Bedrock</strong> — swap it for Vertex, Gemini, or a model running on your own laptop and not one
   line of the harness changes.</p>
   <p class="track-why">🎤 <strong>Worth saying to a customer.</strong> “The model is a replaceable
   part.” It follows that your controls cannot live inside the model — they have to live in the code
-  around it. That is the thread running through all five stages.</p>
+  around it. That is the thread running through all five lessons.</p>
 </details>
 
 <details>
@@ -197,7 +197,7 @@ rest of the day.</p>
   get one reply. Note what is <em>not</em> there: no session, no user account, no memory. The model
   is a function — same input, similar output, and it forgets you instantly.</p>
   <p class="track-why">Which means every “conversation” you have ever had with a chatbot was the
-  entire transcript being re-sent, every single turn. Hold on to that; it is why Stage 4 exists. 🧠</p>
+  entire transcript being re-sent, every single turn. Hold on to that; it is why Lesson 04 exists. 🧠</p>
 </details>
 
 <details>
@@ -206,7 +206,7 @@ rest of the day.</p>
     if block.type == "text":
         print(block.text)</code></pre></div>
   <p class="track-why">The reply arrives as <strong>content blocks</strong>. Today they are all
-  <code>text</code>. From Stage 2 onward some of them are <code>tool_use</code> — the model asking
+  <code>text</code>. From Lesson 02 onward some of them are <code>tool_use</code> — the model asking
   for something to be run. Code that assumes <code>content[0].text</code> works right up until the
   model tries to use a tool, and then breaks.</p>
 </details>
@@ -219,7 +219,7 @@ print(f"output_tokens: {response.usage.output_tokens}")</code></pre></div>
   <p class="track-why"><strong>stop_reason</strong> is why the model stopped talking.
   <strong>input_tokens</strong> is how much you sent it. That second number is the one that
   eventually kills a naive agent, because a growing conversation is re-sent in full every turn —
-  Stage 4 watches it climb. 📈</p>
+  Lesson 04 watches it climb. 📈</p>
 </details>
 
 <h2>Try it yourself 🧪</h2>
@@ -277,7 +277,7 @@ any hardcoded secrets.</code></pre></div>
   </ul>
   <p class="why" data-for="a">Billing follows from it, but it is not the reason. Look again at what the script sends and what it gets back. Try again.</p>
   <p class="why" data-for="b">Consistency is a happy result, not the cause. The real reason is more basic than that. Try again.</p>
-  <p class="why" data-for="c">✅ Right. The model is stateless. “Memory” is a list that the code around it chooses to keep and resend — which makes memory a design decision, and a security one. Stage 4 is about exactly that.</p>
+  <p class="why" data-for="c">✅ Right. The model is stateless. “Memory” is a list that the code around it chooses to keep and resend — which makes memory a design decision, and a security one. Lesson 04 is about exactly that.</p>
 </div>
 
 <div class="ask">
@@ -287,7 +287,7 @@ any hardcoded secrets.</code></pre></div>
 </div>
 
 <div class="win">
-  <p><span class="callout-label">✅ Stage 1 done.</span> You have a model that can talk and cannot
+  <p><span class="callout-label">✅ Lesson 01 done.</span> You have a model that can talk and cannot
   act. Next: fifteen more lines that let it act — and the moment where the security conversation
   really begins.</p>
 </div>

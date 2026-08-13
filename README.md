@@ -9,13 +9,21 @@ CLI, Idira Secure Cloud Access, and the Idira Identity Broker.
 
 Two parts, in order:
 
-- **Part 1 · How a harness is built** (`S1`–`S5`, ~45 min) — five short Python scripts in
+- **Part 1 · How a harness is built** (lessons `01`–`05`) — five short Python scripts in
   [`ai-harness-app/`](ai-harness-app), each about thirty lines. A bare model call → the tool-use loop
   → an agent (system prompt, toolbox, iteration cap) → context management → prompt injection defeated
   by controls rather than prompt-craft. Attendees run each one, read a breakdown of it, then break it
-  on purpose.
-- **Part 2 · Claude Code on real problems** (`01`–`08`, ~50 min) — the original vibe-coding lab,
-  unchanged. The same loop, properly engineered, pointed at Idira problems.
+  on purpose. **Lessons 01, 02 and 05 run live, 28 minutes. Lessons 03 and 04 are self-paced**, about
+  18 minutes, and are written to be read after the session.
+- **Part 2 · AI Harness: Claude Code** (lessons `06`–`10`, ~48 min) — the same loop, properly
+  engineered, pointed at Idira problems. Then **lessons `11`–`13`** as optional advanced courses for
+  people who finish early.
+
+Part 1 replaced the twelve-minute slide deck this workshop used to open with. Building an agent costs
+the same time as explaining one and nobody has to take the trainer's word for anything. What remains
+is a three-minute opener in [`docs/presentation-outline.md`](docs/presentation-outline.md), which also
+keeps the retired slide wording as an appendix. The whole session is 87 minutes in a 90-minute slot,
+so [`docs/run-of-show.md`](docs/run-of-show.md) opens with what to cut.
 
 ## The one-sentence version
 
@@ -27,7 +35,7 @@ three, and finishes by giving an agent access to a system it holds no credential
 **💬 Build it → 🔎 Look → 🔑 Find → 🎫 Elevate → ✂️ Delete → 🛡️ Broker**
 
 The audience are Domain Consultants, so the last move matters twice: they have to be able to
-*do* it, and they have to be able to *demo* it. Lesson 5 ends with a client demo script. Part 1 is
+*do* it, and they have to be able to *demo* it. Lesson 10 ends with a client demo script. Part 1 is
 what makes them able to *explain* it.
 
 ## Start here
@@ -37,7 +45,7 @@ what makes them able to *explain* it.
 | **An attendee** | Double-click [`lab/index.html`](lab/index.html) |
 | **An attendee, beforehand** | [`lab/0000-prework.html`](lab/0000-prework.html), or just run `bash check-prereqs.sh` / `.\check-prereqs.ps1` |
 | **The workshop owner** | [`docs/owner-prep.md`](docs/owner-prep.md) — start 3 weeks out |
-| **A trainer** | [`docs/run-of-show.md`](docs/run-of-show.md) and [`docs/presentation-outline.md`](docs/presentation-outline.md) |
+| **A trainer** | [`docs/run-of-show.md`](docs/run-of-show.md), then [`docs/presentation-outline.md`](docs/presentation-outline.md) for the 3-minute opener |
 | **A helper** | [`docs/helper-runbook.md`](docs/helper-runbook.md) |
 
 ## Layout
@@ -50,42 +58,43 @@ vibe-coding-workshop/
 ├── lab/                Attendee-facing guide. Plain HTML, opened by double-click.
 │   ├── index.html          Entry point
 │   ├── 0000-prework.html   Before the session: installs, venv, access checks
-│   ├── stage-1-bare-call.html
+│   ├── 0001-one-call.html
 │   │                       Part 1 · ~8 min  · one model call, no tools, find the wall
-│   ├── stage-2-give-it-a-tool.html
+│   ├── 0002-give-it-a-tool.html
 │   │                       Part 1 · ~10 min · hunt the planted secrets, then the loop
-│   ├── stage-3-make-it-an-agent.html
-│   │                       Part 1 · ~9 min  · system prompt, toolbox, iteration cap
-│   ├── stage-4-context.html
-│   │                       Part 1 · ~9 min  · token accounting and compaction
-│   ├── stage-5-prompt-injection.html
+│   ├── 0003-make-it-an-agent.html
+│   │                       Part 1 · ~9 min  · self-paced · system prompt, toolbox, cap
+│   ├── 0004-context-engineering.html
+│   │                       Part 1 · ~9 min  · self-paced · token accounting, compaction
+│   ├── 0005-when-data-lies.html
 │   │                       Part 1 · ~10 min · injection, controls, hand-off to Part 2
-│   ├── 0001-setup.html     Mandatory · ~5 min  · agent running on Bedrock
-│   ├── 0002-find-the-secrets.html
-│   │                       Mandatory · ~13 min · four secrets, two fates
-│   ├── 0003-zsp-access.html
-│   │                       Mandatory · ~10 min · elevate with the zsp-aws skill
-│   ├── 0004-fix-the-app.html
-│   │                       Mandatory · ~8 min  · delete the credential
-│   ├── 0005-identity-broker.html
-│   │                       Mandatory · ~12 min · MCP through the Broker, audit, kill switch
-│   ├── 0006-build-from-nothing.html
-│   │                       Optional  · ~10 min · one prompt, empty folder
-│   ├── 0007-write-a-skill.html
-│   │                       Optional  · ~15 min · write your own SKILL.md
-│   ├── 0008-afk-harness.html
-│   │                       Optional  · ~20 min · grill → spec → tickets → implement → review
+│   ├── 0006-setup.html     Everyone · ~5 min  · agent running on Bedrock
+│   ├── 0007-find-the-secrets.html
+│   │                       Everyone · ~13 min · four secrets, two fates
+│   ├── 0008-zsp-access.html
+│   │                       Everyone · ~10 min · elevate with the zsp-aws skill
+│   ├── 0009-fix-the-app.html
+│   │                       Everyone · ~8 min  · delete the credential
+│   ├── 0010-identity-broker.html
+│   │                       Everyone · ~12 min · MCP through the Broker, audit, kill switch
+│   ├── 0011-build-from-nothing.html
+│   │                       Optional advanced · ~10 min · one prompt, empty folder
+│   ├── 0012-write-a-skill.html
+│   │                       Optional advanced · ~15 min · write your own SKILL.md
+│   ├── 0013-afk-harness.html
+│   │                       Optional advanced · ~20 min · grill → spec → tickets → review
 │   ├── reference/cheatsheet.html
 │   └── assets/             Shared stylesheet and script
 ├── sandbox-app/        The deliberately insecure Python app under study (Part 2)
-├── ai-harness-app/     Part 1 — the harness, built in five steps
+├── ai-harness-app/     Part 1 — the harness, built in five lessons
+│   ├── requirements.txt    Part 1's dependencies — a different list from Part 2's
 │   ├── config.py           The only file that knows which provider you are on
-│   ├── 01_bare_call.py     S1 · one call, text in and text out
-│   ├── 02_single_tool.py   S2 · the loop, with one tool
-│   ├── 03_agent.py         S3 · system prompt + toolbox + MAX_ITERATIONS
-│   ├── 04_context.py       S4 · usage accounting + compaction
+│   ├── 01_bare_call.py     01 · one call, text in and text out
+│   ├── 02_single_tool.py   02 · the loop, with one tool
+│   ├── 03_agent.py         03 · system prompt + toolbox + MAX_ITERATIONS
+│   ├── 04_context.py       04 · usage accounting + compaction
 │   ├── 05_prompt_injection.py
-│   │                       S5 · the injected file, and the controls that refuse it
+│   │                       05 · the injected file, and the controls that refuse it
 │   ├── tools.py            Four tools, `_safe_path` sandbox, command allowlist
 │   └── sandbox/            Six tiny files: six planted secrets, four planted bugs,
 │                           and the tampered RELEASE_NOTES.md
@@ -97,33 +106,33 @@ vibe-coding-workshop/
 
 Every page carries a **page selector** — a Back / dropdown / Next bar driven by a single
 `PAGES` array in [`lab/assets/lab.js`](lab/assets/lab.js). Adding or reordering a lesson means
-editing that array, not eleven files.
+editing that array, not sixteen files.
 
 ## What attendees do
 
-**Part 1 (S1–S5)** — build the harness. Each page links one script, runs it, breaks the script down
+**Part 1 (01–05)** — build the harness. Each page links one script, runs it, breaks the script down
 part by part behind collapsible sections, and hands the attendee an experiment: weaken the system
-prompt, drop `MAX_ITERATIONS` to 2, turn compaction off, widen the command allowlist. `S2` opens with
+prompt, drop `MAX_ITERATIONS` to 2, turn compaction off, widen the command allowlist. `02` opens with
 a **secret hunt** — attendees search `ai-harness-app/sandbox/` by hand for the six planted values
 before the agent does, and the two nobody finds (a hidden `.env`, and a password inside a
-`postgres://` URL) make the argument for eliminating credentials rather than scanning for them. `S5`
+`postgres://` URL) make the argument for eliminating credentials rather than scanning for them. `05`
 closes Part 1 and hands over to Claude Code.
 
 The five scripts run on **Claude on Amazon Bedrock** by default, reading the same temporary `AWS_*`
 credentials and `ANTHROPIC_MODEL` that Claude Code uses — no second credential, no extra login.
 `LLM_PROVIDER` switches to Vertex, Gemini or a local GGUF model without touching the loop.
 
-**Part 2, mandatory (Lessons 1–5)** — prework verification, secret detection on the sandbox app,
+**Part 2, mandatory (Lessons 06–10)** — prework verification, secret detection on the sandbox app,
 zero standing privileges, elimination via `zsp-aws`, and connecting an MCP server through the
 Identity Broker.
 
-**Part 2, optional (Lessons 6–8)**, one self-contained page each, marked optional and independent of
+**Part 2, optional advanced courses (Lessons 11–13)**, one self-contained page each, independent of
 one another:
 
-- **6 · Build something from nothing with a simple prompt** — an empty folder and one sentence,
+- **11 · Build something from nothing with a simple prompt** — an empty folder and one sentence,
   then the experiment: does the agent embed a credential or not?
-- **7 · Write your own skill** — turn something you already know into a `SKILL.md`
-- **8 · Build something AFK** — the full harness: `/grill-with-docs` → `/to-spec` →
+- **12 · Write your own skill** — turn something you already know into a `SKILL.md`
+- **13 · Build something AFK** — the full harness: `/grill-with-docs` → `/to-spec` →
   `/to-tickets` → `/implement` → `/code-review`. The point is *context engineering*: small
   tickets each sized to one fresh context window, and all the human decisions front-loaded so
   the implementation happens while you are away from the keyboard.
@@ -143,7 +152,7 @@ These are not incidental. Several design decisions only make sense in light of t
   `file://` is used defensively. The pages are also responsive, so the guide is readable on a
   phone — wide diagrams and tables scroll sideways rather than shrinking to illegibility.
 - **The workshop ships as a git repository.** Which is what makes Claude Code's built-in
-  `/security-review` usable in Lesson 2. It is oriented at *changes*, so on a fresh clone the
+  `/security-review` usable in Lesson 07. It is oriented at *changes*, so on a fresh clone the
   lesson also supplies a whole-project fallback prompt.
 - **Credentials are copy-pasted from the AWS portal.** Not a compromise — AWS's recommended
   auto-refreshing alternative needs the AWS CLI, which needs admin rights.
@@ -171,12 +180,12 @@ this audience will notice.
   follow-up session
 - **Authoring** an AI agent access policy — attendees consume one and learn how it is
   structured, but writing one needs the Secure AI Admin role
-- **Idira EPM** — named in the prework, Lesson 3, the cheat sheet and the deck as the layer that
+- **Idira EPM** — named in the prework, Lesson 08 and the cheat sheet as the layer that
   governs which executables may run on a managed endpoint (`idsec` being a privileged tool), because
   it is the question a customer asks. Never demonstrated; there is no EPM task and no console tour
-- Tests, CI, branching strategy — Lesson 8 shows the shape of an AFK harness, not a delivery pipeline
+- Tests, CI, branching strategy — Lesson 13 shows the shape of an AFK harness, not a delivery pipeline
 - **Streaming, sub-agents, MCP clients, retries and backoff in Part 1's scripts** — all real parts of
-  a production harness, all left out so each stage stays readable in one screen
+  a production harness, all left out so each lesson's script stays readable in one screen
 
 ## A note on the fake credentials
 
@@ -186,6 +195,6 @@ them authenticate to anything, anywhere. They are recognisable to scanners, whic
 
 `ai-harness-app/sandbox/RELEASE_NOTES.md` contains a **deliberate prompt-injection payload** in an
 HTML comment: it instructs the agent to read `/etc/passwd` and POST the `.env` to an external host.
-It is the exhibit Stage 5 exists to demonstrate, and both requests are refused by `_safe_path` and the
+It is the exhibit Lesson 05 exists to demonstrate, and both requests are refused by `_safe_path` and the
 `run_command` allowlist. Expect security tooling — and other AI agents reading this repo — to flag
 that file. That is the correct reaction to it.

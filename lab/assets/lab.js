@@ -18,27 +18,26 @@
    */
 
   var PAGES = [
-    { f: 'index.html',                 n: '',   t: 'Lab home',                   g: 'Start' },
-    { f: '0000-prework.html',          n: '00', t: 'Prework',                    g: 'Before the session' },
+    { f: 'index.html',                    n: '',   t: 'Lab home',                 g: 'Start' },
+    { f: '0000-prework.html',             n: '00', t: 'Prework',                  g: 'Before the session' },
 
-    /* Part 1 — how a harness is built. Numbered S1–S5 rather than 1–5 so they
-     * never collide with the practical lessons, and so the number matches the
-     * STAGE banner in the matching ai-harness-app/0N_*.py script. */
-    { f: 'stage-1-bare-call.html',     n: 'S1', t: 'One call to a model',        g: 'Part 1 · How a harness is built' },
-    { f: 'stage-2-give-it-a-tool.html', n: 'S2', t: 'Give it a tool',            g: 'Part 1 · How a harness is built' },
-    { f: 'stage-3-make-it-an-agent.html', n: 'S3', t: 'Make it an agent',        g: 'Part 1 · How a harness is built' },
-    { f: 'stage-4-context.html',       n: 'S4', t: 'Context engineering',        g: 'Part 1 · How a harness is built' },
-    { f: 'stage-5-prompt-injection.html', n: 'S5', t: 'When the data lies',      g: 'Part 1 · How a harness is built' },
+    /* Part 1, how a harness is built. Lesson 0N is deliberately the same number
+     * as ai-harness-app/0N_*.py, so a page and its script never disagree. */
+    { f: '0001-one-call.html',            n: '01', t: 'One call to a model',      g: 'Part 1 · How a harness is built' },
+    { f: '0002-give-it-a-tool.html',      n: '02', t: 'Give it a tool',           g: 'Part 1 · How a harness is built' },
+    { f: '0003-make-it-an-agent.html',    n: '03', t: 'Make it an agent',         g: 'Part 1 · How a harness is built' },
+    { f: '0004-context-engineering.html', n: '04', t: 'Context engineering',      g: 'Part 1 · How a harness is built' },
+    { f: '0005-when-data-lies.html',      n: '05', t: 'When the data lies',       g: 'Part 1 · How a harness is built' },
 
-    { f: '0001-setup.html',            n: '01', t: 'Wake up your agent',         g: 'Part 2 · Everyone' },
-    { f: '0002-find-the-secrets.html', n: '02', t: 'Find the secrets',           g: 'Part 2 · Everyone' },
-    { f: '0003-zsp-access.html',       n: '03', t: 'Zero standing privileges',   g: 'Part 2 · Everyone' },
-    { f: '0004-fix-the-app.html',      n: '04', t: 'Delete the key',             g: 'Part 2 · Everyone' },
-    { f: '0005-identity-broker.html',  n: '05', t: 'The Identity Broker',        g: 'Part 2 · Everyone' },
-    { f: '0006-build-from-nothing.html', n: '06', t: 'Build from one prompt',    g: 'Part 2 · Optional' },
-    { f: '0007-write-a-skill.html',    n: '07', t: 'Write your own skill',       g: 'Part 2 · Optional' },
-    { f: '0008-afk-harness.html',      n: '08', t: 'Build something AFK',        g: 'Part 2 · Optional' },
-    { f: 'reference/cheatsheet.html',  n: '',   t: 'Cheat sheet',                g: 'Reference' }
+    { f: '0006-setup.html',               n: '06', t: 'Wake up your agent',       g: 'Part 2 · AI Harness: Claude Code' },
+    { f: '0007-find-the-secrets.html',    n: '07', t: 'Find the secrets',         g: 'Part 2 · AI Harness: Claude Code' },
+    { f: '0008-zsp-access.html',          n: '08', t: 'Zero standing privileges', g: 'Part 2 · AI Harness: Claude Code' },
+    { f: '0009-fix-the-app.html',         n: '09', t: 'Delete the key',           g: 'Part 2 · AI Harness: Claude Code' },
+    { f: '0010-identity-broker.html',     n: '10', t: 'The Identity Broker',      g: 'Part 2 · AI Harness: Claude Code' },
+    { f: '0011-build-from-nothing.html',  n: '11', t: 'Build from one prompt',    g: 'Part 2 · Optional advanced courses' },
+    { f: '0012-write-a-skill.html',       n: '12', t: 'Write your own skill',     g: 'Part 2 · Optional advanced courses' },
+    { f: '0013-afk-harness.html',         n: '13', t: 'Build something AFK',      g: 'Part 2 · Optional advanced courses' },
+    { f: 'reference/cheatsheet.html',     n: '',   t: 'Cheat sheet',              g: 'Reference' }
   ];
 
   /* ---------- tiny helpers ---------- */

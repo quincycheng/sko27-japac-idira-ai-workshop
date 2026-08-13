@@ -10,7 +10,7 @@ teaches. You are removing obstacles.
 **Do the attendee prework yourself before the session**, on your own laptop, both the macOS
 and Windows steps if you can. Ten minutes now saves you improvising in front of someone.
 
-**And do [Lesson 5](../lab/0005-identity-broker.html) at least once**, including the browser
+**And do [Lesson 10](../lab/0010-identity-broker.html) at least once**, including the browser
 sign-in. It is the only module with an authentication flow, and if you have never seen it you
 cannot tell "not signed in yet" from "no policy allows this" — which are the same-looking
 failure with completely different responses.
@@ -135,7 +135,7 @@ or **Idira EPM** — that is endpoint **application control**, not a `PATH` prob
 desk-side fix: the attendee has no admin rights, and working around application control is the
 opposite of what we are teaching. If a **Request authorization** button is offered, have them use it.
 Otherwise 🙋 **escalate** and move them to a loaner laptop. Say the useful sentence while you do it:
-*this is Idira EPM deciding which tools may run on a managed endpoint — the same idea as Lesson 3,
+*this is Idira EPM deciding which tools may run on a managed endpoint — the same idea as Lesson 08,
 one layer lower down.*
 
 ### 4 · Expired or rejected credentials
@@ -166,7 +166,7 @@ A missing session token is the classic silent failure.
 
 ## The rest, by lesson
 
-### Lesson 1
+### Lesson 06
 
 | Symptom | Cause | Fix |
 | --- | --- | --- |
@@ -179,7 +179,7 @@ A missing session token is the classic silent failure.
 | Certificate or TLS error reaching Bedrock | A corporate CA bundle variable set by laptop policy | `unset AWS_CA_BUNDLE REQUESTS_CA_BUNDLE CURL_CA_BUNDLE` (Windows: `Remove-Item Env:AWS_CA_BUNDLE, Env:REQUESTS_CA_BUNDLE, Env:CURL_CA_BUNDLE -ErrorAction SilentlyContinue`), then retry. Still failing → escalate. |
 | `cd` fails | Unzipped somewhere other than Downloads | macOS: type `cd ` then drag the folder in. Windows: copy the path from Explorer's address bar. |
 
-### Lesson 2
+### Lesson 07
 
 Mostly prompt-driven, so mostly fine. Four things:
 
@@ -213,7 +213,7 @@ Mostly prompt-driven, so mostly fine. Four things:
   is the expected outcome — the app *does* have credentials, they are just fake. That is the
   point of the step.
 
-### Lesson 3
+### Lesson 08
 
 | Symptom | Cause | Fix |
 | --- | --- | --- |
@@ -225,7 +225,7 @@ Mostly prompt-driven, so mostly fine. Four things:
 | Agent tries to set environment variables itself | It cannot — it runs in a subprocess | They must `/exit` first. This is by design and worth saying out loud. |
 | Something failed with no useful message | — | `~/.idsec/logs/idsec-cli.log` has the detail |
 
-### Lesson 4
+### Lesson 09
 
 | Symptom | Cause | Fix |
 | --- | --- | --- |
@@ -233,10 +233,10 @@ Mostly prompt-driven, so mostly fine. Four things:
 | `AccessDeniedException` on Bedrock after elevating | The elevated role may lack `bedrock:InvokeModel` | **Escalate immediately** — this is owner-prep gate G2 and it affects everyone |
 | Agent also removed `region_name` | Over-eager edit | Have them ask it to put `region_name=AWS_REGION` back |
 | Agent moved the keys to a `.env` file instead of deleting them | It solved the wrong problem | Great teaching moment. "You have hidden it, not removed it. Ask it again, and say *delete*." |
-| `ImportError: cannot import name 'AWS_ACCESS_KEY_ID' from 'config.settings'` | The agent deleted the constants but left the `import` in `summarize.py` that asks for them | **The most likely Lesson 4 failure.** Back into the agent: *"summarize.py still imports the constants you deleted — remove them from the import and run the app."* The lesson's diff shows all seven removed lines. |
+| `ImportError: cannot import name 'AWS_ACCESS_KEY_ID' from 'config.settings'` | The agent deleted the constants but left the `import` in `summarize.py` that asks for them | **The most likely Lesson 09 failure.** Back into the agent: *"summarize.py still imports the constants you deleted — remove them from the import and run the app."* The lesson's diff shows all seven removed lines. |
 | `grep` still finds `AKIA` | Usually `config/__pycache__/*.pyc` — Python's compiled copy still holds the old string. Otherwise `.claude/` history or a backup file | The lesson's command already excludes `__pycache__`; if they typed a plain `grep -r`, that is what they hit. Worth thirty seconds: caches, images and git history keep copies, which is why the real last step is deleting the key at the source. |
 
-### Lesson 5 — the Identity Broker 🛡️
+### Lesson 10 — the Identity Broker 🛡️
 
 This is the only module with an authentication flow, so it fails in ways the rest of the day
 does not. **Read this one properly before the session, and do the lesson yourself once.**
@@ -260,18 +260,18 @@ disabled or no policy matches, and both are tenant-side.
 **Do not let anyone paste their Client Secret into a chat, a shared doc, or the projector.**
 It is a lab credential in a lab tenant, but the habit is the thing we are teaching.
 
-### Lessons 6–8 — the optional ones
+### Lessons 11–13 — the optional ones
 
 Nobody is expected to reach these, and none of them can break the mandatory work. Help
 lightly and prefer pointing at the page over explaining.
 
 | Symptom | Cause | Fix |
 | --- | --- | --- |
-| Lesson 6: the agent puts a key in the file | That **is** the experiment 🎯 | Ask them what they would do about it. Best conversation of the day. |
-| Lesson 6: the agent does *not* put a key in the file | Also a valid result | Have them compare with a neighbour. The point is that the outcome varies, which is why review is a step. |
-| Lesson 7: the new skill is never used | Description too vague, or wrong folder | `.claude/skills/<name>/SKILL.md`, and test it in a **fresh** conversation |
-| Lesson 8: `/to-spec` etc. do not appear | `/setup-matt-pocock-skills` not run | Run it once, then retry. Those skills are deliberately not auto-selectable. |
-| Lesson 8: `/implement` is taking ages | Working as designed — that is the AFK part ☕ | Tell them to leave it alone and read the ticket list while it runs |
+| Lesson 11: the agent puts a key in the file | That **is** the experiment 🎯 | Ask them what they would do about it. Best conversation of the day. |
+| Lesson 11: the agent does *not* put a key in the file | Also a valid result | Have them compare with a neighbour. The point is that the outcome varies, which is why review is a step. |
+| Lesson 12: the new skill is never used | Description too vague, or wrong folder | `.claude/skills/<name>/SKILL.md`, and test it in a **fresh** conversation |
+| Lesson 13: `/to-spec` etc. do not appear | `/setup-matt-pocock-skills` not run | Run it once, then retry. Those skills are deliberately not auto-selectable. |
+| Lesson 13: `/implement` is taking ages | Working as designed — that is the AFK part ☕ | Tell them to leave it alone and read the ticket list while it runs |
 
 ---
 
@@ -287,7 +287,7 @@ individuals, and it takes ten seconds to arrange.
 - Bedrock `AccessDeniedException` after elevating → gate G2 gap, affects the room
 - Repeated genuine credential expiry → gate G1 not applied
 - The share link or clone URL not loading → everyone downstream is blocked
-- **Any refused MCP tool call in Lesson 5** → the server is disabled, or no access policy
+- **Any refused MCP tool call in Lesson 10** → the server is disabled, or no access policy
   matches. Gate G5. Affects the whole room and cannot be fixed at a desk.
 - **`localhost` callbacks failing for more than one person** → the venue network is
   intercepting the Broker sign-in redirect. Trainer decision, not a desk fix.

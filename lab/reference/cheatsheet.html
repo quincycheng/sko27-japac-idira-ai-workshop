@@ -90,7 +90,7 @@ claude</code></pre></div>
   <tr><td><code>/plugin</code></td><td>Browse and install plugins from the marketplace</td></tr>
   <tr><td><code>/mcp</code></td><td>Connect to, authenticate against and inspect MCP servers</td></tr>
   <tr><td><code>/security-review</code></td><td>Built-in security review of your changes</td></tr>
-  <tr><td><code>/plugin</code> → mattpocock-skills</td><td>The harness used in Lesson 8</td></tr>
+  <tr><td><code>/plugin</code> → mattpocock-skills</td><td>The harness used in Lesson 13</td></tr>
 </table>
 
 <p>Adding an MCP server through the Idira Identity Broker — run this outside the agent, all on one
@@ -148,18 +148,18 @@ python -c "import boto3; print(boto3.client('sts').get_caller_identity()['Arn'])
 <code>py</code> instead of <code>python</code>.</p>
 </div>
 
-<h3>Part 1 — the harness stages 🏗️</h3>
+<h3>Part 1 — lessons 01 to 05 🏗️</h3>
 
 <p>Same venv, same three <code>AWS_*</code> lines as Claude Code. Add
 <span class="os os-inline os-mac"><code>export AWS_REGION=us-east-1</code></span><span class="os os-inline os-win"><code>$env:AWS_REGION="us-east-1"</code></span>,
 then from <code>ai-harness-app/</code>:</p>
 
-<div class="code"><pre><code>python 01_bare_call.py          # S1  one call — text in, text out, no tools
-python 02_single_tool.py        # S2  the loop: one tool, and it can act
-python 03_agent.py              # S3  system prompt + toolbox + iteration cap
+<div class="code"><pre><code>python 01_bare_call.py          # 01  one call — text in, text out, no tools
+python 02_single_tool.py        # 02  the loop: one tool, and it can act
+python 03_agent.py              # 03  system prompt + toolbox + iteration cap
 python 03_agent.py "your task"  #     any task you like — same code
-python 04_context.py            # S4  token accounting + compaction
-python 05_prompt_injection.py   # S5  a file gives the agent orders; controls refuse</code></pre></div>
+python 04_context.py            # 04  token accounting + compaction
+python 05_prompt_injection.py   # 05  a file gives the agent orders; controls refuse</code></pre></div>
 
 <table>
   <tr><th>Knob</th><th>Where</th><th>What it shows</th></tr>
@@ -214,7 +214,7 @@ server must be <strong>enabled</strong>. Tools are discovered the first time an 
 before that, the count reads <em>Not discovered yet</em>. Every tool run is audited, success or
 failure. 📋</p>
 
-<h2>8 · The AFK harness (Lesson 8)</h2>
+<h2>8 · The AFK harness (Lesson 13)</h2>
 
 <div class="code"><pre><code>/plugin                      # install mattpocock-skills
 /setup-matt-pocock-skills    # once per machine

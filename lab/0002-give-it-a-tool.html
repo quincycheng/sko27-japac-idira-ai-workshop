@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>S2 · Give it a tool · SKO27 TechSummit - AI Workshop for Idira DC</title>
+<title>02 · Give it a tool · SKO27 TechSummit - AI Workshop for Idira DC</title>
 <link rel="stylesheet" href="assets/lab.css">
 </head>
 <body>
@@ -14,14 +14,14 @@
 <nav id="page-nav"></nav>
 
 <header class="lesson">
-  <p class="kicker">Part 1 · Stage 2 of 5</p>
+  <p class="kicker">Part 1 · Lesson 02</p>
   <h1>Give it a tool 🔧</h1>
   <p class="standfirst">
     Thirty more lines and the model can act. This is the loop that turns a chatbot into an agent —
     and the exact moment your security instincts should switch on.
   </p>
   <ul class="meta">
-    <li class="tag-must">Part 1 · Everyone</li>
+    <li class="tag-must">Everyone</li>
     <li>⏱️ ~10 minutes</li>
     <li>📄 <code>ai-harness-app/02_single_tool.py</code></li>
     <li id="step-counter">&nbsp;</li>
@@ -29,44 +29,44 @@
 </header>
 
 <figure>
-<svg viewBox="0 0 760 152" role="img" aria-label="The five stages of Part 1, with stage 2 highlighted.">
+<svg viewBox="0 0 760 152" role="img" aria-label="The five lessons of Part 1, with lesson 02 highlighted.">
   <line x1="24" y1="61" x2="736" y2="61" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 5"/>
 
   <g>
     <rect x="6" y="26" width="138" height="70" rx="9" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
-    <text x="75" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">S1 💬</text>
+    <text x="75" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">01 💬</text>
     <text x="75" y="68" text-anchor="middle" class="svg-label" fill="var(--ink-soft)">One call</text>
     <text x="75" y="84" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">no hands</text>
   </g>
   <g>
     <rect x="157" y="20" width="138" height="82" rx="9" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2.5"/>
-    <text x="226" y="44" text-anchor="middle" class="svg-sub" fill="var(--accent)">S2 🔧</text>
+    <text x="226" y="44" text-anchor="middle" class="svg-sub" fill="var(--accent)">02 🔧</text>
     <text x="226" y="64" text-anchor="middle" class="svg-label" fill="var(--ink)">A tool + a loop</text>
     <text x="226" y="80" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">it can act</text>
     <text x="226" y="94" text-anchor="middle" class="svg-sub" fill="var(--accent)">you are here</text>
   </g>
   <g>
     <rect x="308" y="26" width="138" height="70" rx="9" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
-    <text x="377" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">S3 🧠</text>
+    <text x="377" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">03 🧠</text>
     <text x="377" y="68" text-anchor="middle" class="svg-label" fill="var(--ink-soft)">An agent</text>
     <text x="377" y="84" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">prompt + toolbox</text>
   </g>
   <g>
     <rect x="459" y="26" width="138" height="70" rx="9" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
-    <text x="528" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">S4 📉</text>
+    <text x="528" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">04 📉</text>
     <text x="528" y="68" text-anchor="middle" class="svg-label" fill="var(--ink-soft)">Context</text>
     <text x="528" y="84" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">count + compact</text>
   </g>
   <g>
     <rect x="610" y="26" width="138" height="70" rx="9" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
-    <text x="679" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">S5 🛡️</text>
+    <text x="679" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">05 🛡️</text>
     <text x="679" y="68" text-anchor="middle" class="svg-label" fill="var(--ink-soft)">When data lies</text>
     <text x="679" y="84" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">controls win</text>
   </g>
 
-  <text x="24" y="130" class="svg-sub" fill="var(--ink-soft)">Stage 2 adds: one tool, and the loop that runs it. Everything after this is refinement.</text>
+  <text x="24" y="130" class="svg-sub" fill="var(--ink-soft)">Lesson 02 adds: one tool, and the loop that runs it. Everything after this is refinement.</text>
 </svg>
-<figcaption>Five stages. This one is the big one.</figcaption>
+<figcaption>Five lessons. This one is the big one.</figcaption>
 </figure>
 
 <h2>First: find the secrets yourself 🕵️</h2>
@@ -129,7 +129,7 @@ Select-String -Path sandbox\* -Pattern "KEY|SECRET|TOKEN|PASSWORD"</code></pre><
       <p class="track-why">Keep going and you will notice the sandbox has more than secrets in it:
       <code>app.py</code> has an <code>eval()</code>, a <code>shell=True</code> command injection
       and a path traversal; <code>utils.py</code> hashes passwords with unsalted MD5. Park those —
-      Stage 3 goes hunting for them. 🐛</p>
+      Lesson 03 goes hunting for them. 🐛</p>
     </details>
   </div>
 </div>
@@ -243,11 +243,11 @@ Select-String -Path sandbox\* -Pattern "KEY|SECRET|TOKEN|PASSWORD"</code></pre><
     ...
     if response.stop_reason != "tool_use":
         break</code></pre></div>
-  <p class="track-why">Remember <code>end_turn</code> from Stage 1? Now the model can stop for a
+  <p class="track-why">Remember <code>end_turn</code> from Lesson 01? Now the model can stop for a
   second reason: <code>tool_use</code>, meaning “I want something run before I continue.” That one
   extra value is what makes agents possible. 🔑</p>
   <p class="track-why">And notice <code>while True</code> — nothing bounds this. If the model keeps
-  asking, the loop keeps going, forever, spending money. Stage 3 fixes it. ⛔</p>
+  asking, the loop keeps going, forever, spending money. Lesson 03 fixes it. ⛔</p>
 </details>
 
 <details>
@@ -270,7 +270,7 @@ Select-String -Path sandbox\* -Pattern "KEY|SECRET|TOKEN|PASSWORD"</code></pre><
   <p class="track-why">Read that <code>if</code> again. The model <em>asked</em>; our code decided.
   <strong>That gap is the only place safety can live.</strong> Here it is only checking for an empty
   argument, but the same gap is where you would put an allowlist, a path check, an approval prompt,
-  or an audit log. Stage 5 pushes on it hard.</p>
+  or an audit log. Lesson 05 pushes on it hard.</p>
   <p class="track-why">Note too that a bad request comes back as a <em>normal result the model can
   read</em> — <code>"error: 'pattern' is required"</code> — not a crash. An agent that can see its
   own mistakes recovers from them. 🩹</p>
@@ -290,7 +290,7 @@ messages.append({"role": "user", "content": tool_results})</code></pre></div>
   “this part is only data”.</p>
   <p class="track-why">If an attacker controls a file the agent reads, the attacker is typing into
   your conversation. That is prompt injection, it is a design property rather than a bug, and it is
-  Stage 5. 🎣</p>
+  Lesson 05. 🎣</p>
 </details>
 
 <h2>Break it on purpose 🔨</h2>
@@ -333,12 +333,12 @@ messages.append({"role": "user", "content": tool_results})</code></pre></div>
 
 <div class="ask">
   🗣️ <strong>Ask your agent:</strong> “In <code>ai-harness-app/02_single_tool.py</code>, what stops
-  this loop from running forever, and what would you add?” Then compare its answer with what Stage 3
+  this loop from running forever, and what would you add?” Then compare its answer with what Lesson 03
   actually does. 🥊
 </div>
 
 <div class="win">
-  <p><span class="callout-label">✅ Stage 2 done.</span> You have an agent: a loop, a tool, and a
+  <p><span class="callout-label">✅ Lesson 02 done.</span> You have an agent: a loop, a tool, and a
   model deciding what to call. You have also seen the two things that make people nervous — an
   unbounded loop, and untrusted file contents landing in the conversation. Both get addressed next.</p>
 </div>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>S3 · Make it an agent · SKO27 TechSummit - AI Workshop for Idira DC</title>
+<title>03 · Make it an agent · SKO27 TechSummit - AI Workshop for Idira DC</title>
 <link rel="stylesheet" href="assets/lab.css">
 </head>
 <body>
@@ -14,14 +14,14 @@
 <nav id="page-nav"></nav>
 
 <header class="lesson">
-  <p class="kicker">Part 1 · Stage 3 of 5</p>
+  <p class="kicker">Part 1 · Lesson 03</p>
   <h1>Make it an agent 🧠</h1>
   <p class="standfirst">
     The loop barely changes. What changes is a job description, four tools instead of one, and a
     hard limit on how long it may keep going. That is the whole recipe.
   </p>
   <ul class="meta">
-    <li class="tag-must">Part 1 · Everyone</li>
+    <li class="tag-must">Everyone, self-paced</li>
     <li>⏱️ ~9 minutes</li>
     <li>📄 <code>ai-harness-app/03_agent.py</code> + <code>tools.py</code></li>
     <li id="step-counter">&nbsp;</li>
@@ -29,42 +29,42 @@
 </header>
 
 <figure>
-<svg viewBox="0 0 760 152" role="img" aria-label="The five stages of Part 1, with stage 3 highlighted.">
+<svg viewBox="0 0 760 152" role="img" aria-label="The five lessons of Part 1, with lesson 03 highlighted.">
   <line x1="24" y1="61" x2="736" y2="61" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 5"/>
 
   <g>
     <rect x="6" y="26" width="138" height="70" rx="9" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
-    <text x="75" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">S1 💬</text>
+    <text x="75" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">01 💬</text>
     <text x="75" y="68" text-anchor="middle" class="svg-label" fill="var(--ink-soft)">One call</text>
     <text x="75" y="84" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">no hands</text>
   </g>
   <g>
     <rect x="157" y="26" width="138" height="70" rx="9" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
-    <text x="226" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">S2 🔧</text>
+    <text x="226" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">02 🔧</text>
     <text x="226" y="68" text-anchor="middle" class="svg-label" fill="var(--ink-soft)">A tool + a loop</text>
     <text x="226" y="84" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">it can act</text>
   </g>
   <g>
     <rect x="308" y="20" width="138" height="82" rx="9" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2.5"/>
-    <text x="377" y="44" text-anchor="middle" class="svg-sub" fill="var(--accent)">S3 🧠</text>
+    <text x="377" y="44" text-anchor="middle" class="svg-sub" fill="var(--accent)">03 🧠</text>
     <text x="377" y="64" text-anchor="middle" class="svg-label" fill="var(--ink)">An agent</text>
     <text x="377" y="80" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">prompt + toolbox</text>
     <text x="377" y="94" text-anchor="middle" class="svg-sub" fill="var(--accent)">you are here</text>
   </g>
   <g>
     <rect x="459" y="26" width="138" height="70" rx="9" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
-    <text x="528" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">S4 📉</text>
+    <text x="528" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">04 📉</text>
     <text x="528" y="68" text-anchor="middle" class="svg-label" fill="var(--ink-soft)">Context</text>
     <text x="528" y="84" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">count + compact</text>
   </g>
   <g>
     <rect x="610" y="26" width="138" height="70" rx="9" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
-    <text x="679" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">S5 🛡️</text>
+    <text x="679" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">05 🛡️</text>
     <text x="679" y="68" text-anchor="middle" class="svg-label" fill="var(--ink-soft)">When data lies</text>
     <text x="679" y="84" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">controls win</text>
   </g>
 
-  <text x="24" y="130" class="svg-sub" fill="var(--ink-soft)">Stage 3 adds: a system prompt, three more tools, and a limit. The loop body is nearly untouched.</text>
+  <text x="24" y="130" class="svg-sub" fill="var(--ink-soft)">Lesson 03 adds: a system prompt, three more tools, and a limit. The loop body is nearly untouched.</text>
 </svg>
 <figcaption>More capability, almost no more harness.</figcaption>
 </figure>
@@ -75,7 +75,7 @@
   <div class="step-head"><div class="step-num">1</div><p class="step-title">Let it audit the sandbox</p></div>
   <div class="step-body">
     <div class="code"><pre><code>python 03_agent.py</code></pre></div>
-    <p>Same terminal window as Stage 2 — same credentials, same <code>.venv</code>. Watch the
+    <p>Same terminal window as Lesson 02 — same credentials, same <code>.venv</code>. Watch the
     <code>[tool ]</code> lines. This time it has choices, and it makes a plan: 🗺️</p>
     <div class="code"><pre><code>[tool ] list_files(path='.')
 [tool ] read_file(path='config.py')
@@ -128,7 +128,7 @@ python 03_agent.py "Write a Jira ticket for the worst finding, in our house styl
   <text x="626" y="126" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">for all three boxes</text>
   <text x="626" y="152" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">two are constant.</text>
   <text x="626" y="168" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">one is not.</text>
-  <text x="626" y="194" text-anchor="middle" class="svg-sub" fill="var(--accent)">→ Stage 4</text>
+  <text x="626" y="194" text-anchor="middle" class="svg-sub" fill="var(--accent)">→ Lesson 04</text>
 
   <text x="24" y="242" class="svg-sub" fill="var(--ink-faint)">Choosing what goes in these boxes — and what to throw out — is “context engineering”.</text>
   <text x="24" y="258" class="svg-sub" fill="var(--ink-faint)">Choosing the words in the top box is “prompt engineering”. Related, not the same job.</text>
@@ -147,13 +147,13 @@ Rules:
 - Cite findings as file:line with a one-line explanation of the risk.
 - When you have enough to report, stop calling tools and write a short findings
   summary ordered by severity. Be concise."""</code></pre></div>
-  <p class="track-why">Read the rules as three separate jobs. “Don't guess” 🚫 targets the Stage 1
+  <p class="track-why">Read the rules as three separate jobs. “Don't guess” 🚫 targets the Lesson 01
   failure — inventing file contents. “Cite file:line” makes the output <em>checkable by a human</em>,
   which is the difference between a finding and an opinion. “Stop calling tools when you have
   enough” 🛑 is what makes the loop terminate on its own.</p>
-  <p class="track-why">This is the same skill as Stage 1's prompt edit, applied at a higher level:
+  <p class="track-why">This is the same skill as Lesson 01's prompt edit, applied at a higher level:
   written once, applied to every turn, for every task. Powerful — and, worth being blunt about,
-  <strong>advisory</strong>. A prompt is a strong suggestion, never a boundary. Stage 5 shows what
+  <strong>advisory</strong>. A prompt is a strong suggestion, never a boundary. Lesson 05 shows what
   happens when something else in the conversation makes a louder suggestion. 📣</p>
 </details>
 
@@ -185,7 +185,7 @@ Rules:
 for step in range(1, MAX_ITERATIONS + 1):
     ...
 return "(stopped: hit the iteration cap -- the agent kept working past the limit)"</code></pre></div>
-  <p class="track-why"><code>while True</code> from Stage 2 is gone. This cap cannot be argued with,
+  <p class="track-why"><code>while True</code> from Lesson 02 is gone. This cap cannot be argued with,
   talked around, or convinced — the loop runs at most twelve times because Python says so. ⛔</p>
   <p class="track-why">Every real harness has a family of these: a turn cap, a token budget, a
   timeout, a spend limit, a tool-call quota. Unglamorous, and they are the controls that hold when
@@ -244,7 +244,7 @@ return "(stopped: hit the iteration cap -- the agent kept working past the limit
 </div>
 
 <div class="check" data-answer="c">
-  <p class="check-q">🧠 Stage 3 is far more capable than Stage 2. Where did that come from?</p>
+  <p class="check-q">🧠 Lesson 03 is far more capable than Lesson 02. Where did that come from?</p>
   <ul class="opts">
     <li><button data-opt="a">A larger model, chosen for the harder task</button></li>
     <li><button data-opt="b">Substantially more sophisticated loop code</button></li>
@@ -264,7 +264,7 @@ return "(stopped: hit the iteration cap -- the agent kept working past the limit
   </ul>
   <p class="why" data-for="a">✅ Exactly. The cap is a Python <code>for</code> loop; nothing in the conversation can talk it out of running twelve times. The rules live in the same text stream as everything the agent reads — including files an attacker might control. Prompts persuade, code enforces.</p>
   <p class="why" data-for="b">The other way round. The provider does not police your system prompt, and the cap is the harder of the two precisely <em>because</em> it is local code. Try again.</p>
-  <p class="why" data-for="c">This is the distinction the whole of Stage 5 rests on. Have another go.</p>
+  <p class="why" data-for="c">This is the distinction the whole of Lesson 05 rests on. Have another go.</p>
 </div>
 
 <div class="ask">
@@ -274,9 +274,9 @@ return "(stopped: hit the iteration cap -- the agent kept working past the limit
 </div>
 
 <div class="win">
-  <p><span class="callout-label">✅ Stage 3 done.</span> You have an agent that plans, chooses, cites
+  <p><span class="callout-label">✅ Lesson 03 done.</span> You have an agent that plans, chooses, cites
   its work, and stops. Run it on a bigger repo, though, and it falls over for a reason that has
-  nothing to do with intelligence. That is Stage 4.</p>
+  nothing to do with intelligence. That is Lesson 04.</p>
 </div>
 
 <div id="page-pager"></div>

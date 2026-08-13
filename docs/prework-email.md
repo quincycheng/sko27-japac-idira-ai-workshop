@@ -101,7 +101,7 @@ See you on `<date>`. Bring a charger. 🔋
 ## Checklist for the sender
 
 - [ ] The workshop folder is distributed as a **git repository** (clone URL, or a zip that still
-      contains `.git/`) — Lesson 2 uses `/security-review`, which needs version control
+      contains `.git/`) — Lesson 07 uses `/security-review`, which needs version control
 - [ ] `docs/` is **not** in what attendees receive
 - [ ] Share links or clone URL tested from a device that has never opened them
 - [ ] `idsec` mirrors are on a share that needs **no login**
@@ -115,7 +115,7 @@ See you on `<date>`. Bring a charger. 🔋
 
 ### Not in this email, on purpose
 
-The **Identity Broker** details for Lesson 5 — Gateway URL, Client ID, Client Secret — are
+The **Identity Broker** details for Lesson 10 — Gateway URL, Client ID, Client Secret — are
 **not** sent in advance. There is no prework for that lesson, and a client secret in sixty
 inboxes is a worse idea than a client secret on sixty cards. Put them on the cards or on a
 slide on the day. See gate G5 in [owner-prep.md](owner-prep.md).
