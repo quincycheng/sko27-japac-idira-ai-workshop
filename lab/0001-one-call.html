@@ -137,10 +137,12 @@ $env:AWS_REGION="us-east-1"</code></pre></div>
     five lessons live in:</p>
     <div class="code"><pre><code>cd ai-harness-app</code></pre></div>
     <div class="warn">
-      <p><span class="callout-label">🙋 <code>No module named anthropic</code>?</span> Your virtual
-      environment is off, or the library is missing. Fix it once:
-      <code>python -m pip install -r requirements.txt</code> — or run
-      <code>bash check-prereqs.sh</code> from the workshop folder, which checks the lot.</p>
+      <p><span class="callout-label"><code>No module named anthropic</code>? Try this first.</span>
+      Your virtual environment is off, or the library never installed. Either
+      <code>python -m pip install -r requirements.txt</code> from this folder, or run the prework
+      script from the workshop folder, which checks the lot and installs what is missing:
+      <code>bash check-prereqs.sh</code> on macOS, <code>.\check-prereqs.ps1</code> on Windows.
+      🙋 Raise your card only if the script cannot fix it.</p>
     </div>
   </div>
 </div>

@@ -105,8 +105,22 @@
     </div>
     <p>Check the agent is installed:</p>
     <div class="code"><pre><code>claude --version</code></pre></div>
-    <p>You should see a version number. If you see “command not found” 🙋 raise your card —
-    it is a <code>PATH</code> problem and a helper fixes it in a minute.</p>
+    <p>You should see a version number.</p>
+    <div class="warn">
+      <p><span class="callout-label">“command not found”? Try this first.</span> Your terminal cannot
+      see the agent, which is a <code>PATH</code> problem rather than a missing install. The prework
+      script sorts it out and tells you what it did:</p>
+      <div class="os os-mac">
+        <div class="code"><pre><code>cd ~/Downloads/vibe-coding-workshop
+bash check-prereqs.sh</code></pre></div>
+      </div>
+      <div class="os os-win">
+        <div class="code"><pre><code>cd $HOME\Downloads\vibe-coding-workshop
+.\check-prereqs.ps1</code></pre></div>
+      </div>
+      <p>Then open a <strong>new</strong> terminal and try <code>claude --version</code> again. Still
+      nothing? 🙋 Raise your card.</p>
+    </div>
   </div>
 </div>
 
@@ -216,10 +230,18 @@ source .venv/bin/activate</code></pre></div>
     <p>And check Python can find the library it needs:</p>
     <div class="code"><pre><code>python -c "import boto3; print('boto3 is ready')"</code></pre></div>
     <div class="warn">
-      <p><span class="callout-label">🙋 Any of this failing?</span> Almost always one of two things:
-      no <code>(.venv)</code> in your prompt (activate it), or you never made one (redo prework
-      step 3, or raise your card — a helper does it with you in two minutes). Do not install
-      anything globally to get past it.</p>
+      <p><span class="callout-label">Any of this failing? Try this first.</span> Almost always one of
+      two things. Either there is no <code>(.venv)</code> in your prompt, in which case activate it
+      and you are done. Or you never made one, in which case the prework script builds it and
+      installs the libraries for you:</p>
+      <div class="os os-mac">
+        <div class="code"><pre><code>bash check-prereqs.sh</code></pre></div>
+      </div>
+      <div class="os os-win">
+        <div class="code"><pre><code>.\check-prereqs.ps1</code></pre></div>
+      </div>
+      <p>Do not install anything globally to get past this. 🙋 Raise your card if the script itself
+      reports something it cannot fix.</p>
     </div>
   </div>
 </div>
@@ -247,7 +269,7 @@ source .venv/bin/activate</code></pre></div>
   <tr>
     <td><code>claude: command not found</code></td>
     <td>Installed, but your terminal cannot see it</td>
-    <td>🙋 Raise your card</td>
+    <td>Run the prework script, then a <strong>new</strong> terminal. Still failing → 🙋 raise your card</td>
   </tr>
   <tr>
     <td><code>UnrecognizedClientException</code> or <code>ExpiredToken</code></td>

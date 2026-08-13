@@ -183,13 +183,17 @@ if [ ! -x "$VPY" ]; then
   fail "Libraries" "blocked by .venv" "Create the virtual environment, then re-run this script"
 else
   NEED=()
-  check_import boto3    || NEED+=("sandbox-app/requirements.txt")
-  check_import anthropic || NEED+=("ai-harness-app/requirements.txt")
+  check_import boto3 || NEED+=("sandbox-app/requirements.txt")
+  # rich powers ui.py, which every lesson imports. Without checking it, a failed
+  # rich install reports PASS here and then crashes on import in the room. Both
+  # live in the same requirements file, so test them together and list it once.
+  check_import anthropic && check_import rich || NEED+=("ai-harness-app/requirements.txt")
 
   if [ ${#NEED[@]} -eq 0 ]; then
     good "boto3 is ready (the sandbox app)"
-    good "anthropic is ready (the harness stages in Part 1)"
-    pass "Libraries" "boto3 + anthropic"
+    good "anthropic is ready (the harness lessons in Part 1)"
+    good "rich is ready (the terminal UI)"
+    pass "Libraries" "boto3 + anthropic + rich"
   else
     bad "missing libraries from: ${NEED[*]}"
     if ask "Install them into .venv now? (needs internet, ~1 minute)"; then
@@ -199,8 +203,8 @@ else
         run "python -m pip install -r $req"
         "$VPY" -m pip install --quiet -r "$PROJECT/$req" || OK=0
       done
-      if [ "$OK" = 1 ] && check_import boto3 && check_import anthropic; then
-        good "boto3 and anthropic both import cleanly"
+      if [ "$OK" = 1 ] && check_import boto3 && check_import anthropic && check_import rich; then
+        good "boto3, anthropic and rich all import cleanly"
         fixed "Libraries" "installed"
       else
         bad "the install did not finish cleanly"
@@ -385,13 +389,42 @@ for row in "${SUMMARY[@]}"; do
   printf '  %s  %-24s %s%s%s\n' "$icon" "$what" "$DIM" "$detail" "$R"
 done
 
+# Two things no script can settle, and both need a reply days ahead rather than a
+# raised hand on the day: an entitlement nobody in the room can grant, and an
+# endpoint policy nobody in the room can change. Print them loudly in both the
+# pass and the fail path, because the pass path is the one people actually read.
+only_you() {
+  cat <<ONLYYOU
+
+  ${YEL}${B}──────────  Two things only you can confirm  ──────────${R}
+
+  ${B}1. The AWS portal (8️⃣  above).${R} Click through it now if you have not.
+     No AWS tile, no accounts, or no 'Access keys' link means you are missing an
+     ${B}entitlement${R}. Nobody can grant it from a seat on the day.
+
+  ${B}2. Does this laptop actually let these programs run?${R}
+     Try both, in a new terminal:
+
+         ${BLU}idsec version${R}
+         ${BLU}claude --version${R}
+
+     A version number from each means you are fine. But if either one is found
+     and still refuses to start — a message about a policy, an administrator,
+     'this application is blocked', or ${B}Idira EPM${R} — that is endpoint
+     application control, not a setup problem. This script cannot fix it and
+     neither can a helper: it needs an endpoint policy change with a lead time
+     of days. If a ${B}Request for authorization${R} prompt appears, use it.
+
+  ${B}Either of those looking wrong? 📧 Reply to the workshop email TODAY.${R}
+  Not tomorrow, and definitely not on the morning of the workshop. Both take
+  days to sort out, and both stop you doing the hands-on work entirely.
+ONLYYOU
+}
+
 if [ ${#TODO[@]} -eq 0 ]; then
+  printf '\n  %s%s🎉 Every check this script can make has passed.%s\n' "$GRN" "$B" "$R"
+  only_you
   cat <<DONE
-
-  ${GRN}${B}🎉 You are ready for the workshop.${R}
-
-  One thing left that no script can do — the AWS portal check (8️⃣  above).
-  Please click through it if you have not already.
 
   Bring: this laptop, a charger, and your workshop email. See you there! 👋
 DONE
@@ -418,4 +451,5 @@ cat <<NEXT
   Stuck on any of them? 📧 Reply to the workshop email this week — we would
   much rather fix it now than on the day.
 NEXT
+only_you
 exit 1

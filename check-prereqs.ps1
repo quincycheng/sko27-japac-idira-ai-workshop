@@ -173,13 +173,19 @@ if (-not (Test-Path $VPy)) {
     Add-Fail 'Libraries' 'blocked by .venv' 'Create the virtual environment, then re-run this script'
 } else {
     $need = @()
-    if (-not (Test-Import 'boto3'))     { $need += 'sandbox-app\requirements.txt' }
-    if (-not (Test-Import 'anthropic')) { $need += 'ai-harness-app\requirements.txt' }
+    if (-not (Test-Import 'boto3')) { $need += 'sandbox-app\requirements.txt' }
+    # rich powers ui.py, which every lesson imports. Without checking it, a failed
+    # rich install reports PASS here and then crashes on import in the room. Both
+    # live in the same requirements file, so test them together and list it once.
+    if (-not (Test-Import 'anthropic') -or -not (Test-Import 'rich')) {
+        $need += 'ai-harness-app\requirements.txt'
+    }
 
     if ($need.Count -eq 0) {
         Write-Good 'boto3 is ready (the sandbox app)'
-        Write-Good 'anthropic is ready (the harness stages in Part 1)'
-        Add-Pass 'Libraries' 'boto3 + anthropic'
+        Write-Good 'anthropic is ready (the harness lessons in Part 1)'
+        Write-Good 'rich is ready (the terminal UI)'
+        Add-Pass 'Libraries' 'boto3 + anthropic + rich'
     } else {
         Write-Bad ("missing libraries from: " + ($need -join ', '))
         if (Confirm-Action 'Install them into .venv now? (needs internet, ~1 minute)') {
@@ -188,8 +194,8 @@ if (-not (Test-Path $VPy)) {
                 Write-Cmd "python -m pip install -r $req"
                 & $VPy -m pip install --quiet -r (Join-Path $Project $req)
             }
-            if ((Test-Import 'boto3') -and (Test-Import 'anthropic')) {
-                Write-Good 'boto3 and anthropic both import cleanly'
+            if ((Test-Import 'boto3') -and (Test-Import 'anthropic') -and (Test-Import 'rich')) {
+                Write-Good 'boto3, anthropic and rich all import cleanly'
                 Add-Fixed 'Libraries' 'installed'
             } else {
                 Write-Bad 'the install did not finish cleanly'
@@ -379,12 +385,41 @@ foreach ($row in $Summary) {
     Write-Host $row.Detail -ForegroundColor DarkGray
 }
 
+# Two things no script can settle, and both need a reply days ahead rather than a
+# raised hand on the day: an entitlement nobody in the room can grant, and an
+# endpoint policy nobody in the room can change. Printed in both the pass and the
+# fail path, because the pass path is the one people actually read.
+function Show-OnlyYou {
+    Write-Host ''
+    Write-Host '  ──────────  Two things only you can confirm  ──────────' -ForegroundColor Yellow
+    Write-Host ''
+    Write-Host '  1. The AWS portal (8️⃣  above).' -NoNewline -ForegroundColor White
+    Write-Host ' Click through it now if you have not.'
+    Write-Host "     No AWS tile, no accounts, or no 'Access keys' link means you are missing an"
+    Write-Host '     entitlement. Nobody can grant it from a seat on the day.'
+    Write-Host ''
+    Write-Host '  2. Does this laptop actually let these programs run?' -ForegroundColor White
+    Write-Host '     Try both, in a new PowerShell window:'
+    Write-Host ''
+    Write-Host '         idsec version' -ForegroundColor Cyan
+    Write-Host '         claude --version' -ForegroundColor Cyan
+    Write-Host ''
+    Write-Host '     A version number from each means you are fine. But if either one is found'
+    Write-Host '     and still refuses to start — a message about a policy, an administrator,'
+    Write-Host "     'this application is blocked', or Idira EPM — that is endpoint application"
+    Write-Host '     control, not a setup problem. This script cannot fix it and neither can a'
+    Write-Host '     helper: it needs an endpoint policy change with a lead time of days. If a'
+    Write-Host '     Request for authorization prompt appears, use it.'
+    Write-Host ''
+    Write-Host '  Either of those looking wrong? 📧 Reply to the workshop email TODAY.' -ForegroundColor White
+    Write-Host '  Not tomorrow, and definitely not on the morning of the workshop. Both take'
+    Write-Host '  days to sort out, and both stop you doing the hands-on work entirely.'
+}
+
 if ($Todo.Count -eq 0) {
     Write-Host ''
-    Write-Host '  🎉 You are ready for the workshop.' -ForegroundColor Green
-    Write-Host ''
-    Write-Host '  One thing left that no script can do — the AWS portal check (8️⃣  above).'
-    Write-Host '  Please click through it if you have not already.'
+    Write-Host '  🎉 Every check this script can make has passed.' -ForegroundColor Green
+    Show-OnlyYou
     Write-Host ''
     Write-Host '  Bring: this laptop, a charger, and your workshop email. See you there! 👋'
     exit 0
@@ -407,4 +442,5 @@ Write-Host '      .\check-prereqs.ps1' -ForegroundColor Cyan
 Write-Host ''
 Write-Host '  Stuck on any of them? 📧 Reply to the workshop email this week — we would'
 Write-Host '  much rather fix it now than on the day.'
+Show-OnlyYou
 exit 1

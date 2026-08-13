@@ -281,22 +281,86 @@ If a machine is genuinely broken, **two people, one laptop**. The driver types, 
 reads the lab guide aloud and decides what to ask the agent. Pairs frequently learn more than
 individuals, and it takes ten seconds to arrange.
 
-## What to escalate immediately
+## Who fixes what — the three tiers
 
-- `list-targets` empty for more than one person → tenant policy gap
-- Bedrock `AccessDeniedException` after elevating → gate G2 gap, affects the room
-- Repeated genuine credential expiry → gate G1 not applied
-- The share link or clone URL not loading → everyone downstream is blocked
-- **Any refused MCP tool call in Lesson 10** → the server is disabled, or no access policy
-  matches. Gate G5. Affects the whole room and cannot be fixed at a desk.
-- **`localhost` callbacks failing for more than one person** → the venue network is
-  intercepting the Broker sign-in redirect. Trainer decision, not a desk fix.
-- **`idsec` or `claude` blocked by endpoint application control** (EPM or equivalent) → needs an
-  endpoint policy change, which nobody in the room can make. One person → loaner laptop. More than
-  one → the trainer needs to know, because the managed-laptop fleet will do it to everybody.
-- **`SSLError` / `CERTIFICATE_VERIFY_FAILED` from Python or from Claude Code**, after unsetting
-  the CA bundle variables → the network is inspecting TLS. Everything that talks to AWS is
-  affected, so it is a room-wide problem, not a laptop problem.
+Sort every problem into one of three tiers before you touch it. Most of what you will be called over
+for is **Self**, and the single most useful thing you can do all day is know that and say it.
 
-These are not desk-side fixes. Get a trainer, because they change what the front of the
-room should be doing.
+| Tier | Who fixes it | How you recognise it |
+| --- | --- | --- |
+| **Self** 🧑 | The attendee, usually by running the prework script | Something is missing or not on `PATH`. Nothing is broken; a step was skipped. |
+| **Helper** 🙋 | You, at the desk, in under two minutes | Wrong window, wrong shell, wrong folder, partial paste. The machine is fine and the account is fine. |
+| **Tenant** 🚩 | The workshop owner, tenant-side, before or during | Policy, registration, network or endpoint. Nobody in the room can fix it, and it usually affects more than one person. |
+
+### Tier 1 · Self — point at the script, do not debug
+
+**The prework script is the answer to most of the day's questions.** From the workshop folder:
+
+```
+# macOS
+bash check-prereqs.sh
+# Windows
+.\check-prereqs.ps1
+```
+
+It checks everything, fixes most of it, and says plainly what it could not. Say this rather than
+typing anything yourself:
+
+> Run the prereq script from the workshop folder, then open a new terminal. It will tell you what it
+> fixed.
+
+| Symptom | Almost always | What you say |
+| --- | --- | --- |
+| `idsec: command not found` | Prework step 5 skipped, or `PATH` edited without a new terminal | Run the script. It downloads `idsec` and fixes `PATH`. Then **new terminal**. |
+| `claude: command not found` | Same shape: installed under `~/.local/bin`, not on `PATH` | Run the script, then **new terminal**. |
+| `No module named boto3` / `anthropic` / `rich` | No `.venv`, or libraries never installed | Run the script. It builds the venv and installs both requirements files. |
+| No `.venv` folder at all | Prework step 3 skipped | Run the script. Do **not** `pip install --user`. |
+| `idsec configure` never run | Prework step 6 skipped | Their card has the tenant subdomain and username. Two minutes. |
+
+⚠️ **The new-terminal cost.** Any `PATH` fix needs a fresh window, and a fresh window has no AWS
+credentials in it. Tell them that in the same breath, or they will fix `idsec` and immediately break
+Bedrock. Cheat sheet §1 puts it back.
+
+**The most common misdiagnosis of the day:** `idsec version` failing in Lesson 08 gets reported as
+"the CLI is broken". It is not. It is prework step 5, and the lesson now says so before it mentions
+your card.
+
+### Tier 2 · Helper — the four you actually fix
+
+These are the top four above, and they are yours: wrong terminal window, no `(.venv)`, `PATH` not
+picked up in this shell, and partial or expired credential paste. Two minutes each, then move.
+
+Also yours: wrong folder, Command Prompt instead of PowerShell, execution policy on `Activate.ps1`,
+and an agent waiting on a permission prompt nobody noticed.
+
+### Tier 3 · Tenant — escalate immediately, do not debug
+
+**Get a trainer.** These change what the front of the room should be doing, and several of them are
+gate failures from [owner-prep.md](owner-prep.md) that will hit everybody within minutes.
+
+| Symptom | What it means | Gate |
+| --- | --- | --- |
+| `list-targets` empty, for more than one person | No elevation policy covers these users | G2 |
+| Bedrock `AccessDeniedException` **after** elevating | The elevated role lacks `bedrock:InvokeModel`. Affects the room. | G2 |
+| Repeated genuine credential expiry | Session duration still 1 hour | G1 |
+| Any **refused** MCP tool call in Lesson 10 | Server disabled, or no policy matches user + agent + tool | G5 |
+| `localhost` callback fails for more than one person | The venue network is intercepting the Broker sign-in redirect | — |
+| `idsec` or `claude` **blocked** by endpoint application control 🖥️ | Needs an EPM policy change. Nobody in the room has the rights. One person → loaner laptop. Several → the fleet will do it to everybody. | — |
+| `SSLError` / `CERTIFICATE_VERIFY_FAILED` after unsetting the CA bundle variables | The network is inspecting TLS. Everything that talks to AWS is affected. | — |
+| The share link or clone URL not loading | Everyone downstream is blocked | G3 / G6 |
+| `/security-review` behaving differently for different people | The repo shipped without a first commit | G6 |
+
+**Blocked is not missing.** 🖥️ If the shell finds the program and it still will not start — a message
+about a policy, an administrator, "this application is blocked", or **Idira EPM** — that is
+application control, not `PATH`, and the prework script cannot help. If a **Request authorization**
+option is offered, have them use it. Otherwise escalate and move them to a loaner laptop. Say the
+useful sentence while you walk them over:
+
+> This is Idira EPM deciding which tools may run on a managed endpoint. Same idea as Lesson 08, one
+> layer lower down.
+
+### What the prework was supposed to catch
+
+Every Tier 1 row above is a prework step. When you see a cluster of them, that is worth telling a
+trainer even though each one is individually trivial: it means the prework did not land, and the
+whole room is about ten minutes behind where the run of show assumes it is.

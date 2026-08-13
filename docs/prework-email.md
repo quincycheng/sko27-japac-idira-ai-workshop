@@ -44,17 +44,47 @@ The releases page is the primary source — pick the newest release and the file
 machine. The prework page tells you exactly which filename to look for. The mirrors are there in
 case GitHub is blocked on your network.
 
+## Two things we need to hear about this week 🚩
+
+Everything else on this list you can fix yourself. These two you cannot, and neither can a helper on
+the day. Both need days of lead time, so please check them now and **reply to this email** if either
+looks wrong.
+
+**1. Can you reach AWS through the portal?** Sign in at https://ngid.cyberark.cloud/, open **CYBR
+User Portal**, click the **AWS** tile. You should see an account with an **Access keys** link next to
+it. Nothing to copy yet — you just need to know it is there. A missing tile, no accounts, or no
+Access keys link is an **access entitlement** we have to grant for you in advance.
+
+**2. Will your laptop let the two programs run?** 🖥️ After you have done the setup below, try `idsec
+version` and `claude --version`. If either one is *blocked* rather than missing — a message about a
+policy, an administrator, or **Idira EPM** — that is endpoint application control, and it needs a
+policy change rather than anything you can do. Please don't try to work around it. Just reply, and
+use the **Request for authorization** button if you are offered one.
+
 ## What to do
 
 1. Get the **workshop folder** onto your laptop, into your Downloads folder.
-2. Open the folder, go into `lab`, and **double-click `0000-prework.html`**. It opens in your
-   browser.
-3. Follow the **seven steps** on that page. Pick macOS or Windows at the top and the whole page
-   adjusts to your machine.
+2. **Run the setup script.** Open a terminal in that folder and run one line:
 
-That page is the real instructions — this email is just the links and your login.
+   ```
+   # macOS
+   bash check-prereqs.sh
 
-## Three things worth knowing
+   # Windows PowerShell
+   .\check-prereqs.ps1
+   ```
+
+   It checks everything, offers to fix what it can, and finishes by telling you exactly what is
+   left. Most people are done at this point. It touches nothing outside your home folder and this
+   project folder, and it changes nothing without asking you first.
+3. **Anything it could not fix**, or if you would rather read what you are doing: open the folder, go
+   into `lab`, and **double-click `0000-prework.html`**. Pick macOS or Windows at the top and the
+   whole page adjusts to your machine. It walks through the same seven steps by hand.
+
+That page is the real instructions — this email is just the links, your login, and the script that
+saves you most of the typing.
+
+## A few things worth knowing
 
 **Nothing needs administrator rights.** Everything installs into your own home folder. If you
 get a prompt asking for admin credentials, stop and reply to this email — something has gone
@@ -81,16 +111,11 @@ never opened a terminal, you are exactly who this was written for.
 
 **Reply to this email.** Please do not wait for the day.
 
-One step in particular cannot be fixed from your seat during the session — **step 7**, where you
-check you can reach AWS through the portal. If the **AWS** tile is missing, or no accounts are
-listed, or there is no **Access keys** link, that is an access entitlement we have to grant
-for you in advance. Tell us this week.
+Run the setup script first if you have not — it names the problem for you, which makes your reply
+much easier for us to act on. Then paste what it printed into your reply.
 
-**The other one to tell us about early: a download your laptop refuses to run.** 🖥️ If `idsec` or
-Claude Code is *blocked* rather than missing — a message about a policy, an administrator, or
-**Idira EPM** — that is endpoint application control, and it needs a policy change rather than
-anything you can do. Please don't try to work around it; just reply, and use the **Request
-authorization** button if you are offered one.
+And the two at the top of this email, again, because they are the ones that cannot wait: **the AWS
+portal check** and **a program your laptop refuses to run**. Both need days, not minutes.
 
 See you on `<date>`. Bring a charger. 🔋
 

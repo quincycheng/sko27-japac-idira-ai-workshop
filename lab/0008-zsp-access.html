@@ -101,6 +101,27 @@ means that right now, before you run anything on this page, your entitlement to 
   the terminal, through the agent.</p>
 </div>
 
+<div class="win">
+  <p><span class="callout-label">🪶 Notice what nobody had to set up for this.</span> Before you
+  start, look at what is <em>not</em> on the prerequisite list for the next five steps:</p>
+  <ul>
+    <li><strong>No OIDC provider.</strong> Nobody registered an identity provider in that AWS
+    account.</li>
+    <li><strong>No IAM trust policy.</strong> There is no trust relationship written to say which
+    external identities may assume which role.</li>
+    <li><strong>No role per person.</strong> Sixty attendees, and nobody created sixty roles or sixty
+    mappings.</li>
+    <li><strong>No CloudFormation, Terraform or bootstrap stack.</strong> Nothing was deployed into
+    the account to make this work.</li>
+  </ul>
+  <p>You logged in to Idira. That is the whole of your side of the setup. Secure Cloud Access brokers
+  the request itself, so the account does not need to be taught about you in advance.</p>
+  <p>🎯 <strong>Worth remembering for client conversations.</strong> "How much do we have to build
+  first?" is usually the second question you get asked, right after "how does it work?" The honest
+  answer here is that federation plumbing is the thing you are replacing, not the thing you need
+  before you start.</p>
+</div>
+
 <h2>Steps</h2>
 
 <div class="step">
@@ -132,8 +153,25 @@ dir .claude\skills</code></pre></div>
     <div class="code"><pre><code>idsec version</code></pre></div>
     <p>You should get a version number. This is a single file — no installer, no admin rights,
     nothing added to your system. 🪶</p>
-    <p>If you get “command not found”, you are probably not in the folder where you extracted it.
-    🙋 Raise your card.</p>
+    <div class="warn">
+      <p><span class="callout-label">“command not found”? Almost certainly the prework.</span> This
+      is the most common single failure in this lesson, and it usually means <strong>prework step 5
+      was skipped</strong> or the <code>PATH</code> line was added without opening a new terminal.
+      Nothing is broken. Run the prework script from the workshop folder, which downloads
+      <code>idsec</code> if it is missing and fixes your <code>PATH</code> if it is not:</p>
+      <div class="os os-mac">
+        <div class="code"><pre><code>cd ~/Downloads/vibe-coding-workshop
+bash check-prereqs.sh</code></pre></div>
+      </div>
+      <div class="os os-win">
+        <div class="code"><pre><code>cd $HOME\Downloads\vibe-coding-workshop
+.\check-prereqs.ps1</code></pre></div>
+      </div>
+      <p>Then open a <strong>new</strong> terminal, re-do your AWS credentials from
+      <a href="0006-setup.html">Lesson 06</a>, and try <code>idsec version</code> again.</p>
+      <p>🙋 Raise your card if the script says it cannot download the binary, or if the program is
+      found but refuses to start. Those two are not yours to fix, and the callout below says why.</p>
+    </div>
     <div class="note">
       <p><span class="callout-label">🖥️ On a managed laptop, something decides whether this may run
       at all.</span> <code>idsec</code> is a <em>privileged</em> tool: anyone who can run it can ask
