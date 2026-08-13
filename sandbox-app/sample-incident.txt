@@ -1,0 +1,37 @@
+INCIDENT REPORT — INC-2026-0417
+Opened: 2026-04-17 02:14 UTC
+Severity: High
+Reporter: Overnight SOC shift
+
+SUMMARY
+At 01:52 UTC an automated alert fired on the build agent pool for repeated
+authentication failures against the container registry. Between 01:52 and 02:09
+UTC a single build agent attempted 1,431 registry pulls using an access key that
+had been retired eleven months earlier.
+
+TIMELINE
+01:52  Alert "registry-auth-failure-rate" fires.
+01:58  On-call engineer acknowledges.
+02:04  Source traced to build agent bld-agent-14.
+02:09  Agent isolated from the build network.
+02:14  Incident opened.
+03:40  Key confirmed retired in May 2025 but never removed from the agent image.
+
+FINDINGS
+The retired access key was baked into a configuration file inside the build agent
+image. The image had been rebuilt fourteen times since the key was retired, and
+the key was copied forward on every rebuild. No inventory recorded that the key
+existed inside the image, so the retirement process never touched it. The key had
+read access to three registries and, until nine months ago, write access to one.
+
+There is no evidence of data exfiltration. The failures occurred because the key
+was retired, not because it was blocked.
+
+CONTRIBUTING FACTORS
+- The credential was stored in source-controlled configuration.
+- No scanning ran against the build agent image definitions.
+- Key ownership was recorded against a team that was reorganised in 2025.
+
+OPEN QUESTIONS
+- How many other retired keys remain in image definitions?
+- Why did fourteen rebuilds not trigger a credential review?

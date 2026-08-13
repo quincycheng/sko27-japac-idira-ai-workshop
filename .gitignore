@@ -1,0 +1,180 @@
+# .gitignore for the Idira vibe-coding workshop
+#
+# Two audiences produce junk in this repo:
+#   1. The workshop owner, building and dry-running the material.
+#   2. Sixty attendees, who each clone it and then run the lab inside it.
+#
+# The second one matters more than usual. Attendees create virtual environments,
+# scratch projects and copied skills inside the folder they cloned — none of that
+# belongs here.
+#
+# ⚠️ READ THE LAST SECTION BEFORE ADDING A SECRET PATTERN. The fake credentials in
+# sandbox-app/ are the point of this workshop and must stay tracked.
+
+
+# ---------------------------------------------------------------------------
+# Python virtual environments  (prework step 3)
+# ---------------------------------------------------------------------------
+# The lab standardises on `.venv` in the repo root. The rest are here because
+# people who already know Python will use their own habit instead.
+
+.venv/
+.venv-*/
+venv/
+env/
+ENV/
+.python-version
+pyvenv.cfg
+
+
+# ---------------------------------------------------------------------------
+# Python build and cache artefacts
+# ---------------------------------------------------------------------------
+
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+build/
+dist/
+pip-log.txt
+pip-wheel-metadata/
+
+
+# ---------------------------------------------------------------------------
+# Agent working files
+# ---------------------------------------------------------------------------
+# Machine-local Claude Code settings and session state. `.claude/settings.json`
+# (no `.local`) is shared config and IS tracked if you ever add one.
+
+.claude/settings.local.json
+.claude/*.local.json
+.claude/projects/
+.claude/todos/
+.claude/shell-snapshots/
+.claude/statsig/
+.claude/history.jsonl
+
+# Lessons 3 and 5 tell attendees to copy skills into the app they are working
+# in. Those are copies of skills/ — the originals are tracked, the copies are not.
+sandbox-app/.claude/
+
+
+# ---------------------------------------------------------------------------
+# Downloaded tools and built distributions
+# ---------------------------------------------------------------------------
+# The idsec CLI is a downloaded binary (prework step 5). Never commit it —
+# attendees fetch the build for their own platform from the releases page.
+#
+# These are anchored with a leading slash on purpose. Unanchored, `idsec` also
+# matches skills/idsec/ — the tracked SKILL.md that teaches the CLI — and the
+# lab loses a skill it hands to every attendee.
+
+/idsec
+/idsec.exe
+/idsec/
+*.tar.gz
+*.tgz
+*.zip
+
+# The attendee-facing bundle, if you build it in place (owner-prep gate G3).
+vibe-coding-workshop-dist/
+
+
+# ---------------------------------------------------------------------------
+# Attendee scratch space
+# ---------------------------------------------------------------------------
+# Lessons 6 and 8 start from an empty folder. If someone creates it inside their
+# clone rather than beside it, these names catch the common cases. Not
+# exhaustive — it cannot be — but it covers the folder names the lab suggests.
+
+scratch/
+playground/
+my-first-app/
+my-app/
+my-project/
+from-nothing/
+
+
+# ---------------------------------------------------------------------------
+# Operating system and editor noise
+# ---------------------------------------------------------------------------
+
+# macOS
+.DS_Store
+.AppleDouble
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Editors
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+.\#*
+\#*\#
+
+
+# ---------------------------------------------------------------------------
+# Real credentials — belt and braces
+# ---------------------------------------------------------------------------
+# Nothing in this repo needs any of these. They are here because an agent asked
+# to "put the credentials somewhere safer" will sometimes reach for a .env file,
+# and a room of sixty people running that prompt is exactly when you want this
+# net in place. See the helper runbook, Lesson 4.
+
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+!**/*.key.example
+.aws/
+credentials
+.idsec/
+.netrc
+
+
+# ---------------------------------------------------------------------------
+# 🚨 DO NOT IGNORE THESE
+# ---------------------------------------------------------------------------
+# The whole workshop depends on the planted fake credentials being present in a
+# fresh clone. Lesson 2 asks an agent to find them; Lesson 4 deletes one of them;
+# Part 1's Stage 2 asks the attendee to find them by hand first. If a future
+# secret-scanning pattern hides these files, those lessons have no content.
+#
+# Every value is a public example placeholder — AWS's own documentation strings
+# and obviously-fake GitHub, Stripe, Slack and Postgres values. None of them
+# authenticate to anything, anywhere. See the note at the end of README.md.
+#
+# ⚠️ ai-harness-app/sandbox/.env is matched by the `.env` rule above, and Stage 2
+# specifically teaches that a hidden dotfile is the secret people miss. Without
+# this negation a fresh clone is missing two of the six planted secrets and the
+# lesson quietly loses its punchline.
+#
+# These negations are load-bearing. Leave them last so nothing added above can
+# override them.
+
+!sandbox-app/config/
+!sandbox-app/config/settings.py
+!sandbox-app/config/integrations.json
+!sandbox-app/config/__init__.py
+!ai-harness-app/sandbox/.env

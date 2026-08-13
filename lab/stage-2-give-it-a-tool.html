@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S2 · Give it a tool · SKO27 TechSummit - AI Workshop for Idira DC</title>
+<link rel="stylesheet" href="assets/lab.css">
+</head>
+<body>
+<div id="progress-rail"><div id="progress-fill"></div></div>
+
+<div class="wrap">
+
+<nav id="page-nav"></nav>
+
+<header class="lesson">
+  <p class="kicker">Part 1 · Stage 2 of 5</p>
+  <h1>Give it a tool 🔧</h1>
+  <p class="standfirst">
+    Thirty more lines and the model can act. This is the loop that turns a chatbot into an agent —
+    and the exact moment your security instincts should switch on.
+  </p>
+  <ul class="meta">
+    <li class="tag-must">Part 1 · Everyone</li>
+    <li>⏱️ ~10 minutes</li>
+    <li>📄 <code>ai-harness-app/02_single_tool.py</code></li>
+    <li id="step-counter">&nbsp;</li>
+  </ul>
+</header>
+
+<figure>
+<svg viewBox="0 0 760 152" role="img" aria-label="The five stages of Part 1, with stage 2 highlighted.">
+  <line x1="24" y1="61" x2="736" y2="61" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 5"/>
+
+  <g>
+    <rect x="6" y="26" width="138" height="70" rx="9" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="75" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">S1 💬</text>
+    <text x="75" y="68" text-anchor="middle" class="svg-label" fill="var(--ink-soft)">One call</text>
+    <text x="75" y="84" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">no hands</text>
+  </g>
+  <g>
+    <rect x="157" y="20" width="138" height="82" rx="9" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2.5"/>
+    <text x="226" y="44" text-anchor="middle" class="svg-sub" fill="var(--accent)">S2 🔧</text>
+    <text x="226" y="64" text-anchor="middle" class="svg-label" fill="var(--ink)">A tool + a loop</text>
+    <text x="226" y="80" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">it can act</text>
+    <text x="226" y="94" text-anchor="middle" class="svg-sub" fill="var(--accent)">you are here</text>
+  </g>
+  <g>
+    <rect x="308" y="26" width="138" height="70" rx="9" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="377" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">S3 🧠</text>
+    <text x="377" y="68" text-anchor="middle" class="svg-label" fill="var(--ink-soft)">An agent</text>
+    <text x="377" y="84" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">prompt + toolbox</text>
+  </g>
+  <g>
+    <rect x="459" y="26" width="138" height="70" rx="9" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="528" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">S4 📉</text>
+    <text x="528" y="68" text-anchor="middle" class="svg-label" fill="var(--ink-soft)">Context</text>
+    <text x="528" y="84" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">count + compact</text>
+  </g>
+  <g>
+    <rect x="610" y="26" width="138" height="70" rx="9" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="679" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">S5 🛡️</text>
+    <text x="679" y="68" text-anchor="middle" class="svg-label" fill="var(--ink-soft)">When data lies</text>
+    <text x="679" y="84" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">controls win</text>
+  </g>
+
+  <text x="24" y="130" class="svg-sub" fill="var(--ink-soft)">Stage 2 adds: one tool, and the loop that runs it. Everything after this is refinement.</text>
+</svg>
+<figcaption>Five stages. This one is the big one.</figcaption>
+</figure>
+
+<h2>First: find the secrets yourself 🕵️</h2>
+
+<p>In a moment you will ask an agent to hunt for hardcoded secrets in a small, deliberately awful
+repo. Before you do — <strong>beat it to the punch.</strong> Do it by hand, the way you would in a
+customer's codebase.</p>
+
+<div class="note">
+  <p><span class="callout-label">🧪 The rules.</span> Everything the agent can see lives in
+  <code>ai-harness-app/sandbox/</code>. Six files, none longer than 40 lines. Every secret in there
+  is a well-known fake — publicly documented example values — so nothing sensitive is on your
+  laptop. ⚠️ Give yourself <strong>three minutes</strong>, then stop.</p>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">1</div><p class="step-title">Look for yourself — no AI 🙅</p></div>
+  <div class="step-body">
+    <p>From the <code>ai-harness-app</code> folder:</p>
+    <div class="os os-mac">
+      <div class="code"><pre><code>ls -la sandbox
+grep -rn "KEY\|SECRET\|TOKEN\|PASSWORD" sandbox</code></pre></div>
+    </div>
+    <div class="os os-win">
+      <div class="code"><pre><code>Get-ChildItem sandbox -Force
+Select-String -Path sandbox\* -Pattern "KEY|SECRET|TOKEN|PASSWORD"</code></pre></div>
+    </div>
+    <p>Or just open the files in an editor and read them. Either is fine — reading is the point.</p>
+    <p><strong>Write down two numbers</strong> before you go on: how many <em>files</em> hold a
+    secret, and how many <em>secret values</em> you found in total. 🔢 No peeking below.</p>
+    <div class="warn">
+      <p><span class="callout-label">🙈 Notice what <code>ls</code> alone misses.</span> One of the
+      two guilty files starts with a dot, so it is invisible to plain <code>ls</code>, to Finder, and
+      to a lot of scanners. The <code>-la</code> / <code>-Force</code> above is doing real work.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">2</div><p class="step-title">Check your answer 📊</p></div>
+  <div class="step-body">
+    <p>Ready? Open the box.</p>
+    <details>
+      <summary>🔓 Reveal: 6 secret values, in 2 files</summary>
+      <table>
+        <thead><tr><th>Where</th><th>What</th><th>Easy to miss?</th></tr></thead>
+        <tbody>
+          <tr><td><code>sandbox/.env:2</code></td><td><code>GITHUB_TOKEN</code> — a <code>ghp_…</code> personal access token</td><td>👀 the file is hidden</td></tr>
+          <tr><td><code>sandbox/.env:3</code></td><td><code>JWT_SIGNING_SECRET</code> — forge any session with this</td><td>👀 the file is hidden</td></tr>
+          <tr><td><code>sandbox/config.py:4</code></td><td><code>AWS_ACCESS_KEY_ID</code></td><td>no — screams “secret”</td></tr>
+          <tr><td><code>sandbox/config.py:5</code></td><td><code>AWS_SECRET_ACCESS_KEY</code></td><td>no</td></tr>
+          <tr><td><code>sandbox/config.py:7</code></td><td><code>DATABASE_URL</code> — the password <code>hunter2</code> is <em>inside the URL</em></td><td>🥷 <strong>yes</strong></td></tr>
+          <tr><td><code>sandbox/config.py:10</code></td><td><code>STRIPE_API_KEY</code> — <code>sk_live_…</code>, so production</td><td>🤏 formatted differently on purpose</td></tr>
+        </tbody>
+      </table>
+      <p class="track-why"><strong>Score yourself honestly.</strong> Most people find four. The two
+      that hide are the hidden <code>.env</code> and the database password buried in a connection
+      string — the one that no <code>KEY=</code> or <code>SECRET=</code> pattern will ever match.
+      That is the whole problem with pattern-matching for secrets, in one line of code. 🎯</p>
+      <p class="track-why">Keep going and you will notice the sandbox has more than secrets in it:
+      <code>app.py</code> has an <code>eval()</code>, a <code>shell=True</code> command injection
+      and a path traversal; <code>utils.py</code> hashes passwords with unsalted MD5. Park those —
+      Stage 3 goes hunting for them. 🐛</p>
+    </details>
+  </div>
+</div>
+
+<h2>Now let the agent try 🤖</h2>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">3</div><p class="step-title">Run the loop</p></div>
+  <div class="step-body">
+    <div class="code"><pre><code>python 02_single_tool.py</code></pre></div>
+    <p>Watch the transcript rather than the answer. Lines marked <code>[model]</code> are it
+    thinking out loud; lines marked <code>[tool ]</code> are <strong>your Python running on your
+    laptop because the model asked it to</strong>. 🎬</p>
+    <div class="code"><pre><code>TASK: Search this repo for any hardcoded secrets or API keys. Report what you find.
+
+[model] I'll search for common secret patterns.
+[tool ] search_code(pattern='(?i)(api[_-]?key|secret|token|password)')
+[model] Found several. Let me check for AWS keys specifically.
+[tool ] search_code(pattern='AKIA[0-9A-Z]{16}')
+[model] Here is what I found: ...</code></pre></div>
+    <p>Three or four turns, two or three searches, then a report. Nobody wrote “first search for
+    keys, then search for AWS” — it worked that out. 🤯</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">4</div><p class="step-title">Compare its list to yours ⚖️</p></div>
+  <div class="step-body">
+    <p>Now the interesting bit. Against the table above, mark up the agent's report:</p>
+    <ul>
+      <li>✅ Which of the six did it find?</li>
+      <li>❓ Did it get <code>hunter2</code> inside <code>DATABASE_URL</code>? It only has one tool
+        — regex search — so it finds that one <em>only</em> if it thinks to search for
+        <code>postgres://</code> or <code>://.*:.*@</code>.</li>
+      <li>🎲 Run it a second time. The searches will differ. Same code, same task, different
+        investigation — this is not a scanner, and it is not repeatable.</li>
+    </ul>
+    <div class="note">
+      <p><span class="callout-label">🗣️ The line worth stealing for a customer conversation.</span>
+      “It is not better than your scanner at pattern-matching — it is worse. What it does that your
+      scanner cannot is <em>decide what to look for next</em>. Which is also why you cannot audit
+      it by reading its rules: it has none.”</p>
+    </div>
+  </div>
+</div>
+
+<h2>How the loop works 🔁</h2>
+
+<figure>
+<svg viewBox="0 0 760 250" role="img" aria-label="The harness loop: send conversation and tools to the model; if the model asks for a tool, the harness runs it and appends the result; repeat until the model stops asking.">
+  <defs>
+    <marker id="lp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"/>
+    </marker>
+  </defs>
+
+  <rect x="24" y="40" width="180" height="76" rx="10" fill="var(--panel)" stroke="var(--line)" stroke-width="1.5"/>
+  <text x="114" y="70" text-anchor="middle" class="svg-label" fill="var(--ink)">messages[]</text>
+  <text x="114" y="90" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">the whole conversation,</text>
+  <text x="114" y="105" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">re-sent every single turn</text>
+
+  <rect x="290" y="40" width="180" height="76" rx="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>
+  <text x="380" y="70" text-anchor="middle" class="svg-label" fill="var(--ink)">the model 💬</text>
+  <text x="380" y="90" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">replies with text,</text>
+  <text x="380" y="105" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">or asks for a tool</text>
+
+  <rect x="556" y="40" width="180" height="76" rx="10" fill="var(--panel)" stroke="var(--ink-soft)" stroke-width="1.5"/>
+  <text x="646" y="70" text-anchor="middle" class="svg-label" fill="var(--ink)">your code 🔧</text>
+  <text x="646" y="90" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">decides whether to run it,</text>
+  <text x="646" y="105" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">then runs it for real</text>
+
+  <line x1="208" y1="66" x2="284" y2="66" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#lp)"/>
+  <text x="246" y="56" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">send</text>
+
+  <line x1="474" y1="66" x2="550" y2="66" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#lp)"/>
+  <text x="512" y="56" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">tool_use</text>
+
+  <path d="M 646 122 L 646 168 L 114 168 L 114 122" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#lp)"/>
+  <text x="380" y="188" text-anchor="middle" class="svg-sub" fill="var(--accent)">tool_result appended to messages[] → go round again</text>
+
+  <text x="24" y="222" class="svg-label" fill="var(--ink-soft)">The loop ends when the model replies without asking for a tool.</text>
+  <text x="24" y="242" class="svg-sub" fill="var(--ink-faint)">That is the entire architecture. Claude Code is this, with better tools and a lot of polish.</text>
+</svg>
+<figcaption>Twenty lines of Python. Open each part below to see them.</figcaption>
+</figure>
+
+<details>
+  <summary>1 · The tool definition — a schema, and nothing more</summary>
+  <div class="code"><pre><code>TOOLS = [
+    {
+        "name": "search_code",
+        "description": "Regex-search the repo. Returns matching 'file:line: text' rows.",
+        "input_schema": { ... "pattern": {"type": "string"} ... },
+    }
+]</code></pre></div>
+  <p class="track-why">A tool is <strong>two things that must agree</strong>: this JSON description,
+  which is all the model ever sees, and a Python function, which is what actually runs. The model
+  cannot see the code, cannot change the code, and cannot invent a tool that is not on this list.</p>
+  <p class="track-why">🔐 <strong>So your tool list is your attack surface.</strong> Word for word,
+  that is the same conversation as “what can this service account do?” — which is why this stuff is
+  a privilege problem wearing an AI costume.</p>
+</details>
+
+<details>
+  <summary>2 · The loop, and the one line that ends it</summary>
+  <div class="code"><pre><code>while True:
+    response = client.messages.create(
+        model=MODEL, max_tokens=2048,
+        tools=TOOLS, messages=messages,
+    )
+    ...
+    if response.stop_reason != "tool_use":
+        break</code></pre></div>
+  <p class="track-why">Remember <code>end_turn</code> from Stage 1? Now the model can stop for a
+  second reason: <code>tool_use</code>, meaning “I want something run before I continue.” That one
+  extra value is what makes agents possible. 🔑</p>
+  <p class="track-why">And notice <code>while True</code> — nothing bounds this. If the model keeps
+  asking, the loop keeps going, forever, spending money. Stage 3 fixes it. ⛔</p>
+</details>
+
+<details>
+  <summary>3 · Give the whole turn back, tool request included</summary>
+  <div class="code"><pre><code>messages.append({"role": "assistant", "content": response.content})</code></pre></div>
+  <p class="track-why">The model's <code>tool_use</code> block goes back into the transcript intact.
+  Drop it and the result you send next has nothing to attach to, and the API rejects the whole
+  request. Half the pain of writing your first harness is this bookkeeping. 📎</p>
+</details>
+
+<details>
+  <summary>4 · Where the security actually lives</summary>
+  <div class="code"><pre><code>for block in response.content:
+    if block.type == "tool_use":
+        pattern = block.input.get("pattern")
+        if not pattern:
+            output = "error: 'pattern' is required and must be non-empty."
+        else:
+            output = search_code(**block.input)</code></pre></div>
+  <p class="track-why">Read that <code>if</code> again. The model <em>asked</em>; our code decided.
+  <strong>That gap is the only place safety can live.</strong> Here it is only checking for an empty
+  argument, but the same gap is where you would put an allowlist, a path check, an approval prompt,
+  or an audit log. Stage 5 pushes on it hard.</p>
+  <p class="track-why">Note too that a bad request comes back as a <em>normal result the model can
+  read</em> — <code>"error: 'pattern' is required"</code> — not a crash. An agent that can see its
+  own mistakes recovers from them. 🩹</p>
+</details>
+
+<details>
+  <summary>5 · The result goes back as if the user said it</summary>
+  <div class="code"><pre><code>tool_results.append({
+    "type": "tool_result",
+    "tool_use_id": block.id,   # must match the request
+    "content": output,
+})
+messages.append({"role": "user", "content": tool_results})</code></pre></div>
+  <p class="track-why">Here is the sentence to remember for the rest of the day: 🚨 <strong>the
+  contents of the files you scanned are now in the <code>user</code> role.</strong> To the model,
+  the file's text and your instructions arrive in exactly the same stream, with no marker saying
+  “this part is only data”.</p>
+  <p class="track-why">If an attacker controls a file the agent reads, the attacker is typing into
+  your conversation. That is prompt injection, it is a design property rather than a bug, and it is
+  Stage 5. 🎣</p>
+</details>
+
+<h2>Break it on purpose 🔨</h2>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">5</div><p class="step-title">Delete one line</p></div>
+  <div class="step-body">
+    <p>Comment out the line from part 3 — the one appending the assistant turn — and run it again.</p>
+    <div class="code"><pre><code># messages.append({"role": "assistant", "content": response.content})</code></pre></div>
+    <p>You get a <code>400</code> from the API: a <code>tool_result</code> with no matching
+    <code>tool_use</code>. 💥 Useful to have felt once, because it makes the shape concrete: the
+    transcript has to stay consistent, and <strong>the harness is what keeps it consistent</strong>.
+    Put the line back. ↩️</p>
+  </div>
+</div>
+
+<div class="check" data-answer="b">
+  <p class="check-q">🔧 The model “used a tool”. What actually happened?</p>
+  <ul class="opts">
+    <li><button data-opt="a">The model executed the search on the provider's servers</button></li>
+    <li><button data-opt="b">It returned JSON asking for it; your Python chose to run it locally</button></li>
+    <li><button data-opt="c">The provider ran your function through a secure sandbox on your behalf</button></li>
+  </ul>
+  <p class="why" data-for="a">No code left your laptop and none ran on theirs — <code>search_code</code> is a function in <code>tools.py</code>. Try again.</p>
+  <p class="why" data-for="b">✅ Exactly. The model only ever <em>asks</em>. Your loop decides. Everything you can do about agent risk lives in that decision — which is good news, because it is ordinary code you already know how to review.</p>
+  <p class="why" data-for="c">There is no such sandbox in play. Your process ran your function on your files. Try again.</p>
+</div>
+
+<div class="check" data-answer="c">
+  <p class="check-q">🥷 Why is the <code>DATABASE_URL</code> password the one both you and the agent likely missed?</p>
+  <ul class="opts">
+    <li><button data-opt="a">It is in a hidden file that the search tool skips</button></li>
+    <li><button data-opt="b">It is encrypted, so no plain-text search can match it</button></li>
+    <li><button data-opt="c">It is embedded in a URL, so it matches no “this is a secret” pattern</button></li>
+  </ul>
+  <p class="why" data-for="a">That is the <code>.env</code> trap, and a good one — but <code>config.py</code> is perfectly visible. Try again.</p>
+  <p class="why" data-for="b"><code>hunter2</code> is sitting there in plain text. Try again.</p>
+  <p class="why" data-for="c">✅ Yes. <code>postgres://admin:hunter2@…</code> has no <code>KEY</code>, no <code>SECRET</code>, no <code>sk_live</code>. It is exactly the shape of secret that survives a scanner and turns up in an incident — and exactly the argument for eliminating credentials rather than hunting for them.</p>
+</div>
+
+<div class="ask">
+  🗣️ <strong>Ask your agent:</strong> “In <code>ai-harness-app/02_single_tool.py</code>, what stops
+  this loop from running forever, and what would you add?” Then compare its answer with what Stage 3
+  actually does. 🥊
+</div>
+
+<div class="win">
+  <p><span class="callout-label">✅ Stage 2 done.</span> You have an agent: a loop, a tool, and a
+  model deciding what to call. You have also seen the two things that make people nervous — an
+  unbounded loop, and untrusted file contents landing in the conversation. Both get addressed next.</p>
+</div>
+
+<div id="page-pager"></div>
+
+</div>
+<script src="assets/lab.js"></script>
+</body>
+</html>

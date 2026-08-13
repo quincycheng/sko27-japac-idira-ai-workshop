@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cheat sheet · SKO27 TechSummit - AI Workshop for Idira DC</title>
+<link rel="stylesheet" href="../assets/lab.css">
+</head>
+<body>
+<div id="progress-rail"><div id="progress-fill"></div></div>
+
+<div class="wrap">
+
+<nav id="page-nav"></nav>
+
+<header class="lesson">
+  <p class="kicker">Reference</p>
+  <h1>Cheat sheet 📋</h1>
+  <p class="standfirst">
+    Every command in the lab, on one page. Keep this open in a second tab.
+    It prints on two sides of A4 if you would rather have it on paper. 🖨️
+  </p>
+</header>
+
+<div class="os-switch" data-os-switch></div>
+
+<h2>1 · Start a session from scratch</h2>
+
+<p>Do all of this in <strong>one terminal window</strong> and keep that window open.</p>
+
+<div class="os os-mac">
+<div class="code"><pre><code># a) paste the three lines copied from the AWS portal
+export AWS_ACCESS_KEY_ID="ASIA...."
+export AWS_SECRET_ACCESS_KEY="....."
+export AWS_SESSION_TOKEN="....."
+
+# b) point Claude Code at Bedrock
+export CLAUDE_CODE_USE_BEDROCK=1
+export AWS_REGION=us-east-1
+export ANTHROPIC_MODEL=us.anthropic.claude-sonnet-4-5-20250929-v1:0
+
+# c) switch on the virtual environment
+cd ~/Downloads/vibe-coding-workshop
+source .venv/bin/activate
+
+# d) go to the app and start the agent
+cd sandbox-app
+claude</code></pre></div>
+</div>
+
+<div class="os os-win">
+<div class="code"><pre><code># a) paste the three lines copied from the AWS portal
+$env:AWS_ACCESS_KEY_ID="ASIA...."
+$env:AWS_SECRET_ACCESS_KEY="....."
+$env:AWS_SESSION_TOKEN="....."
+
+# b) point Claude Code at Bedrock
+$env:CLAUDE_CODE_USE_BEDROCK=1
+$env:AWS_REGION="us-east-1"
+$env:ANTHROPIC_MODEL="us.anthropic.claude-sonnet-4-5-20250929-v1:0"
+
+# c) switch on the virtual environment
+cd $HOME\Downloads\vibe-coding-workshop
+.\.venv\Scripts\Activate.ps1
+
+# d) go to the app and start the agent
+cd sandbox-app
+claude</code></pre></div>
+</div>
+
+<h2>2 · Where the credentials come from</h2>
+
+<ol>
+  <li><code>https://ngid.cyberark.cloud/</code> → sign in with the login on your card 🎟️</li>
+  <li><strong>CYBR User Portal</strong> → the <strong>AWS</strong> tile</li>
+  <li>You land on <code>…awsapps.com/start/#</code></li>
+  <li><strong>Access keys</strong> next to your account/role</li>
+  <li>Tab: <span class="os os-inline os-mac"><strong>macOS and Linux</strong></span><span class="os os-inline os-win"><strong>PowerShell</strong></span></li>
+  <li><strong>Option 1: Set AWS environment variables</strong> → copy 📋 → paste into the terminal</li>
+</ol>
+
+<h2>3 · Claude Code</h2>
+
+<table>
+  <tr><th>Command</th><th>What it does</th></tr>
+  <tr><td><code>claude</code></td><td>Start the agent in the current folder</td></tr>
+  <tr><td><code>claude --version</code></td><td>Check it is installed</td></tr>
+  <tr><td><code>/exit</code></td><td>Leave the agent, back to the terminal</td></tr>
+  <tr><td><code>Esc</code></td><td>Interrupt it mid-answer</td></tr>
+  <tr><td><code>/plugin</code></td><td>Browse and install plugins from the marketplace</td></tr>
+  <tr><td><code>/mcp</code></td><td>Connect to, authenticate against and inspect MCP servers</td></tr>
+  <tr><td><code>/security-review</code></td><td>Built-in security review of your changes</td></tr>
+  <tr><td><code>/plugin</code> → mattpocock-skills</td><td>The harness used in Lesson 8</td></tr>
+</table>
+
+<p>Adding an MCP server through the Idira Identity Broker — run this outside the agent, all on one
+line:</p>
+<div class="code"><pre><code>claude mcp add --transport http --scope user idira-broker &lt;GATEWAY-URL&gt; --client-id &lt;CLIENT-ID&gt; --client-secret</code></pre></div>
+<p><code>--client-secret</code> takes no value — it prompts, so the secret stays out of your shell
+history. Then <code>/mcp</code> inside the agent to authenticate as yourself. 🙋</p>
+
+<h2>4 · idsec — the Idira CLI</h2>
+
+<div class="code"><pre><code>idsec version                                     # is it installed?
+idsec login                                       # log in (prompts for password/MFA)
+idsec login --force                               # log in again before the token expires
+idsec profiles list                               # which profiles exist
+idsec sca cloud-access list-targets --csp aws     # what may I elevate into?
+idsec sca cloud-access elevate --csp aws \
+  --workspace-id &lt;aws-account-id&gt; \
+  --roleIds &lt;role-arn&gt;                            # ask for access</code></pre></div>
+
+<div class="warn">
+  <p><span class="callout-label">⚠️ Two rules.</span> Don't run <code>idsec configure</code> again
+  after the prework — it overwrites your settings. And take account IDs and role ARNs from
+  <code>list-targets</code> output rather than typing them from memory.</p>
+</div>
+
+<p>Flags change between releases. When in doubt: <code>idsec sca cloud-access elevate --help</code>.
+Logs for anything that fails opaquely: <code>~/.idsec/logs/idsec-cli.log</code>.</p>
+
+<p>🖥️ <strong>And one layer lower:</strong> on a managed endpoint, <strong>Idira EPM</strong>
+decides whether a CLI like this is allowed to run at all, and by whom — application control plus an
+approval flow, audited. <strong>EPM</strong> = which tool may run here. <strong>Secure Cloud
+Access</strong> = what access it can obtain. <strong>Secrets Manager</strong> = what happens to the
+secrets you cannot eliminate.</p>
+
+<h2>5 · Python</h2>
+
+<div class="code"><pre><code>python summarize.py                    # summarise sample-incident.txt
+python summarize.py other-report.txt   # summarise a different file
+python notify.py "your summary here"   # dry run — sends nothing
+
+python -c "import boto3; print(boto3.client('sts').get_caller_identity()['Arn'])"
+                                       # who am I in AWS right now?</code></pre></div>
+
+<p><strong>Activate the virtual environment first</strong>, or none of the above will find
+<code>boto3</code>:</p>
+<div class="os os-mac">
+<div class="code"><pre><code>cd ~/Downloads/vibe-coding-workshop &amp;&amp; source .venv/bin/activate</code></pre></div>
+<p>Prompt shows <code>(.venv)</code> = on. If <code>python</code> is not found outside the venv, use
+<code>python3</code> — or add <code>alias python="python3"</code> to <code>~/.zshrc</code>.</p>
+</div>
+<div class="os os-win">
+<div class="code"><pre><code>cd $HOME\Downloads\vibe-coding-workshop; .\.venv\Scripts\Activate.ps1</code></pre></div>
+<p>Prompt shows <code>(.venv)</code> = on. Blocked by the execution policy? Run
+<code>Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass</code> first. Outside the venv, use
+<code>py</code> instead of <code>python</code>.</p>
+</div>
+
+<h3>Part 1 — the harness stages 🏗️</h3>
+
+<p>Same venv, same three <code>AWS_*</code> lines as Claude Code. Add
+<span class="os os-inline os-mac"><code>export AWS_REGION=us-east-1</code></span><span class="os os-inline os-win"><code>$env:AWS_REGION="us-east-1"</code></span>,
+then from <code>ai-harness-app/</code>:</p>
+
+<div class="code"><pre><code>python 01_bare_call.py          # S1  one call — text in, text out, no tools
+python 02_single_tool.py        # S2  the loop: one tool, and it can act
+python 03_agent.py              # S3  system prompt + toolbox + iteration cap
+python 03_agent.py "your task"  #     any task you like — same code
+python 04_context.py            # S4  token accounting + compaction
+python 05_prompt_injection.py   # S5  a file gives the agent orders; controls refuse</code></pre></div>
+
+<table>
+  <tr><th>Knob</th><th>Where</th><th>What it shows</th></tr>
+  <tr><td><code>MAX_ITERATIONS</code></td><td><code>03_agent.py</code></td><td>Set to 2 → the agent is cut off. Limits cost capability.</td></tr>
+  <tr><td><code>COMPACT_THRESHOLD_TOKENS</code></td><td><code>04_context.py</code></td><td>Huge → tokens climb forever. Tiny → constant, vaguer compaction.</td></tr>
+  <tr><td><code>_ALLOWED_COMMANDS</code></td><td><code>tools.py</code></td><td>The allowlist. Widen it and the injection in <code>sandbox/RELEASE_NOTES.md</code> gets somewhere.</td></tr>
+  <tr><td><code>_safe_path()</code></td><td><code>tools.py</code></td><td>Nine lines that refuse every <code>../</code> escape.</td></tr>
+  <tr><td><code>LLM_PROVIDER</code></td><td>environment</td><td><code>bedrock</code> (default), <code>vertex</code>, <code>gemini</code>, <code>llama</code> — the loop never changes.</td></tr>
+</table>
+
+<p><code>No module named anthropic</code> → venv is off, or run
+<code>python -m pip install -r ai-harness-app/requirements.txt</code>.
+<code>No AWS credentials in this terminal window</code> → paste the three <code>AWS_*</code> lines
+again; they expire. ⏳</p>
+
+<h2>6 · Prompts that did the work 🗣️</h2>
+
+<p>Copy these, or better, adapt them. Notice they all say what you want, not how to do it.</p>
+
+<div class="code"><pre><code>Run "python summarize.py". Explain why it fails, in plain English, to
+someone who is not a developer. Do not fix anything yet.</code></pre></div>
+
+<div class="code"><pre><code>Review every file in this project for hardcoded secrets and credentials.
+For each one, tell me: which file, what kind of secret it is, and what an
+attacker could do with it. Make a table. Change nothing.</code></pre></div>
+
+<div class="code"><pre><code>Use the zsp-aws skill to get me AWS access with zero standing privileges.
+Show me what targets I am allowed before you elevate into anything.</code></pre></div>
+
+<div class="code"><pre><code>I now have short-lived AWS credentials in my environment. Remove the
+hardcoded AWS credentials from this project so the app uses the environment
+instead. Show me exactly what you changed before you change it.</code></pre></div>
+
+<div class="code"><pre><code>List the tools you can reach on the idira-broker MCP server, then use one
+of them to answer a simple question. Tell me which tool you chose and why.</code></pre></div>
+
+<h2>7 · The Identity Broker, in six lines 🛡️</h2>
+
+<table>
+  <tr><th>Thing</th><th>Where / what</th></tr>
+  <tr><td>Gateway URL shape</td><td><code>https://&lt;region&gt;.data.aigw.cyberark.cloud/mcp/&lt;server-name&gt;</code></td></tr>
+  <tr><td>Client ID + Secret</td><td>Issued when an admin <strong>registers an AI agent</strong></td></tr>
+  <tr><td>Access policies</td><td><strong>Manage &gt; Policies &gt; AI agents access</strong> → <strong>Create policy</strong></td></tr>
+  <tr><td>The four policy steps</td><td>General details → MCP servers and tools → AI agents → Users and roles</td></tr>
+  <tr><td>Role needed to write one</td><td><strong>Secure AI Admin</strong></td></tr>
+  <tr><td>Kill switch</td><td>Set the MCP server to <strong>Disabled</strong>. Instant, for every agent.</td></tr>
+</table>
+
+<p>Deny-by-default: a request is allowed only where a policy matches <em>both</em> the principal
+(user/role <strong>and</strong> agent) and the resource (tool on a server). Both the agent and the
+server must be <strong>enabled</strong>. Tools are discovered the first time an agent connects —
+before that, the count reads <em>Not discovered yet</em>. Every tool run is audited, success or
+failure. 📋</p>
+
+<h2>8 · The AFK harness (Lesson 8)</h2>
+
+<div class="code"><pre><code>/plugin                      # install mattpocock-skills
+/setup-matt-pocock-skills    # once per machine
+/grill-with-docs             # it interviews you   ← you are needed here
+/to-spec                     # read this properly  ← and here
+/to-tickets                  # small vertical slices
+/implement                   # walk away ☕
+/code-review                 # two axes: quality and spec
+/security-review             # and the one from today</code></pre></div>
+
+<p>Small tickets are a <strong>context</strong> strategy: each slice is sized to fit one fresh
+context window, so no ticket inherits another's confusion. 🧠</p>
+
+<h2>9 · Installing the skills</h2>
+
+<p>Run from inside <code>sandbox-app</code>:</p>
+<div class="os os-mac">
+<div class="code"><pre><code>mkdir -p .claude/skills
+cp -R ../skills/idsec ../skills/zsp-aws .claude/skills/</code></pre></div>
+</div>
+<div class="os os-win">
+<div class="code"><pre><code>New-Item -ItemType Directory -Force .claude\skills | Out-Null
+Copy-Item -Recurse -Force ..\skills\idsec, ..\skills\zsp-aws .claude\skills\</code></pre></div>
+</div>
+<p>To have them in <em>every</em> project on your machine, copy them to
+<span class="os os-inline os-mac"><code>~/.claude/skills/</code></span><span class="os os-inline os-win"><code>$HOME\.claude\skills\</code></span>
+instead.</p>
+
+<h2>10 · When it breaks 🩹</h2>
+
+<table>
+  <tr><th>Message</th><th>Cause</th><th>Fix</th></tr>
+  <tr><td><code>command not found: claude</code></td><td>Not on <code>PATH</code></td><td>🙋 Raise your card</td></tr>
+  <tr><td><code>command not found: idsec</code></td><td>Not on <code>PATH</code>, or wrong folder</td><td>🙋 Raise your card</td></tr>
+  <tr><td><code>idsec</code> is <em>blocked</em>, not missing</td><td>Endpoint application control — e.g. Idira EPM</td><td>🙋 Raise your card. Don't work around it.</td></tr>
+  <tr><td><code>ExpiredToken</code> / <code>ExpiredTokenException</code></td><td>Credentials timed out</td><td>Re-copy from the portal (§2)</td></tr>
+  <tr><td><code>UnrecognizedClientException</code></td><td>Credentials wrong or partly pasted</td><td>Re-copy all three lines</td></tr>
+  <tr><td><code>NoCredentialsError</code></td><td>No credentials in this window</td><td>You opened a new terminal — redo §1</td></tr>
+  <tr><td><code>AccessDeniedException</code> on Bedrock</td><td>Region or model name is off</td><td>Redo §1(b) with the Copy button</td></tr>
+  <tr><td><code>No module named boto3</code></td><td>Virtual environment not active</td><td>Activate it (§5) — no <code>(.venv)</code>, no boto3</td></tr>
+  <tr><td><code>Activate.ps1 cannot be loaded</code></td><td>PowerShell execution policy</td><td><code>Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass</code></td></tr>
+  <tr><td>MCP server shows <em>needs authentication</em></td><td>You have not signed in yet</td><td><code>/mcp</code> → pick it → sign in in the browser</td></tr>
+  <tr><td>MCP tool call refused</td><td>Server disabled, or no policy allows it</td><td>🙋 Raise your card — this one is tenant-side</td></tr>
+  <tr><td>Everything worked, now nothing does</td><td>You are in a different terminal window</td><td>Redo §1 — that is almost always it</td></tr>
+</table>
+
+<h2>The one idea 🧭</h2>
+
+<div class="win">
+  <p>When you find a stored secret, ask <strong>“does this need to exist at all?”</strong> before you
+  ask “where should we keep it?”</p>
+  <p>If the platform can issue access on demand — as AWS can, through Idira Secure Cloud Access —
+  <strong>eliminate</strong> it. ✂️ If it cannot, <strong>onboard</strong> it into
+  <strong>Idira Secrets Manager</strong>. 🔒 Both are good answers. Only one of them removes the risk
+  permanently — and in a client's production environment, everything you cannot eliminate belongs in
+  the vault, never in a config file or a long-lived environment variable.</p>
+</div>
+
+<div id="page-pager"></div>
+
+</div>
+<script src="../assets/lab.js"></script>
+</body>
+</html>

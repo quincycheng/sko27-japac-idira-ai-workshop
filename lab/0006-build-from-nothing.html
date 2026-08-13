@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>6 · Build something from nothing · SKO27 TechSummit - AI Workshop for Idira DC</title>
+<link rel="stylesheet" href="assets/lab.css">
+</head>
+<body>
+<div id="progress-rail"><div id="progress-fill"></div></div>
+
+<div class="wrap">
+
+<nav id="page-nav"></nav>
+
+<header class="lesson">
+  <p class="kicker">Optional · 1 of 3</p>
+  <h1>Build something from nothing with a simple prompt 🎸</h1>
+  <p class="standfirst">
+    Everything so far started from someone else's code. This is the bit that surprises people:
+    an empty folder, one sentence, and a working tool.
+  </p>
+  <ul class="meta">
+    <li class="tag-opt">Optional</li>
+    <li>⏱️ ~10 minutes</li>
+    <li id="step-counter">&nbsp;</li>
+  </ul>
+</header>
+
+<div class="os-switch" data-os-switch></div>
+
+<div class="note">
+  <p><span class="callout-label">🧭 Nobody is expected to reach this page.</span> The three optional
+  lessons are alternatives, not a queue — start with whichever one you actually want. This one is
+  the shortest, and the one most people enjoy most.</p>
+</div>
+
+<h2>Steps</h2>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">1</div><p class="step-title">Start in an empty folder</p></div>
+  <div class="step-body">
+    <p>Working somewhere new matters: the agent reads the folder it starts in, so a fresh folder
+    means a blank slate with none of the sandbox app's baggage.</p>
+    <div class="os os-mac">
+      <div class="code"><pre><code>mkdir ~/my-first-app
+cd ~/my-first-app
+claude</code></pre></div>
+    </div>
+    <div class="os os-win">
+      <div class="code"><pre><code>New-Item -ItemType Directory -Force $HOME\my-first-app | Out-Null
+cd $HOME\my-first-app
+claude</code></pre></div>
+    </div>
+    <div class="note">
+      <p><span class="callout-label">🐍 About your virtual environment.</span> The venv you made in
+      the prework belongs to the workshop folder. If what you build here needs a library, either
+      make a new venv in this folder the same way, or just ask the agent to — it knows how.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">2</div><p class="step-title">Ask for one small, genuinely useful thing</p></div>
+  <div class="step-body">
+    <p>The trick is to pick something you would actually use, and to keep it to one job. Good first
+    asks, all from real security work:</p>
+    <ul>
+      <li>“Write a Python script that reads a CSV of failed logins and prints the top 10 source
+      IPs.” 📊</li>
+      <li>“Write a script that takes a folder of log files and finds every line containing an email
+      address.” 📨</li>
+      <li>“Write a script that turns a list of CVE IDs into a summary table.” 🐛</li>
+      <li>“Write a script that checks a list of domains for an SPF record and flags the ones without
+      one.” 📮</li>
+    </ul>
+    <p>Then <strong>run it</strong>. It will probably work. When it does not, paste the error back in
+    and say “fix this” — that loop <em>is</em> the skill. 🔁</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">3</div><p class="step-title">Run the experiment 🔬</p></div>
+  <div class="step-body">
+    <p>Now the part that belongs in a security workshop. Ask for something that has to reach an
+    external service, and <strong>say nothing at all about credentials</strong>:</p>
+    <div class="code"><pre><code>Write a Python script that uploads a file to an S3 bucket.</code></pre></div>
+    <p>Then look hard at what came back. Which did it do?</p>
+    <table>
+      <tr><th>What it did</th><th>What that means</th></tr>
+      <tr><td>🔑 Put a key straight in the file</td><td>You have just recreated Lesson 2, by accident, in ten seconds.</td></tr>
+      <tr><td>🌱 Read an environment variable</td><td>Better. The secret still has to exist somewhere — but not here.</td></tr>
+      <tr><td>🎫 Used the default credential chain</td><td>Best. This is what Lesson 4 left you with, and it needs no secret at all.</td></tr>
+      <tr><td>🙋 Asked you what to do</td><td>Also good. Nothing wrong with an agent that checks.</td></tr>
+    </table>
+    <div class="warn">
+      <p><span class="callout-label">👥 Compare with the person next to you.</span> You will not
+      always get the same answer from the same prompt — and <em>that</em>, not any statistic, is the
+      reason review is not optional. A control you cannot predict is a control you do not have.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">4</div><p class="step-title">Make it review itself</p></div>
+  <div class="step-body">
+    <p>Finish with the habit worth taking to work:</p>
+    <div class="code"><pre><code>Now review your own script for hardcoded secrets and insecure defaults.
+Be harsh.</code></pre></div>
+    <p>Agents are much better at criticising code than at getting it right first time. That
+    asymmetry is free, and it costs you one sentence. 🪞</p>
+    <p>If your project is in git, <code>/security-review</code> does the same job with a proper
+    security-focused prompt behind it. Try both.</p>
+  </div>
+</div>
+
+<div class="check" data-answer="c">
+  <p class="check-q">🔬 Two people run the same prompt and get different credential handling. Why does that matter?</p>
+  <ul class="opts">
+    <li><button data-opt="a">It does not matter much, as long as one of the two scripts works</button></li>
+    <li><button data-opt="b">It means the prompt was wrong, and better wording removes the risk</button></li>
+    <li><button data-opt="c">It means output varies, so review has to be a step and not a hope</button></li>
+  </ul>
+  <p class="why" data-for="a">Working and safe are different properties. The one with the key in it works perfectly — that is the problem. Try again.</p>
+  <p class="why" data-for="b">Better prompts help a lot, and you should write them. But they shift the odds rather than removing the variance. Try again.</p>
+  <p class="why" data-for="c">✅ Exactly. You cannot rely on a behaviour you cannot predict, so the check goes into the process. Generating faster makes that more important, not less.</p>
+</div>
+
+<div class="ask">
+  🗣️ <strong>Ask your agent:</strong> “Which of the three credential approaches did you use, and what
+  would you have to change to use the safest one?” Making it explain its own choice is how you learn
+  to spot the choice next time.
+</div>
+
+<div id="page-pager"></div>
+
+</div>
+<script src="assets/lab.js"></script>
+</body>
+</html>

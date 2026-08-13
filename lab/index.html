@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SKO27 TechSummit - AI Workshop for Idira DC</title>
+<link rel="stylesheet" href="assets/lab.css">
+</head>
+<body>
+<div id="progress-rail"><div id="progress-fill"></div></div>
+
+<div class="wrap">
+
+<nav id="page-nav"></nav>
+
+<header class="lesson">
+  <p class="kicker">Hands-on for Idira Domain Consultants · today: vibe coding</p>
+  <h1>AI Workshop for Idira DC 🎸</h1>
+  <p class="standfirst">
+    First you will build an AI agent out of parts, in five short steps, so nothing about it is
+    mysterious. Then you will point a real one at a real security problem, take that problem away for
+    good — and finish with a demo you can run for a client. No coding experience needed.
+  </p>
+  <ul class="meta">
+    <li>⏱️ Part 1 ~45 min · Part 2 ~50 min</li>
+    <li>💻 macOS or Windows</li>
+    <li>🚫 No admin rights needed</li>
+  </ul>
+</header>
+
+<div class="note">
+  <p><span class="callout-label">👋 Start here.</span> Two parts, in order.
+  <strong>Part 1 (S1–S5)</strong> builds an AI harness from fifteen lines of Python upwards, so you
+  can see exactly what an agent is. <strong>Part 2 (01–05)</strong> uses a proper one — Claude Code —
+  on Idira problems; those five are for everyone. Lessons <strong>06–08 are optional</strong>: pick
+  one if you finish early, and do not worry if you never reach them.</p>
+  <p>Short of time? Part 2 stands on its own. But Part 1 is the half that makes you able to
+  <em>explain</em> this to a customer, not just demo it. 🎯</p>
+</div>
+
+<div class="warn">
+  <p><span class="callout-label">🎯 You are a Domain Consultant, so read every lesson twice.</span>
+  Once as someone learning to use an agent, and once as someone who will be asked to explain this to
+  a customer next month. Part 1 gives you the explanation; Lesson 05 is written specifically as a demo
+  you can reuse, and the last section of it is a script. 🎬</p>
+</div>
+
+<h2>Before the session</h2>
+
+<ul class="cards">
+  <li><a href="0000-prework.html">
+    <div class="card-top"><span class="card-n">00</span><span class="card-title">Prework 🧰</span></div>
+    <p class="card-desc">Done at your desk beforehand — and there is now a script that checks and fixes most of it for you. <strong>Before the session</strong> · ~25 min</p>
+  </a></li>
+</ul>
+
+<h2>Part 1 · How an AI harness is built 🏗️</h2>
+
+<p>Five stages, five small Python files in <code>ai-harness-app/</code>, each about thirty lines. You
+run each one, read what it does, then break it on purpose. By the end there is nothing left in the
+box you have not seen.</p>
+
+<figure>
+<svg viewBox="0 0 760 200" role="img" aria-label="The evolution from a simple LLM call, through prompt engineering and context engineering, to a full AI harness.">
+  <defs>
+    <marker id="evo" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink-faint)"/>
+    </marker>
+  </defs>
+
+  <g>
+    <rect x="10" y="24" width="168" height="100" rx="10" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="94" y="56" text-anchor="middle" font-size="21">💬</text>
+    <text x="94" y="82" text-anchor="middle" class="svg-label" fill="var(--ink)">A simple call</text>
+    <text x="94" y="102" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">text in, text out</text>
+    <text x="94" y="116" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">no memory, no hands</text>
+  </g>
+  <g>
+    <rect x="206" y="24" width="168" height="100" rx="10" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="290" y="56" text-anchor="middle" font-size="21">✍️</text>
+    <text x="290" y="82" text-anchor="middle" class="svg-label" fill="var(--ink)">Prompt engineering</text>
+    <text x="290" y="102" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">a role, rules,</text>
+    <text x="290" y="116" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">a shape for the answer</text>
+  </g>
+  <g>
+    <rect x="402" y="24" width="168" height="100" rx="10" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="486" y="56" text-anchor="middle" font-size="21">🧠</text>
+    <text x="486" y="82" text-anchor="middle" class="svg-label" fill="var(--ink)">Context engineering</text>
+    <text x="486" y="102" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">deciding what it sees</text>
+    <text x="486" y="116" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">at the moment it works</text>
+  </g>
+  <g>
+    <rect x="598" y="24" width="152" height="100" rx="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>
+    <text x="674" y="56" text-anchor="middle" font-size="21">🏗️</text>
+    <text x="674" y="82" text-anchor="middle" class="svg-label" fill="var(--ink)">An AI harness</text>
+    <text x="674" y="102" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">loop + tools + limits</text>
+    <text x="674" y="116" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">= Claude Code</text>
+  </g>
+
+  <line x1="181" y1="74" x2="201" y2="74" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#evo)"/>
+  <line x1="377" y1="74" x2="397" y2="74" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#evo)"/>
+  <line x1="573" y1="74" x2="593" y2="74" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#evo)"/>
+
+  <text x="380" y="158" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">Each step adds a few lines of code — and one new way to get it wrong.</text>
+  <text x="380" y="180" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">You will build all four, in order, in about forty-five minutes. 🛠️</text>
+</svg>
+<figcaption>The four things people mean when they say “AI”, in the order they were invented.</figcaption>
+</figure>
+
+<ul class="cards">
+  <li><a href="stage-1-bare-call.html">
+    <div class="card-top"><span class="card-n">S1</span><span class="card-title">One call to a model ⚛️</span></div>
+    <p class="card-desc">Fifteen lines. A model that talks and cannot act — then find the wall it cannot get past. <strong>Everyone</strong> · ~8 min</p>
+  </a></li>
+
+  <li><a href="stage-2-give-it-a-tool.html">
+    <div class="card-top"><span class="card-n">S2</span><span class="card-title">Give it a tool 🔧</span></div>
+    <p class="card-desc">Hunt six planted secrets yourself, then watch an agent do it. The loop that makes it an agent, line by line. <strong>Everyone</strong> · ~10 min</p>
+  </a></li>
+
+  <li><a href="stage-3-make-it-an-agent.html">
+    <div class="card-top"><span class="card-n">S3</span><span class="card-title">Make it an agent 🧠</span></div>
+    <p class="card-desc">A system prompt, a toolbox, and a hard limit. Ask it to delete everything and watch it fail. <strong>Everyone</strong> · ~9 min</p>
+  </a></li>
+
+  <li><a href="stage-4-context.html">
+    <div class="card-top"><span class="card-n">S4</span><span class="card-title">Context engineering 📉</span></div>
+    <p class="card-desc">Watch the token count climb until the agent folds its own transcript away. This is what <code>/compact</code> is. <strong>Everyone</strong> · ~9 min</p>
+  </a></li>
+
+  <li><a href="stage-5-prompt-injection.html">
+    <div class="card-top"><span class="card-n">S5</span><span class="card-title">When the data lies 🎣</span></div>
+    <p class="card-desc">A file gives your agent orders. Prompts do not save you; nine lines of Python do. <strong>Everyone</strong> · ~10 min</p>
+  </a></li>
+</ul>
+
+<h2>Part 2 · Claude Code on real problems 🎸</h2>
+
+<p>Same loop you just built, with better tools — pointed at an app nobody should be proud of.</p>
+
+<figure>
+<svg viewBox="0 0 760 165" role="img" aria-label="Five stages: look at the app, find the secrets, elevate from zero standing privileges, delete the key, then broker access with no key at all.">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink-faint)"/>
+    </marker>
+  </defs>
+
+  <g>
+    <rect x="15" y="22" width="133" height="106" rx="10" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="81" y="56" text-anchor="middle" font-size="22">🔎</text>
+    <text x="81" y="82" text-anchor="middle" class="svg-label" fill="var(--ink)">1 · Look</text>
+    <text x="81" y="102" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">ask Claude to</text>
+    <text x="81" y="116" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">review the app</text>
+  </g>
+
+  <g>
+    <rect x="164" y="22" width="133" height="106" rx="10" fill="var(--danger-soft)" stroke="var(--danger)" stroke-width="1.5"/>
+    <text x="230" y="56" text-anchor="middle" font-size="22">🔑</text>
+    <text x="230" y="82" text-anchor="middle" class="svg-label" fill="var(--ink)">2 · Find</text>
+    <text x="230" y="102" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">four secrets in</text>
+    <text x="230" y="116" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">plain text</text>
+  </g>
+
+  <g>
+    <rect x="313" y="22" width="133" height="106" rx="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+    <text x="379" y="56" text-anchor="middle" font-size="22">🎫</text>
+    <text x="379" y="82" text-anchor="middle" class="svg-label" fill="var(--ink)">3 · Elevate</text>
+    <text x="379" y="102" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">borrow access</text>
+    <text x="379" y="116" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">that expires</text>
+  </g>
+
+  <g>
+    <rect x="462" y="22" width="133" height="106" rx="10" fill="var(--win-soft)" stroke="var(--win)" stroke-width="1.5"/>
+    <text x="528" y="56" text-anchor="middle" font-size="22">✂️</text>
+    <text x="528" y="82" text-anchor="middle" class="svg-label" fill="var(--ink)">4 · Delete</text>
+    <text x="528" y="102" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">the key is gone,</text>
+    <text x="528" y="116" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">not hidden</text>
+  </g>
+
+  <g>
+    <rect x="611" y="22" width="133" height="106" rx="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>
+    <text x="677" y="56" text-anchor="middle" font-size="22">🛡️</text>
+    <text x="677" y="82" text-anchor="middle" class="svg-label" fill="var(--ink)">5 · Broker</text>
+    <text x="677" y="102" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">no key at all,</text>
+    <text x="677" y="116" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">every call logged</text>
+  </g>
+
+  <line x1="151" y1="75" x2="161" y2="75" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#ah)"/>
+  <line x1="300" y1="75" x2="310" y2="75" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#ah)"/>
+  <line x1="449" y1="75" x2="459" y2="75" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#ah)"/>
+  <line x1="598" y1="75" x2="608" y2="75" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#ah)"/>
+
+  <text x="380" y="152" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">risk → remedy → the thing you demo</text>
+</svg>
+<figcaption>The whole workshop in five moves. Everything else is detail.</figcaption>
+</figure>
+
+<ul class="cards">
+  <li><a href="0001-setup.html">
+    <div class="card-top"><span class="card-n">01</span><span class="card-title">Wake up your agent 🤖</span></div>
+    <p class="card-desc">Prove Claude Code works and is talking to Amazon Bedrock. <strong>Everyone</strong> · ~5 min</p>
+  </a></li>
+
+  <li><a href="0002-find-the-secrets.html">
+    <div class="card-top"><span class="card-n">02</span><span class="card-title">Find the secrets 🔎</span></div>
+    <p class="card-desc">Meet a real-looking app and let Claude review it. It will not like what it finds. <strong>Everyone</strong> · ~13 min</p>
+  </a></li>
+
+  <li><a href="0003-zsp-access.html">
+    <div class="card-top"><span class="card-n">03</span><span class="card-title">Zero standing privileges 🎫</span></div>
+    <p class="card-desc">Hold no AWS access at all — then use a skill to ask Idira for it, briefly. <strong>Everyone</strong> · ~10 min</p>
+  </a></li>
+
+  <li><a href="0004-fix-the-app.html">
+    <div class="card-top"><span class="card-n">04</span><span class="card-title">Delete the key ✂️</span></div>
+    <p class="card-desc">Make the app work with <em>no</em> credentials in it — and say out loud what is still unfixed. <strong>Everyone</strong> · ~8 min</p>
+  </a></li>
+
+  <li><a href="0005-identity-broker.html">
+    <div class="card-top"><span class="card-n">05</span><span class="card-title">The Identity Broker 🛡️</span></div>
+    <p class="card-desc">Give an agent access to a tool while it holds no credential — then watch one click cut off the whole room. <strong>Everyone</strong> · ~12 min</p>
+  </a></li>
+</ul>
+
+<h3>If you finish early 🍰</h3>
+
+<ul class="cards">
+  <li><a href="0006-build-from-nothing.html">
+    <div class="card-top"><span class="card-n">06</span><span class="card-title">Build from one prompt 🎸</span></div>
+    <p class="card-desc">An empty folder and a sentence. Then the experiment: does it put a key in the file? <strong>Optional</strong> · ~10 min</p>
+  </a></li>
+
+  <li><a href="0007-write-a-skill.html">
+    <div class="card-top"><span class="card-n">07</span><span class="card-title">Write your own skill 📝</span></div>
+    <p class="card-desc">Turn something you already know how to do into a page the agent follows every time. <strong>Optional</strong> · ~15 min</p>
+  </a></li>
+
+  <li><a href="0008-afk-harness.html">
+    <div class="card-top"><span class="card-n">08</span><span class="card-title">Build something AFK 🛋️</span></div>
+    <p class="card-desc">Front-load every decision, then let the agent implement while you go to a meeting. <strong>Optional</strong> · ~20 min</p>
+  </a></li>
+</ul>
+
+<p>Keep <a href="reference/cheatsheet.html">the cheat sheet 📋</a> open in another tab — every command from the lab is on one page.</p>
+
+<h2>Who is who today</h2>
+
+<table>
+  <tr><th>Name</th><th>What it is</th><th>Where it runs</th></tr>
+  <tr>
+    <td><strong>Claude Code</strong></td>
+    <td>An AI agent that lives in your terminal. It reads files, writes files, and runs commands — with your permission.</td>
+    <td>Your laptop</td>
+  </tr>
+  <tr>
+    <td><strong>Amazon Bedrock</strong></td>
+    <td>The AWS service that runs the Claude model. Claude Code sends your questions here.</td>
+    <td>AWS</td>
+  </tr>
+  <tr>
+    <td><strong>Idira Secure Cloud Access</strong></td>
+    <td>Hands out cloud access that expires. This is how you get into AWS without owning a key.</td>
+    <td>Idira platform</td>
+  </tr>
+  <tr>
+    <td><strong>Idira Identity Broker</strong></td>
+    <td>Sits between AI agents and the tools they use. Holds the credentials, applies a policy, audits every call. Lesson 5.</td>
+    <td>Idira platform</td>
+  </tr>
+  <tr>
+    <td><strong>Idira Secrets Manager</strong></td>
+    <td>The vault for secrets that genuinely have to exist. Where the three secrets you <em>don't</em> fix today belong.</td>
+    <td>Idira platform</td>
+  </tr>
+  <tr>
+    <td><strong>idsec</strong></td>
+    <td>Idira's command-line tool. One file, no installer, no admin rights.</td>
+    <td>Your laptop</td>
+  </tr>
+  <tr>
+    <td><strong>The sandbox app</strong></td>
+    <td>A small, deliberately careless Python app. Your patient for the day.</td>
+    <td>Your laptop</td>
+  </tr>
+  <tr>
+    <td><strong>The harness stages</strong></td>
+    <td>Five short Python files in <code>ai-harness-app/</code>. The agent you build yourself in Part 1, with its own tiny repo to investigate.</td>
+    <td>Your laptop</td>
+  </tr>
+</table>
+
+<h2>Before you start ✅</h2>
+
+<p>You should already have all of this from <a href="0000-prework.html">the prework</a>:</p>
+
+<ul>
+  <li>📦 The <strong>workshop folder</strong> unzipped somewhere you can find again</li>
+  <li>🐍 A <strong>virtual environment</strong> in that folder, with <code>boto3</code> and
+  <code>anthropic</code> installed — and you know the command to activate it</li>
+  <li>🤖 <strong>Claude Code</strong> — <code>claude --version</code> prints a number</li>
+  <li>⌨️ <strong>idsec</strong> — <code>idsec version</code> prints a number, and you have run
+  <code>idsec configure</code> once</li>
+  <li>🔐 <strong>AWS access</strong> — you can reach the AWS tile in the portal and see an
+  <strong>Access keys</strong> link</li>
+  <li>🎟️ Your <strong>numbered card</strong> with your login on it</li>
+</ul>
+
+<div class="warn">
+  <p><span class="callout-label">Missing something?</span> Don't sit quietly. 🙋 Hold up your
+  numbered card and a helper will come to you. Lesson 1 exists to catch exactly this, and it
+  is faster to fix now than in twenty minutes.</p>
+</div>
+
+<div class="check" data-answer="b">
+  <p class="check-q">🎸 What does “vibe coding” actually mean here?</p>
+  <ul class="opts">
+    <li><button data-opt="a">You write the code and the AI reviews all of it afterwards</button></li>
+    <li><button data-opt="b">You describe the outcome and the AI writes the code for you</button></li>
+    <li><button data-opt="c">You install a plugin and the app finishes building itself</button></li>
+  </ul>
+  <p class="why" data-for="a">Not quite — that is code review, which is useful but different. Today <em>you</em> describe what you want in plain English and the agent does the typing. Try again.</p>
+  <p class="why" data-for="b">✅ Exactly. You stay in charge of <em>what</em> and <em>why</em>; the agent handles <em>how</em>. That is also why reviewing what it produced matters — which is Lesson 2.</p>
+  <p class="why" data-for="c">Sadly no. There is no button. You still have to say what you want, read what came back, and decide if it is right. Try again.</p>
+</div>
+
+<div id="page-pager"></div>
+
+</div>
+<script src="assets/lab.js"></script>
+</body>
+</html>

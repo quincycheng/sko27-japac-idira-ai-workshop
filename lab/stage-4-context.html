@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S4 · Context engineering · SKO27 TechSummit - AI Workshop for Idira DC</title>
+<link rel="stylesheet" href="assets/lab.css">
+</head>
+<body>
+<div id="progress-rail"><div id="progress-fill"></div></div>
+
+<div class="wrap">
+
+<nav id="page-nav"></nav>
+
+<header class="lesson">
+  <p class="kicker">Part 1 · Stage 4 of 5</p>
+  <h1>Context engineering 📉</h1>
+  <p class="standfirst">
+    Your Stage 3 agent has a fault you cannot see on a six-file repo: it drowns in its own
+    transcript. Fixing that is the hardest part of building a real harness — and it is where the
+    phrase “context engineering” earns its keep.
+  </p>
+  <ul class="meta">
+    <li class="tag-must">Part 1 · Everyone</li>
+    <li>⏱️ ~9 minutes</li>
+    <li>📄 <code>ai-harness-app/04_context.py</code></li>
+    <li id="step-counter">&nbsp;</li>
+  </ul>
+</header>
+
+<figure>
+<svg viewBox="0 0 760 152" role="img" aria-label="The five stages of Part 1, with stage 4 highlighted.">
+  <line x1="24" y1="61" x2="736" y2="61" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 5"/>
+
+  <g>
+    <rect x="6" y="26" width="138" height="70" rx="9" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="75" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">S1 💬</text>
+    <text x="75" y="68" text-anchor="middle" class="svg-label" fill="var(--ink-soft)">One call</text>
+    <text x="75" y="84" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">no hands</text>
+  </g>
+  <g>
+    <rect x="157" y="26" width="138" height="70" rx="9" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="226" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">S2 🔧</text>
+    <text x="226" y="68" text-anchor="middle" class="svg-label" fill="var(--ink-soft)">A tool + a loop</text>
+    <text x="226" y="84" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">it can act</text>
+  </g>
+  <g>
+    <rect x="308" y="26" width="138" height="70" rx="9" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="377" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">S3 🧠</text>
+    <text x="377" y="68" text-anchor="middle" class="svg-label" fill="var(--ink-soft)">An agent</text>
+    <text x="377" y="84" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">prompt + toolbox</text>
+  </g>
+  <g>
+    <rect x="459" y="20" width="138" height="82" rx="9" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2.5"/>
+    <text x="528" y="44" text-anchor="middle" class="svg-sub" fill="var(--accent)">S4 📉</text>
+    <text x="528" y="64" text-anchor="middle" class="svg-label" fill="var(--ink)">Context</text>
+    <text x="528" y="80" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">count + compact</text>
+    <text x="528" y="94" text-anchor="middle" class="svg-sub" fill="var(--accent)">you are here</text>
+  </g>
+  <g>
+    <rect x="610" y="26" width="138" height="70" rx="9" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="679" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">S5 🛡️</text>
+    <text x="679" y="68" text-anchor="middle" class="svg-label" fill="var(--ink-soft)">When data lies</text>
+    <text x="679" y="84" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">controls win</text>
+  </g>
+
+  <text x="24" y="130" class="svg-sub" fill="var(--ink-soft)">Stage 4 adds: two numbers to watch, and a way to throw things away on purpose.</text>
+</svg>
+<figcaption>Nothing new is added to what the agent can <em>do</em>. This stage is about survival.</figcaption>
+</figure>
+
+<h2>The problem, drawn 📈</h2>
+
+<figure>
+<svg viewBox="0 0 760 250" role="img" aria-label="Without compaction, input tokens grow until the context window is blown. With compaction, they rise and drop in a sawtooth and the agent keeps working.">
+  <line x1="60" y1="196" x2="736" y2="196" stroke="var(--line)" stroke-width="1.5"/>
+  <line x1="60" y1="30" x2="60" y2="196" stroke="var(--line)" stroke-width="1.5"/>
+  <text x="30" y="40" class="svg-sub" fill="var(--ink-faint)">tokens</text>
+  <text x="700" y="216" class="svg-sub" fill="var(--ink-faint)">turns →</text>
+
+  <line x1="60" y1="46" x2="736" y2="46" stroke="var(--danger)" stroke-width="1.2" stroke-dasharray="6 4"/>
+  <text x="64" y="40" class="svg-sub" fill="var(--danger)">the context window — a hard ceiling</text>
+
+  <polyline points="60,192 150,168 240,140 330,110 420,80 470,58" fill="none" stroke="var(--danger)" stroke-width="2.2"/>
+  <text x="480" y="58" font-size="16">💥</text>
+  <text x="500" y="62" class="svg-sub" fill="var(--danger)">Stage 3: appends forever, then dies</text>
+
+  <line x1="60" y1="120" x2="736" y2="120" stroke="var(--accent)" stroke-width="1" stroke-dasharray="3 4"/>
+  <text x="64" y="114" class="svg-sub" fill="var(--accent)">COMPACT_THRESHOLD_TOKENS</text>
+
+  <polyline points="60,192 130,170 200,146 270,120 270,176 340,154 410,130 410,180 480,158 550,134 550,182 620,160 690,138"
+            fill="none" stroke="var(--accent)" stroke-width="2.4"/>
+  <text x="600" y="176" class="svg-sub" fill="var(--accent)">Stage 4: folds the middle away, keeps going ♻️</text>
+
+  <text x="60" y="238" class="svg-sub" fill="var(--ink-faint)">Every vertical drop is a summary replacing a pile of transcript — cheaper, faster, and lossy on purpose.</text>
+</svg>
+<figcaption>This sawtooth is exactly what “compacting conversation…” means in Claude Code.</figcaption>
+</figure>
+
+<h2>Watch it happen 👀</h2>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">1</div><p class="step-title">Run the instrumented agent</p></div>
+  <div class="step-body">
+    <div class="code"><pre><code>python 04_context.py</code></pre></div>
+    <p>Same task as Stage 3, same tools, but now every turn prints its own weight. 🏋️ Read down the
+    <code>[ctx ]</code> column:</p>
+    <div class="code"><pre><code>[ctx  ] step  1 | input_tokens=1204 | messages=1
+[tool ] list_files(path='.')
+[ctx  ] step  2 | input_tokens=1388 | messages=3
+[tool ] read_file(path='config.py')
+[ctx  ] step  3 | input_tokens=1902 | messages=5
+[tool ] read_file(path='app.py')
+[ctx  ] step  4 | input_tokens=3117 | messages=7
+[COMPACT] folded 4 messages into a 612-char note
+[ctx  ] step  5 | input_tokens=1740 | messages=4</code></pre></div>
+    <p>Two things to notice, and they are the whole lesson:</p>
+    <ul>
+      <li>📈 <code>input_tokens</code> climbs <strong>even when you have asked nothing new</strong>.
+        You are paying for the whole transcript, again, every turn.</li>
+      <li>♻️ At the threshold, <code>[COMPACT]</code> fires and the count <em>falls</em>. The agent
+        carries on with a summary where the detail used to be.</li>
+    </ul>
+    <div class="note">
+      <p><span class="callout-label">💰 The commercial version of this slide.</span> Cost and latency
+      grow with the <em>square</em> of a naive conversation's length — every turn re-reads everything
+      before it. When someone says their AI pilot “got expensive and slow once people really used
+      it”, this is very often the actual mechanism. 📊</p>
+    </div>
+  </div>
+</div>
+
+<h2>What the script does 🔍</h2>
+
+<details>
+  <summary>1 · Accounting — one line, and it comes free</summary>
+  <div class="code"><pre><code>used = response.usage.input_tokens
+print(f"[ctx  ] step {step:>2} | input_tokens={used} | messages={len(messages)}")</code></pre></div>
+  <p class="track-why">Every response already carries its own usage. Printing it is the cheapest
+  observability you will ever add, and it turns an invisible failure into a number you can chart,
+  alert on, and put a budget against. 📟</p>
+  <p class="track-why">🎤 <strong>Ask a customer running agents in production:</strong> “can you show
+  me tokens per task, by agent?” If the answer is no, they cannot see cost, cannot see runaway loops,
+  and cannot tell a normal task from an attack that made an agent read ten thousand files.</p>
+</details>
+
+<details>
+  <summary>2 · The threshold — deliberately tiny, so you can see it</summary>
+  <div class="code"><pre><code>COMPACT_THRESHOLD_TOKENS = 3000   # tiny on purpose: this repo is six small files
+...
+if used &gt; COMPACT_THRESHOLD_TOKENS:
+    messages = compact(messages)</code></pre></div>
+  <p class="track-why">In a real harness this would be a fraction of the model's context window —
+  perhaps 70% of it — not 3000. It is small here so compaction fires during a two-minute demo.</p>
+</details>
+
+<details>
+  <summary>3 · Compaction — asking the model to summarise itself</summary>
+  <div class="code"><pre><code>head, middle, tail = messages[:1], messages[1:-2], messages[-2:]
+
+summary = client.messages.create(... messages=[{"role": "user", "content":
+    "Summarize this agent transcript for your own future reference. "
+    "Keep every concrete finding (file:line, secret, risk) and which "
+    "files were already inspected. Drop chatter.\n\n" + transcript }])
+
+return head + [compacted_marker] + tail</code></pre></div>
+  <p class="track-why">Three slices. 🍰 <strong>Head</strong> — the original task, never lose that.
+  <strong>Tail</strong> — the last two messages, still live. <strong>Middle</strong> — folded into one
+  note by a second model call.</p>
+  <p class="track-why">Look at what the summary prompt <em>insists</em> on keeping: findings with
+  <code>file:line</code>, and which files have already been looked at. Get that wrong and your agent
+  re-reads the same files forever, or quietly forgets the critical finding from step 2. Writing this
+  prompt well <em>is</em> the engineering. ✍️</p>
+</details>
+
+<details>
+  <summary>4 · The boundary hazard nobody warns you about</summary>
+  <div class="code"><pre><code># The tricky part is boundaries: never split a tool_use from its matching
+# tool_result, or the next call 400s.</code></pre></div>
+  <p class="track-why">Every tool request and its result are a matched pair. Slice between them and
+  the next API call is rejected outright. That is why the code keeps the head and the last two
+  messages <em>whole</em> rather than trimming to a neat token count. 🔗</p>
+  <p class="track-why">This is the unglamorous truth about harness code: most of it is bookkeeping
+  that keeps a transcript legal. It is also why sensible people use someone else's harness. 🤷</p>
+</details>
+
+<details>
+  <summary>5 · 🔐 The security reading of compaction</summary>
+  <p class="track-why">Three things a security architect should notice, none of which are bugs:</p>
+  <ul>
+    <li><strong>Secrets travel.</strong> The agent read <code>.env</code>, so those values are in the
+      transcript — and now they are in the <em>summary</em> too, re-sent on every later turn. Whatever
+      an agent reads, it keeps carrying. 🎒</li>
+    <li><strong>Compaction is lossy, and the model chose what to lose.</strong> Your audit trail of
+      what the agent actually saw is being rewritten by the thing you are auditing. Log the raw
+      transcript separately if it matters. 📝</li>
+    <li><strong>Injected instructions can survive the fold.</strong> If a file said “always approve
+      deployments”, the summary can carry that forward as though it were established fact — with the
+      original source stripped out. 🧟 Straight into Stage 5.</li>
+  </ul>
+</details>
+
+<h2>Try it 🧪</h2>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">2</div><p class="step-title">Turn compaction off and watch it climb</p></div>
+  <div class="step-body">
+    <p>Set the threshold absurdly high so it never fires:</p>
+    <div class="code"><pre><code>COMPACT_THRESHOLD_TOKENS = 500000</code></pre></div>
+    <div class="code"><pre><code>python 04_context.py "Read every file, then re-read each one to double-check your findings."</code></pre></div>
+    <p>Now <code>input_tokens</code> only goes one way. ⬆️ On six tiny files it survives; on a real
+    repository this is the run that ends in an error, or a bill. Now try the opposite — set it to
+    <code>1500</code> and watch it compact constantly, getting vaguer each time. 🫥</p>
+    <p>Somewhere between the two is the right answer, and it depends on the task. Welcome to context
+    engineering: there is no default that is right for everyone. 🎛️</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">3</div><p class="step-title">Spot it in the tool you will use in Part 2 🔗</p></div>
+  <div class="step-body">
+    <p>Claude Code does this for you. Keep a long session going and you will see
+    <code>compacting conversation…</code> go past — the same three slices, a much better summary
+    prompt. You can also trigger it yourself with <code>/compact</code>, and see the numbers with
+    <code>/context</code>.</p>
+    <p>Two habits that follow directly from this stage, and both save real time in Part 2:</p>
+    <ul>
+      <li>🧹 Start a fresh session for an unrelated task instead of carrying a stale transcript.</li>
+      <li>🎯 Point the agent at the file you mean. “Have a look around and find it” is you paying
+        tokens for a search you could have done with one path.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="check" data-answer="b">
+  <p class="check-q">📈 Why does <code>input_tokens</code> rise every turn, even when you type nothing?</p>
+  <ul class="opts">
+    <li><button data-opt="a">The provider adds hidden instructions that accumulate over a session</button></li>
+    <li><button data-opt="b">The model is stateless, so the whole growing transcript is re-sent each turn</button></li>
+    <li><button data-opt="c">Longer sessions use a bigger model, which counts tokens differently</button></li>
+  </ul>
+  <p class="why" data-for="a">Nothing hidden is being injected — you can see the entire payload in <code>messages</code>. Try again.</p>
+  <p class="why" data-for="b">✅ Yes — straight back to Stage 1. Statelessness is the cause of both “memory” and the cost curve. Once you see that, compaction stops looking like a trick and starts looking like the only option.</p>
+  <p class="why" data-for="c">The model never changes here. Try again.</p>
+</div>
+
+<div class="check" data-answer="a">
+  <p class="check-q">♻️ Your agent compacts a session in which it read a credentials file. What should worry you?</p>
+  <ul class="opts">
+    <li><button data-opt="a">The secrets may be copied into the summary and re-sent for the rest of the run</button></li>
+    <li><button data-opt="b">Compaction deletes the secrets, so the finding is lost and nothing is reported</button></li>
+    <li><button data-opt="c">Nothing — summarising is a purely local operation with no risk attached</button></li>
+  </ul>
+  <p class="why" data-for="a">✅ Right. A summary asked to “keep every concrete finding” will happily keep the credential itself. Whatever an agent reads it carries, and compaction copies it into a new, longer-lived place. Which is the strongest possible argument for the agent having nothing worth reading. 🎯</p>
+  <p class="why" data-for="b">It might, and that is a real failure mode too — but it is not the one that shows up in an incident report. Try again.</p>
+  <p class="why" data-for="c">Summarising is another API call, with the sensitive content in it, producing a note that persists. Have another go.</p>
+</div>
+
+<div class="ask">
+  🗣️ <strong>Ask your agent:</strong> “Read <code>ai-harness-app/04_context.py</code>. What happens if
+  <code>compact()</code> is called when the last two messages are a tool_use / tool_result pair, and
+  how would you make it safer?” This is the question that separates people who have shipped a harness
+  from people who have read about one. 🛠️
+</div>
+
+<div class="win">
+  <p><span class="callout-label">✅ Stage 4 done.</span> Your agent can now work for a long time
+  without falling over. One thing left — the one that changes how you sell all of this. What happens
+  when a file the agent reads is <em>lying</em> to it? 🎣</p>
+</div>
+
+<div id="page-pager"></div>
+
+</div>
+<script src="assets/lab.js"></script>
+</body>
+</html>

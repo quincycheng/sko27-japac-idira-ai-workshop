@@ -1,0 +1,14 @@
+{
+  "github": {
+    "api_url": "https://api.github.com",
+    "repository": "acme-security/incident-reports",
+    "personal_access_token": "ghp_0000EXAMPLEONLYnotarealtoken00000000"
+  },
+  "slack": {
+    "channel": "#sec-incidents",
+    "webhook_url": "https://hooks.slack.com/services/T00000000/B00000000/EXAMPLEonlynotarealtoken"
+  },
+  "database": {
+    "url": "postgresql://appuser:ExamplePassw0rd-not-real@db.internal.example.com:5432/incidents"
+  }
+}

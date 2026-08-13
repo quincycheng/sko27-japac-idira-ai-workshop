@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>8 · Build something AFK · SKO27 TechSummit - AI Workshop for Idira DC</title>
+<link rel="stylesheet" href="assets/lab.css">
+</head>
+<body>
+<div id="progress-rail"><div id="progress-fill"></div></div>
+
+<div class="wrap">
+
+<nav id="page-nav"></nav>
+
+<header class="lesson">
+  <p class="kicker">Optional · 3 of 3</p>
+  <h1>Build something AFK 🛋️</h1>
+  <p class="standfirst">
+    So far you have been sitting next to the agent, answering it. Now flip the shape of the work:
+    do <strong>all</strong> the thinking up front, in one dense burst — then walk away and let the
+    agent build while you are away from keyboard.
+  </p>
+  <ul class="meta">
+    <li class="tag-opt">Optional</li>
+    <li>⏱️ ~20 minutes, and the last part runs without you</li>
+    <li id="step-counter">&nbsp;</li>
+  </ul>
+</header>
+
+<div class="os-switch" data-os-switch></div>
+
+<div class="note">
+  <p><span class="callout-label">🎥 Where this comes from.</span> This lesson follows
+  <strong>Matt Pocock</strong>'s workflow, from <em>“mattpocock/skills: A complete AI Coding
+  workflow, end-to-end”</em> (17 minutes) —
+  <a href="https://www.youtube.com/watch?v=M6mYodf0dJM">youtube.com/watch?v=M6mYodf0dJM</a>. Useful
+  chapters if you want to watch the bits rather than the whole thing: <strong>8:31</strong> the
+  <code>grill-with-docs</code> interview · <strong>10:08</strong> creating specs and tickets ·
+  <strong>13:51</strong> implementation and code review. Worth watching on the train home. 🚆</p>
+</div>
+
+<h2>The idea: front-load the humans 🧑‍💻→☕</h2>
+
+<p>The usual way people vibe-code is a conversation: ask, look, correct, ask again. It works, and it
+requires you to be present for the entire build. That does not scale to anything real, because
+<em>you</em> are the bottleneck.</p>
+
+<p>So group the human interactions differently. Put every decision, every ambiguity and every
+correction into an <strong>early phase</strong> where you are fully engaged. Then hand over a plan
+so unambiguous that the agent needs nothing else from you — and go to a meeting.</p>
+
+<figure>
+<svg viewBox="0 0 760 220" role="img" aria-label="A timeline: a dense human phase of interview, spec and tickets, then an away-from-keyboard phase of implementation and review.">
+  <defs>
+    <marker id="af" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"/>
+    </marker>
+  </defs>
+
+  <rect x="16" y="30" width="360" height="120" rx="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>
+  <text x="196" y="52" text-anchor="middle" class="svg-label" fill="var(--ink)">🧑‍💻 You, fully engaged</text>
+  <text x="196" y="68" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">every question happens here</text>
+
+  <rect x="34" y="82" width="104" height="50" rx="7" fill="var(--panel)" stroke="var(--line)"/>
+  <text x="86" y="102" text-anchor="middle" class="svg-sub" fill="var(--ink)">grill-with-docs</text>
+  <text x="86" y="120" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">it asks 🎤</text>
+
+  <rect x="150" y="82" width="94" height="50" rx="7" fill="var(--panel)" stroke="var(--line)"/>
+  <text x="197" y="102" text-anchor="middle" class="svg-sub" fill="var(--ink)">to-spec</text>
+  <text x="197" y="120" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">you read 📄</text>
+
+  <rect x="256" y="82" width="104" height="50" rx="7" fill="var(--panel)" stroke="var(--line)"/>
+  <text x="308" y="102" text-anchor="middle" class="svg-sub" fill="var(--ink)">to-tickets</text>
+  <text x="308" y="120" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">you approve ✅</text>
+
+  <line x1="380" y1="90" x2="418" y2="90" stroke="var(--accent)" stroke-width="2" marker-end="url(#af)" class="flow-dash"/>
+
+  <rect x="422" y="30" width="322" height="120" rx="10" fill="var(--win-soft)" stroke="var(--win)" stroke-width="2"/>
+  <text x="583" y="52" text-anchor="middle" class="svg-label" fill="var(--ink)">☕ Away from keyboard</text>
+  <text x="583" y="68" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">nothing here needs you</text>
+
+  <rect x="440" y="82" width="128" height="50" rx="7" fill="var(--panel)" stroke="var(--line)"/>
+  <text x="504" y="102" text-anchor="middle" class="svg-sub" fill="var(--ink)">implement</text>
+  <text x="504" y="120" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">ticket by ticket 🔁</text>
+
+  <rect x="582" y="82" width="146" height="50" rx="7" fill="var(--panel)" stroke="var(--line)"/>
+  <text x="655" y="102" text-anchor="middle" class="svg-sub" fill="var(--ink)">code-review</text>
+  <text x="655" y="120" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">two reviewers 🔎</text>
+
+  <text x="196" y="176" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">expensive minutes — spend them</text>
+  <text x="583" y="176" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">cheap minutes — go somewhere else</text>
+  <text x="380" y="204" text-anchor="middle" class="svg-label" fill="var(--ink-soft)">The whole trick is moving the boundary as far left as you can 👈</text>
+</svg>
+<figcaption>Same total work. Rearranged so that your attention is needed in one block instead of sprinkled across an afternoon.</figcaption>
+</figure>
+
+<h2>Why the tickets have to be small 🧠</h2>
+
+<p>An agent has a <strong>context window</strong>: a finite amount it can hold in mind at once —
+your instructions, the files it has read, everything it has said so far. It does not forget neatly
+when that fills up. It drifts. It rediscovers a file it already read, contradicts a decision from
+twenty minutes ago, and re-solves a solved problem.</p>
+
+<p>This is what people mean by <strong>context engineering</strong>: deliberately managing what is in
+front of the agent. And the single most effective move is the one this workflow makes for you —
+<strong>each ticket is a vertical slice sized to fit in one fresh context window</strong>.</p>
+
+<table>
+  <tr><th></th><th>🧱 One big ticket</th><th>🧩 Many small tickets</th></tr>
+  <tr>
+    <td><strong>Context</strong></td>
+    <td>Fills up, then degrades — for the rest of the job.</td>
+    <td>Each one starts clean. No inherited confusion.</td>
+  </tr>
+  <tr>
+    <td><strong>When it goes wrong</strong></td>
+    <td>You find out at the end, and it is all tangled together.</td>
+    <td>You find out after one slice, and only that slice is affected.</td>
+  </tr>
+  <tr>
+    <td><strong>Recovering</strong></td>
+    <td>Re-explain everything to a confused agent. 😩</td>
+    <td>Re-run one ticket in a fresh window. 🔄</td>
+  </tr>
+  <tr>
+    <td><strong>Your review</strong></td>
+    <td>A wall of changes nobody reads properly.</td>
+    <td>A diff you can actually hold in your head.</td>
+  </tr>
+</table>
+
+<p>“Vertical” matters too: each slice goes all the way from one end to the other and genuinely works
+when it is done, rather than being a layer that only makes sense once three more layers exist. 🍰</p>
+
+<div class="warn">
+  <p><span class="callout-label">🧪 This workflow expects a real project.</span> It works best where
+  there is git, and where tests and a type check can tell the agent whether it succeeded — that
+  feedback is what makes unattended work safe. Today's workshop repo is in git, so you are fine. In
+  an empty folder, ask the agent to set up git first.</p>
+</div>
+
+<h2>Steps</h2>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">1</div><p class="step-title">Install the harness</p></div>
+  <div class="step-body">
+    <p>Inside the agent:</p>
+    <div class="code"><pre><code>/plugin</code></pre></div>
+    <p>Install <strong>mattpocock-skills</strong> from the marketplace. Then run its setup once, so
+    it knows where to keep specs and tickets:</p>
+    <div class="code"><pre><code>/setup-matt-pocock-skills</code></pre></div>
+    <div class="note">
+      <p><span class="callout-label">⌨️ Type these as slash commands.</span> Several of these skills
+      are deliberately <em>not</em> auto-selectable — the agent will not decide on its own to start
+      writing tickets. You invoke each phase explicitly. That is a safety property, not an
+      inconvenience.</p>
+      <p>Type <code>/</code> and start typing the name, then pick it from the menu. If your terminal
+      shows it with the plugin in front —
+      <code>/mattpocock-skills:grill-with-docs</code> — that is the same thing. 👌</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">2</div><p class="step-title">Get grilled 🎤</p></div>
+  <div class="step-body">
+    <p>Pick something you actually want. A good size for twenty minutes: <em>“a small tool that
+    reads our incident CSV export and produces a weekly summary in Markdown.”</em></p>
+    <div class="code"><pre><code>/grill-with-docs</code></pre></div>
+    <p>Then describe what you want in a sentence or two — and brace yourself. It will interview you
+    in rounds, several numbered questions at a time, each with a recommended answer. It will not
+    start building. 🛑</p>
+    <p>Answer honestly, including “I don't know, you pick”. Every question you answer now is a
+    correction you do not have to make later, when you are not in the room.</p>
+    <div class="win">
+      <p><span class="callout-label">😲 The bit that surprises everyone.</span> This is the phase
+      that feels slow and looks like it is not producing anything. It is the phase doing the actual
+      work. You are watching your own requirements get sharper in real time — half the questions are
+      ones you had not thought about.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">3</div><p class="step-title">Turn the interview into a spec 📄</p></div>
+  <div class="step-body">
+    <p>When the questions run out:</p>
+    <div class="code"><pre><code>/to-spec</code></pre></div>
+    <p>You get a written specification. <strong>Read it properly.</strong> This is your real
+    checkpoint — the last place where a misunderstanding costs you a sentence instead of a
+    rebuild.</p>
+    <p>Wrong? Say so in plain English and have it revised. Cheap now. 💸</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">4</div><p class="step-title">Break it into small tickets 🧩</p></div>
+  <div class="step-body">
+    <div class="code"><pre><code>/to-tickets</code></pre></div>
+    <p>The spec becomes an ordered list of tickets, each a vertical slice, with the dependencies
+    between them made explicit — which ones block which.</p>
+    <p>Now do the thing this lesson is really about: <strong>look at how small they are.</strong>
+    Your instinct will say this is too granular. That instinct is calibrated for humans, who carry
+    context between tasks for free. An agent does not. 🧠</p>
+    <div class="ask">
+      🗣️ Try asking: “Why is ticket 3 separate from ticket 4?” The answer is usually about keeping
+      each one inside a single fresh context — which is exactly the point.
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">5</div><p class="step-title">Walk away ☕</p></div>
+  <div class="step-body">
+    <div class="code"><pre><code>/implement</code></pre></div>
+    <p>Now leave it alone. It works through the tickets, writing tests as it goes, running them and
+    any type check the project has, committing to the current branch, and reviewing its own work at
+    the end.</p>
+    <p>Go and get a coffee, or talk to the person next to you about Lesson 5. Genuinely — the point
+    of the exercise is to <em>not</em> watch. If you sit there supervising, you have rebuilt the
+    thing this replaces. 🙈</p>
+    <div class="warn">
+      <p><span class="callout-label">📌 It commits as it goes,</span> to whatever branch you are
+      currently on. If that matters to you, make a branch before you start — or just ask the agent
+      to make one.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">6</div><p class="step-title">Review what came back 🔎</p></div>
+  <div class="step-body">
+    <div class="code"><pre><code>/code-review</code></pre></div>
+    <p>It asks what to compare against — a commit, a branch, or <code>main</code>. If you started
+    from a clean branch, say the commit you began at, or the branch you branched from. 📍</p>
+    <p>Then it reviews along two independent axes at the same time: does the code meet a general
+    quality baseline, and does it do what the <em>spec</em> said. Both run as separate reviewers, so
+    neither one's opinion contaminates the other's.</p>
+    <p>Two axes matters. Code can be beautifully written and answer the wrong question — and a
+    review that only looks at style will sign it off. ✍️</p>
+    <div class="note">
+      <p><span class="callout-label">🔐 And add the one from today.</span> Follow up with
+      <code>/security-review</code>. You just generated a pile of code you did not read while you
+      were not in the room. Lesson 2's habit applies most exactly here.</p>
+    </div>
+  </div>
+</div>
+
+<h2>What to take back to work 🎒</h2>
+
+<ul>
+  <li>The expensive resource is <strong>your attention</strong>, not the agent's time. Design the
+  work so your attention is needed in one block.</li>
+  <li><strong>Small tickets are a context strategy</strong>, not project-management ceremony.</li>
+  <li>The interview phase feels unproductive and is the highest-leverage part of the whole thing.</li>
+  <li>Unattended work is only safe where something can <strong>check</strong> it — tests, types, and
+  a review pass. No feedback loop, no AFK. 🚦</li>
+</ul>
+
+<div class="check" data-answer="b">
+  <p class="check-q">🧠 Why does this workflow break work into deliberately small tickets?</p>
+  <ul class="opts">
+    <li><button data-opt="a">So that several agents can work on the same repository at once</button></li>
+    <li><button data-opt="b">So each one fits in a fresh context window and starts with no drift</button></li>
+    <li><button data-opt="c">So the tickets can be handed out to different people on the team</button></li>
+  </ul>
+  <p class="why" data-for="a">Parallelism is a nice side effect but not the reason. The constraint being managed is what the agent can hold in mind at once. Try again.</p>
+  <p class="why" data-for="b">✅ Exactly. A full context window degrades quality for everything after it. One slice, one clean window — that is context engineering in one sentence.</p>
+  <p class="why" data-for="c">These tickets are for the agent, not for a sprint board. The sizing follows the context window. Try again.</p>
+</div>
+
+<div class="check" data-answer="a">
+  <p class="check-q">☕ Which phase must you actually be present and engaged for?</p>
+  <ul class="opts">
+    <li><button data-opt="a">The interview and the spec, where every ambiguity is settled early</button></li>
+    <li><button data-opt="b">The implementation, so that mistakes can be corrected as they occur</button></li>
+    <li><button data-opt="c">None of them, provided the very first prompt was detailed enough</button></li>
+  </ul>
+  <p class="why" data-for="a">✅ Right. Human decisions are deliberately grouped at the front. Once the spec and tickets are agreed, implementation needs nothing from you.</p>
+  <p class="why" data-for="b">Supervising the build is the habit this workflow removes. Move that attention to the front, where it changes the outcome. Try again.</p>
+  <p class="why" data-for="c">One prompt cannot settle what you have not been asked yet — that is the whole reason it interviews you. Try again.</p>
+</div>
+
+<div id="page-pager"></div>
+
+</div>
+<script src="assets/lab.js"></script>
+</body>
+</html>

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0 · Prework · SKO27 TechSummit - AI Workshop for Idira DC</title>
+<link rel="stylesheet" href="assets/lab.css">
+</head>
+<body>
+<div id="progress-rail"><div id="progress-fill"></div></div>
+
+<div class="wrap">
+
+<nav id="page-nav"></nav>
+
+<header class="lesson">
+  <p class="kicker">Before the workshop</p>
+  <h1>Prework 🧰</h1>
+  <p class="standfirst">
+    Twenty-five minutes at your own desk, in advance. Everything here is a download into your own
+    home folder — <strong>nothing needs administrator rights</strong> and nothing changes how
+    your laptop is managed.
+  </p>
+  <ul class="meta">
+    <li class="tag-must">Everyone, beforehand</li>
+    <li>⏱️ ~25 minutes</li>
+    <li id="step-counter">&nbsp;</li>
+  </ul>
+</header>
+
+<div class="stop">
+  <p><span class="callout-label">🚨 Please do not skip this.</span> There are about sixty of us and
+  two trainers. If sixty people install software during the session, nobody gets to the interesting
+  part. If something here does not work, <strong>reply to the workshop email</strong> — we would much
+  rather fix it this week than on the day.</p>
+</div>
+
+<p>Pick your machine — the page will follow your choice. 👇</p>
+<div class="os-switch" data-os-switch></div>
+
+<h2>The two-minute way ⚡</h2>
+
+<p>There is a script in the workshop folder that checks all eight items below, tells you which ones
+are missing, and <strong>asks before it fixes anything</strong>. Most people are done in a couple of
+minutes. Open a terminal, go to the workshop folder, and run it:</p>
+
+<div class="os os-mac">
+  <div class="code"><pre><code>cd ~/Downloads/vibe-coding-workshop
+bash check-prereqs.sh</code></pre></div>
+</div>
+<div class="os os-win">
+  <div class="code"><pre><code>cd $HOME\Downloads\vibe-coding-workshop
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\check-prereqs.ps1</code></pre></div>
+  <div class="note">
+    <p><span class="callout-label">🛑 About that middle line.</span> Managed Windows laptops block
+    scripts by default. That command allows them <strong>in this window only</strong> and needs no
+    admin rights. Close the window and the setting is gone.</p>
+  </div>
+</div>
+
+<p>It prints a tick, a spanner or a cross for each item, then a summary and a numbered “still to do”
+list. Every offer is a <code>[y/N]</code> question — answer <code>n</code> and it changes nothing. 🤝</p>
+
+<ul>
+  <li>🔍 Just look, change nothing:
+    <span class="os os-inline os-mac"><code>bash check-prereqs.sh --check-only</code></span>
+    <span class="os os-inline os-win"><code>.\check-prereqs.ps1 -CheckOnly</code></span></li>
+  <li>🤖 Say yes to everything:
+    <span class="os os-inline os-mac"><code>bash check-prereqs.sh --yes</code></span>
+    <span class="os os-inline os-win"><code>.\check-prereqs.ps1 -Yes</code></span></li>
+</ul>
+
+<div class="note">
+  <p><span class="callout-label">🧾 Two promises the script keeps.</span> Nothing is installed outside
+  your home folder and this project folder, and nothing is changed without asking you first. It will
+  also <em>refuse</em> to install Python — on a managed laptop that is the one step that needs admin
+  rights, so it tells you to email us instead. 📧</p>
+  <p>Two things it cannot do for you: the <strong>idsec login</strong> check (step 6) and the
+  <strong>AWS portal</strong> check (step 7 — it will remind you loudly). And if any step fails or you
+  would rather understand what you are running, the manual steps below are the same work, explained.
+  🧑‍🏫</p>
+</div>
+
+<h2>What you will end up with</h2>
+
+<table>
+  <tr><th>#</th><th>Thing</th><th>How you know it worked</th></tr>
+  <tr><td>1</td><td>The workshop folder</td><td>You can see <code>sandbox-app</code> and <code>ai-harness-app</code> inside it</td></tr>
+  <tr><td>2</td><td>Python 3.9 or newer</td><td><code>python --version</code> prints a number</td></tr>
+  <tr><td>3</td><td>A virtual environment with <code>boto3</code> and <code>anthropic</code></td><td><code>libraries ready</code> prints</td></tr>
+  <tr><td>4</td><td>Claude Code</td><td><code>claude --version</code> prints a number</td></tr>
+  <tr><td>5</td><td>The <code>idsec</code> CLI</td><td><code>idsec version</code> prints a number</td></tr>
+  <tr><td>6</td><td>An <code>idsec</code> profile you can log in with</td><td><code>idsec login</code> succeeds</td></tr>
+  <tr><td>7</td><td>AWS access through the portal</td><td>You see an <strong>Access keys</strong> link</td></tr>
+</table>
+
+<h2>Steps</h2>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">1</div><p class="step-title">Get the workshop folder onto your laptop</p></div>
+  <div class="step-body">
+    <p>Use the link in your workshop email. It is either a <strong>zip to unzip</strong> or a
+    <strong>repository to clone</strong> — your email says which. Either way, put it in
+    <strong>Downloads</strong>. 📦</p>
+    <p>You should end up with a folder called <code>vibe-coding-workshop</code> containing
+    <code>lab</code>, <code>sandbox-app</code>, <code>ai-harness-app</code> and <code>skills</code>.</p>
+    <div class="note">
+      <p><span class="callout-label">📚 Why it is a repository.</span> The folder is tracked by
+      <strong>git</strong>, the tool developers use to keep a history of changes. You never have to
+      use git today — but in Lesson 2 you will run Claude Code's built-in
+      <code>/security-review</code>, and that expects to be looking at a project with a history. If
+      you unzipped a zip, the history came with it. Nothing for you to do. ✅</p>
+    </div>
+    <div class="note">
+      <p>You are reading this page <em>from</em> that folder, so if you can see this, step 1 is
+      already done. ✅ There is no web server and no internet involved — these pages are just files.</p>
+    </div>
+    <p>Now open a terminal:</p>
+    <div class="os os-mac">
+      <p>Press <code>⌘ Space</code>, type <strong>Terminal</strong>, press <code>Return</code>.</p>
+    </div>
+    <div class="os os-win">
+      <p>Press the <strong>Windows key</strong>, type <strong>PowerShell</strong>, press
+      <code>Enter</code>. Use <strong>Windows PowerShell</strong> or <strong>PowerShell 7</strong> —
+      <em>not</em> Command Prompt. Every command on this page is PowerShell.</p>
+    </div>
+    <p>Then move into the folder:</p>
+    <div class="os os-mac">
+      <div class="code"><pre><code>cd ~/Downloads/vibe-coding-workshop</code></pre></div>
+    </div>
+    <div class="os os-win">
+      <div class="code"><pre><code>cd $HOME\Downloads\vibe-coding-workshop</code></pre></div>
+    </div>
+    <p><strong>Stay in this folder for the rest of the prework.</strong> 📍</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">2</div><p class="step-title">Check Python — and make <code>python</code> mean Python 3</p></div>
+  <div class="step-body">
+    <div class="code"><pre><code>python --version</code></pre></div>
+    <p>You want <strong>3.9 or newer</strong>. If you got a version number, skip to step 3. 🎉</p>
+
+    <div class="os os-mac">
+      <p>If it said <em>command not found</em>, try:</p>
+      <div class="code"><pre><code>python3 --version</code></pre></div>
+      <p>If <em>that</em> works, you have Python — it is just called <code>python3</code> on your
+      machine. Rather than translating every command in this lab, add an <strong>alias</strong> so
+      that <code>python</code> means <code>python3</code> from now on:</p>
+      <div class="code"><pre><code>echo 'alias python="python3"' &gt;&gt; ~/.zshrc
+echo 'alias pip="pip3"' &gt;&gt; ~/.zshrc</code></pre></div>
+      <p>Then <strong>close the terminal and open a new one</strong>, <code>cd</code> back to the
+      workshop folder, and check again:</p>
+      <div class="code"><pre><code>python --version</code></pre></div>
+      <div class="note">
+        <p><span class="callout-label">🔎 What that did.</span> An alias is a nickname for a command,
+        stored in your own shell settings file (<code>~/.zshrc</code>). It changes nothing about the
+        installed Python and needs no admin rights — and it means every instruction in this lab that
+        says <code>python</code> just works. If you use <code>bash</code> rather than
+        <code>zsh</code>, use <code>~/.bashrc</code> instead.</p>
+      </div>
+    </div>
+
+    <div class="os os-win">
+      <p>If it opened the Microsoft Store, or said the term is not recognised, try the Python
+      launcher:</p>
+      <div class="code"><pre><code>py --version</code></pre></div>
+      <p>If <em>that</em> works, use <code>py</code> instead of <code>python</code> for the next step
+      only. 👍 Once you have activated the virtual environment in step 3, the plain
+      <code>python</code> command works everywhere — the environment supplies it. So this is a
+      two-command inconvenience, not a whole-workshop one.</p>
+      <div class="note">
+        <p><span class="callout-label">🔎 Prefer a permanent nickname?</span> This adds an alias to
+        your PowerShell profile, which is a file in your own user folder:</p>
+        <div class="code"><pre><code>New-Item -ItemType File -Force $PROFILE | Out-Null
+Add-Content $PROFILE 'Set-Alias python py'</code></pre></div>
+        <p>Open a new PowerShell window afterwards. Entirely optional.</p>
+      </div>
+    </div>
+
+    <div class="warn">
+      <p><span class="callout-label">🆘 No Python at all?</span> Reply to the workshop email — do not
+      try to install it yourself, because on a managed laptop that is exactly the step that asks for
+      admin rights. We will sort it out with you before the day.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">3</div><p class="step-title">Make a virtual environment 🐍</p></div>
+  <div class="step-body">
+    <p>A <strong>virtual environment</strong> is a private folder holding this project's Python
+    libraries. It is the standard way to work in Python, for three reasons that matter to you
+    today:</p>
+    <ul>
+      <li>🧹 Nothing is installed system-wide, so nothing needs admin rights.</li>
+      <li>🔒 The workshop cannot break some other tool on your laptop that also uses Python.</li>
+      <li>🗑️ Cleaning up afterwards is deleting one folder.</li>
+    </ul>
+
+    <p>From inside the <code>vibe-coding-workshop</code> folder, create it:</p>
+    <div class="os os-mac">
+      <div class="code"><pre><code>python -m venv .venv</code></pre></div>
+      <p>Then <strong>activate</strong> it:</p>
+      <div class="code"><pre><code>source .venv/bin/activate</code></pre></div>
+    </div>
+    <div class="os os-win">
+      <div class="code"><pre><code>py -m venv .venv</code></pre></div>
+      <p>Then <strong>activate</strong> it:</p>
+      <div class="code"><pre><code>.\.venv\Scripts\Activate.ps1</code></pre></div>
+      <div class="warn">
+        <p><span class="callout-label">🛑 “running scripts is disabled on this system”?</span> Common
+        on managed Windows laptops, and no admin rights needed to work around it. This allows scripts
+        <em>for this window only</em>, then activates:</p>
+        <div class="code"><pre><code>Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\.venv\Scripts\Activate.ps1</code></pre></div>
+        <p>If you would rather not repeat that in every window, <code>-Scope CurrentUser
+        -ExecutionPolicy RemoteSigned</code> makes it stick for your account only.</p>
+      </div>
+    </div>
+
+    <p>Your prompt now starts with <code>(.venv)</code>. That is how you know it is on. 👀</p>
+
+    <p>Install what the two apps need — the sandbox app you will fix in Part 2, and the harness
+    stages you will build in Part 1:</p>
+    <div class="code"><pre><code>pip install -r sandbox-app/requirements.txt
+pip install -r ai-harness-app/requirements.txt</code></pre></div>
+    <p>And check them both:</p>
+    <div class="code"><pre><code>python -c "import boto3, anthropic; print('libraries ready')"</code></pre></div>
+    <p>Two small libraries, about a minute. Neither needs admin rights — they land inside
+    <code>.venv</code>. 🪶</p>
+
+    <div class="stop">
+      <p><span class="callout-label">📌 The one thing to remember from this page.</span> A virtual
+      environment is <strong>per terminal window</strong>. Open a new window and the
+      <code>(.venv)</code> is gone, and Python will not find <code>boto3</code>. The fix is always
+      the same — <code>cd</code> to the workshop folder and activate again:</p>
+      <div class="os os-mac">
+        <div class="code"><pre><code>cd ~/Downloads/vibe-coding-workshop
+source .venv/bin/activate</code></pre></div>
+      </div>
+      <div class="os os-win">
+        <div class="code"><pre><code>cd $HOME\Downloads\vibe-coding-workshop
+.\.venv\Scripts\Activate.ps1</code></pre></div>
+      </div>
+      <p>This is the single most common problem on the day. It is also the easiest to fix — now you
+      know. 💪</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">4</div><p class="step-title">Install Claude Code</p></div>
+  <div class="step-body">
+    <p>One command. It installs into your home folder — no admin rights, no Node.js, no package
+    manager. 🪶</p>
+    <div class="os os-mac">
+      <div class="code"><pre><code>curl -fsSL https://claude.ai/install.sh | bash</code></pre></div>
+    </div>
+    <div class="os os-win">
+      <div class="code"><pre><code>irm https://claude.ai/install.ps1 | iex</code></pre></div>
+    </div>
+    <p><strong>Close your terminal and open a new one</strong>, then check:</p>
+    <div class="code"><pre><code>claude --version</code></pre></div>
+    <p>A version number means you are done. 🎉 (New window, so no <code>(.venv)</code> — that is
+    expected.)</p>
+    <div class="note">
+      <p><span class="callout-label">🔐 You will not be asked to log in.</span> On the day, Claude
+      Code will use <strong>Amazon Bedrock</strong> through your company's AWS account — no personal
+      Claude account, and no data leaving your AWS environment. There is nothing to sign up for.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">5</div><p class="step-title">Install the idsec CLI</p></div>
+  <div class="step-body">
+    <p><code>idsec</code> is Idira's command-line tool. It is a <strong>single file</strong> — there
+    is no installer, and nothing is registered with your operating system.</p>
+
+    <p>Download the archive for your machine from the official releases page:</p>
+    <p>🔗 <a href="https://github.com/cyberark/idsec-cli-golang/releases">github.com/cyberark/idsec-cli-golang/releases</a></p>
+    <p>Take the newest release and pick the file matching your machine:</p>
+    <table>
+      <tr><th>Machine</th><th>Look for a file name containing</th></tr>
+      <tr><td>🍎 Mac with Apple silicon (M1–M4)</td><td><code>darwin</code> and <code>arm64</code></td></tr>
+      <tr><td>🍎 Mac with an Intel chip</td><td><code>darwin</code> and <code>amd64</code></td></tr>
+      <tr><td>🪟 Windows</td><td><code>windows</code> and <code>amd64</code></td></tr>
+    </table>
+    <p>Not sure which Mac you have?
+    <span class="os os-inline os-mac">Run <code>uname -m</code> — <code>arm64</code> means Apple
+    silicon, <code>x86_64</code> means Intel.</span>
+    <span class="os os-inline os-win">Switch this page to 🍎 macOS if you are on a Mac.</span></p>
+
+    <div class="os os-mac">
+      <p>Make a folder for personal tools, unpack <code>idsec</code> into it, and tell your shell
+      where to look:</p>
+      <div class="code"><pre><code>mkdir -p ~/bin
+tar -xzf ~/Downloads/idsec*.tar.gz -C ~/bin
+chmod +x ~/bin/idsec
+echo 'export PATH="$HOME/bin:$PATH"' &gt;&gt; ~/.zshrc</code></pre></div>
+      <p>Close the terminal, open a new one, then check:</p>
+      <div class="code"><pre><code>idsec version</code></pre></div>
+      <p>If macOS refuses to run it (“cannot be opened because the developer cannot be verified”),
+      run <code>xattr -d com.apple.quarantine ~/bin/idsec</code> and try again.</p>
+    </div>
+
+    <div class="os os-win">
+      <p>Make a folder for personal tools, unpack <code>idsec.exe</code> into it, and add it to your
+      own <code>PATH</code> — this is the user-level setting, so no admin rights are needed:</p>
+      <div class="code"><pre><code>New-Item -ItemType Directory -Force $HOME\bin | Out-Null
+tar -xzf $HOME\Downloads\idsec_windows.tar.gz -C $HOME\bin
+$user = [Environment]::GetEnvironmentVariable("Path", "User")
+[Environment]::SetEnvironmentVariable("Path", "$user;$HOME\bin", "User")</code></pre></div>
+      <p>Adjust the archive name to match what you downloaded. Then <strong>close PowerShell and
+      open a new window</strong> (the <code>PATH</code> change only applies to new windows) and check:</p>
+      <div class="code"><pre><code>idsec version</code></pre></div>
+      <p>If Windows blocks the file, right-click <code>$HOME\bin\idsec.exe</code> →
+      <strong>Properties</strong> → tick <strong>Unblock</strong> → <strong>OK</strong>.</p>
+    </div>
+
+    <div class="note">
+      <p><span class="callout-label">🖥️ Blocked by your company's endpoint policy?</span> If it
+      refuses to run and the message mentions a <strong>policy</strong>, an administrator, or
+      <strong>Idira Endpoint Privilege Manager</strong>, that is <em>application control</em> doing
+      its job — deciding which programs are allowed to run on a managed laptop. Please don't try to
+      work around it. If you are offered a <strong>Request authorization</strong> button, use it;
+      otherwise reply to the workshop email <strong>today</strong> and we will get
+      <code>idsec</code> allowed for you. ✋</p>
+      <p>Worth noticing rather than resenting: it is the same idea as the rest of the day, one layer
+      lower down. 🙂 <a href="0003-zsp-access.html">Lesson 3</a> comes back to it.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">6</div><p class="step-title">Set up your idsec profile and log in</p></div>
+  <div class="step-body">
+    <div class="code"><pre><code>idsec configure</code></pre></div>
+    <p>It asks a few questions. Answer them using the values printed in your workshop email — your
+    <strong>tenant subdomain</strong> and <strong>username</strong>. Where a question shows a default
+    in brackets, press
+    <span class="os os-inline os-mac"><code>Return</code></span><span class="os os-inline os-win"><code>Enter</code></span>
+    to accept it.</p>
+    <p>Then log in:</p>
+    <div class="code"><pre><code>idsec login</code></pre></div>
+    <p>Follow the prompts. On most tenants the sign-in happens <strong>in the terminal</strong>: it
+    asks for your password, then for a multi-factor check if your tenant requires one. On some it
+    opens a browser window instead — if that happens, sign in there and come back. Either way you
+    end up with a success message in the terminal. ✅</p>
+    <div class="note">
+      <p><span class="callout-label">🔑 Which password?</span> The one from your workshop email —
+      the same login you use for the portal. Nothing is echoed as you type it, which is normal.</p>
+    </div>
+    <div class="warn">
+      <p><span class="callout-label">Once only.</span> Do this now and then leave it alone. On the day
+      you will only need <code>idsec login</code>. Running <code>idsec configure</code> a second time
+      overwrites your settings, and that is a five-minute detour in a session with about fifty
+      minutes of hands-on time.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">7</div><p class="step-title">Check your AWS access</p></div>
+  <div class="step-body">
+    <p>This is the one step where a problem is <em>invisible</em> until the session starts, so please
+    actually click through it. 🙏</p>
+    <ol>
+      <li>Open <code>https://ngid.cyberark.cloud/</code></li>
+      <li>Sign in with the login from your workshop email 🎟️</li>
+      <li>Open <strong>CYBR User Portal</strong></li>
+      <li>Click the <strong>AWS</strong> tile</li>
+      <li>You should land on a page whose address ends in <code>awsapps.com/start/#</code>, listing
+      at least one account</li>
+      <li>Next to it you should see <strong>Access keys</strong> (or <em>Get credentials</em>).
+      <strong>Click it</strong> and confirm you get a dialog with tabs and an
+      <strong>Option 1: Set AWS environment variables</strong> section</li>
+    </ol>
+    <p>You do not need to copy anything yet. You just need to know the link is there. 👀</p>
+    <div class="stop">
+      <p><span class="callout-label">🚩 No AWS tile? No accounts listed? No Access keys link?</span>
+      Reply to the workshop email <strong>today</strong>. This is an entitlement that has to be
+      granted for you, and it cannot be fixed from your seat on the day.</p>
+    </div>
+  </div>
+</div>
+
+<h2>Bring with you 🎒</h2>
+
+<ul>
+  <li>💻 The laptop you did this on — not a different one</li>
+  <li>🔋 A charger</li>
+  <li>🎟️ Your workshop email, or the attendee number and login from it</li>
+  <li>🐍 The activation command for your virtual environment. You will need it more than once.</li>
+  <li>🧠 No prior coding experience. Genuinely. That is the point.</li>
+</ul>
+
+<div class="check" data-answer="a">
+  <p class="check-q">🔎 Which of these prework steps needs administrator rights on your laptop?</p>
+  <ul class="opts">
+    <li><button data-opt="a">None of them — everything installs into your own home folder</button></li>
+    <li><button data-opt="b">Just the Claude Code installer, because it adds a new command</button></li>
+    <li><button data-opt="c">Just the PATH change, because it edits a system-wide setting</button></li>
+  </ul>
+  <p class="why" data-for="a">✅ Correct, and deliberately so. Claude Code and <code>idsec</code> unpack into your home folder, the virtual environment is a folder inside the project, and the <code>PATH</code> change is user-scoped. Nothing touches the managed parts of your machine.</p>
+  <p class="why" data-for="b">The installer writes into your home folder and adds the command to your own <code>PATH</code> — no elevation involved. Try again.</p>
+  <p class="why" data-for="c">We deliberately used the <em>user</em> <code>PATH</code>, not the system one. That is why no prompt appears. Try again.</p>
+</div>
+
+<div class="check" data-answer="c">
+  <p class="check-q">🐍 On the day, a fresh terminal says <code>No module named boto3</code>. Why?</p>
+  <ul class="opts">
+    <li><button data-opt="a">The library did not install properly and has to be installed again</button></li>
+    <li><button data-opt="b">A new window resets Python, so libraries have to be reinstalled once</button></li>
+    <li><button data-opt="c">A new window is not in the virtual environment — activate it again</button></li>
+  </ul>
+  <p class="why" data-for="a">Almost certainly fine. Before reinstalling anything, look at your prompt for <code>(.venv)</code>. Try again.</p>
+  <p class="why" data-for="b">Nothing is lost, and you never need to reinstall. The libraries are sitting in <code>.venv</code> waiting to be switched on. Try again.</p>
+  <p class="why" data-for="c">✅ Exactly. Activation is per window. <code>cd</code> to the workshop folder, activate, and you are back — no reinstalling, no helper needed.</p>
+</div>
+
+<div class="win">
+  <p><span class="callout-label">🎉 All seven ticks?</span> You are ready. Nothing else to do until
+  the day — and when you arrive, start at
+  <a href="stage-1-bare-call.html">Stage 1: one call to a model</a>. (Straight to the Claude Code half
+  instead? That is <a href="0001-setup.html">Lesson 01</a>.)</p>
+</div>
+
+<div id="page-pager"></div>
+
+</div>
+<script src="assets/lab.js"></script>
+</body>
+</html>

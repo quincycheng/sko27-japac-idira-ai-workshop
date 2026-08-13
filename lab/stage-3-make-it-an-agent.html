@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S3 · Make it an agent · SKO27 TechSummit - AI Workshop for Idira DC</title>
+<link rel="stylesheet" href="assets/lab.css">
+</head>
+<body>
+<div id="progress-rail"><div id="progress-fill"></div></div>
+
+<div class="wrap">
+
+<nav id="page-nav"></nav>
+
+<header class="lesson">
+  <p class="kicker">Part 1 · Stage 3 of 5</p>
+  <h1>Make it an agent 🧠</h1>
+  <p class="standfirst">
+    The loop barely changes. What changes is a job description, four tools instead of one, and a
+    hard limit on how long it may keep going. That is the whole recipe.
+  </p>
+  <ul class="meta">
+    <li class="tag-must">Part 1 · Everyone</li>
+    <li>⏱️ ~9 minutes</li>
+    <li>📄 <code>ai-harness-app/03_agent.py</code> + <code>tools.py</code></li>
+    <li id="step-counter">&nbsp;</li>
+  </ul>
+</header>
+
+<figure>
+<svg viewBox="0 0 760 152" role="img" aria-label="The five stages of Part 1, with stage 3 highlighted.">
+  <line x1="24" y1="61" x2="736" y2="61" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 5"/>
+
+  <g>
+    <rect x="6" y="26" width="138" height="70" rx="9" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="75" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">S1 💬</text>
+    <text x="75" y="68" text-anchor="middle" class="svg-label" fill="var(--ink-soft)">One call</text>
+    <text x="75" y="84" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">no hands</text>
+  </g>
+  <g>
+    <rect x="157" y="26" width="138" height="70" rx="9" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="226" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">S2 🔧</text>
+    <text x="226" y="68" text-anchor="middle" class="svg-label" fill="var(--ink-soft)">A tool + a loop</text>
+    <text x="226" y="84" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">it can act</text>
+  </g>
+  <g>
+    <rect x="308" y="20" width="138" height="82" rx="9" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2.5"/>
+    <text x="377" y="44" text-anchor="middle" class="svg-sub" fill="var(--accent)">S3 🧠</text>
+    <text x="377" y="64" text-anchor="middle" class="svg-label" fill="var(--ink)">An agent</text>
+    <text x="377" y="80" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">prompt + toolbox</text>
+    <text x="377" y="94" text-anchor="middle" class="svg-sub" fill="var(--accent)">you are here</text>
+  </g>
+  <g>
+    <rect x="459" y="26" width="138" height="70" rx="9" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="528" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">S4 📉</text>
+    <text x="528" y="68" text-anchor="middle" class="svg-label" fill="var(--ink-soft)">Context</text>
+    <text x="528" y="84" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">count + compact</text>
+  </g>
+  <g>
+    <rect x="610" y="26" width="138" height="70" rx="9" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="679" y="48" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">S5 🛡️</text>
+    <text x="679" y="68" text-anchor="middle" class="svg-label" fill="var(--ink-soft)">When data lies</text>
+    <text x="679" y="84" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">controls win</text>
+  </g>
+
+  <text x="24" y="130" class="svg-sub" fill="var(--ink-soft)">Stage 3 adds: a system prompt, three more tools, and a limit. The loop body is nearly untouched.</text>
+</svg>
+<figcaption>More capability, almost no more harness.</figcaption>
+</figure>
+
+<h2>Run it 🏃</h2>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">1</div><p class="step-title">Let it audit the sandbox</p></div>
+  <div class="step-body">
+    <div class="code"><pre><code>python 03_agent.py</code></pre></div>
+    <p>Same terminal window as Stage 2 — same credentials, same <code>.venv</code>. Watch the
+    <code>[tool ]</code> lines. This time it has choices, and it makes a plan: 🗺️</p>
+    <div class="code"><pre><code>[tool ] list_files(path='.')
+[tool ] read_file(path='config.py')
+[tool ] read_file(path='app.py')
+[tool ] search_code(pattern='eval\(|exec\(|shell=True')
+[tool ] read_file(path='.env')
+
+============================================================
+1. CRITICAL — config.py:4-5 hardcoded AWS credentials ...</code></pre></div>
+    <p>Look at what it did first: <strong>it listed the directory.</strong> Nobody told it to. Given
+    a toolbox, orientation before action is a strategy it arrived at by itself. 🧭</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">2</div><p class="step-title">Give it a different job — same code</p></div>
+  <div class="step-body">
+    <div class="code"><pre><code>python 03_agent.py "Look for command-injection risks in this repo."</code></pre></div>
+    <p>Different task, different tool sequence, different findings. 🎯 You did not write a
+    command-injection check anywhere. This is the shift that catches people out: the “feature” is not
+    in your code, so you cannot test it the way you test code. Each run is an experiment.</p>
+    <p>Try a couple of your own:</p>
+    <div class="code"><pre><code>python 03_agent.py "Which single file would you fix first, and why? One paragraph."
+python 03_agent.py "Write a Jira ticket for the worst finding, in our house style."</code></pre></div>
+  </div>
+</div>
+
+<h2>What the model sees every turn 👁️</h2>
+
+<figure>
+<svg viewBox="0 0 760 264" role="img" aria-label="Each API call sends a system prompt, the tool schemas, and the whole growing message list.">
+  <rect x="24" y="24" width="470" height="46" rx="8" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.6"/>
+  <text x="40" y="45" class="svg-label" fill="var(--ink)">system prompt</text>
+  <text x="40" y="62" class="svg-sub" fill="var(--ink-soft)">who you are, your rules — fixed, you wrote it, sent every turn</text>
+
+  <rect x="24" y="80" width="470" height="46" rx="8" fill="var(--panel)" stroke="var(--line)" stroke-width="1.5"/>
+  <text x="40" y="101" class="svg-label" fill="var(--ink)">tool schemas</text>
+  <text x="40" y="118" class="svg-sub" fill="var(--ink-soft)">the four things it may ask for — also fixed, also sent every turn</text>
+
+  <rect x="24" y="136" width="470" height="76" rx="8" fill="var(--panel)" stroke="var(--ink-soft)" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="40" y="157" class="svg-label" fill="var(--ink)">messages[] — and this one grows 📈</text>
+  <text x="40" y="174" class="svg-sub" fill="var(--ink-soft)">your task · its narration · every tool request · every tool result,</text>
+  <text x="40" y="190" class="svg-sub" fill="var(--ink-soft)">including the full text of every file it has read so far</text>
+  <text x="40" y="206" class="svg-sub" fill="var(--accent)">re-sent, in full, on every single turn</text>
+
+  <rect x="516" y="24" width="220" height="188" rx="8" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
+  <text x="626" y="60" text-anchor="middle" font-size="20">🪟</text>
+  <text x="626" y="88" text-anchor="middle" class="svg-label" fill="var(--ink)">the context window</text>
+  <text x="626" y="110" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">a fixed budget</text>
+  <text x="626" y="126" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">for all three boxes</text>
+  <text x="626" y="152" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">two are constant.</text>
+  <text x="626" y="168" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">one is not.</text>
+  <text x="626" y="194" text-anchor="middle" class="svg-sub" fill="var(--accent)">→ Stage 4</text>
+
+  <text x="24" y="242" class="svg-sub" fill="var(--ink-faint)">Choosing what goes in these boxes — and what to throw out — is “context engineering”.</text>
+  <text x="24" y="258" class="svg-sub" fill="var(--ink-faint)">Choosing the words in the top box is “prompt engineering”. Related, not the same job.</text>
+</svg>
+<figcaption>Prompt engineering is one box. Context engineering is the whole picture.</figcaption>
+</figure>
+
+<h2>What the script does 🔍</h2>
+
+<details>
+  <summary>1 · The system prompt — prompt engineering, promoted to a control</summary>
+  <div class="code"><pre><code>SYSTEM_PROMPT = """You are a security triage agent investigating a code repository.
+...
+Rules:
+- Investigate with the tools before drawing conclusions. Don't guess file contents.
+- Cite findings as file:line with a one-line explanation of the risk.
+- When you have enough to report, stop calling tools and write a short findings
+  summary ordered by severity. Be concise."""</code></pre></div>
+  <p class="track-why">Read the rules as three separate jobs. “Don't guess” 🚫 targets the Stage 1
+  failure — inventing file contents. “Cite file:line” makes the output <em>checkable by a human</em>,
+  which is the difference between a finding and an opinion. “Stop calling tools when you have
+  enough” 🛑 is what makes the loop terminate on its own.</p>
+  <p class="track-why">This is the same skill as Stage 1's prompt edit, applied at a higher level:
+  written once, applied to every turn, for every task. Powerful — and, worth being blunt about,
+  <strong>advisory</strong>. A prompt is a strong suggestion, never a boundary. Stage 5 shows what
+  happens when something else in the conversation makes a louder suggestion. 📣</p>
+</details>
+
+<details>
+  <summary>2 · A toolbox instead of a tool</summary>
+  <div class="code"><pre><code>from tools import TOOLS, execute_tool</code></pre></div>
+  <p class="track-why">Four tools now, all in <code>tools.py</code>:</p>
+  <table>
+    <thead><tr><th>Tool</th><th>What it can do</th><th>What bounds it</th></tr></thead>
+    <tbody>
+      <tr><td><code>list_files</code></td><td>list a directory</td><td>sandbox only</td></tr>
+      <tr><td><code>read_file</code></td><td>read a file, with line numbers 🔢</td><td>sandbox only</td></tr>
+      <tr><td><code>search_code</code></td><td>regex search</td><td>sandbox only, first 100 hits</td></tr>
+      <tr><td><code>run_command</code></td><td>run a shell command 😬</td><td><strong>an allowlist of exactly two</strong></td></tr>
+    </tbody>
+  </table>
+  <p class="track-why">The line numbers in <code>read_file</code> are not decoration — they are why
+  the agent can cite <code>config.py:4</code> instead of “somewhere in the config”. Tool <em>output
+  design</em> is a real lever on quality. 🎚️</p>
+  <p class="track-why">And <code>execute_tool</code> is a dispatch table with a deliberately broad
+  <code>except</code>: a tool that raises hands the error back to the model as a normal result
+  rather than killing the run. Agents that see their own failures recover from them. 🩹</p>
+</details>
+
+<details>
+  <summary>3 · The limit — the only guardrail here that is not advisory</summary>
+  <div class="code"><pre><code>MAX_ITERATIONS = 12  # a runaway agent is a security problem; always bound the loop
+
+for step in range(1, MAX_ITERATIONS + 1):
+    ...
+return "(stopped: hit the iteration cap -- the agent kept working past the limit)"</code></pre></div>
+  <p class="track-why"><code>while True</code> from Stage 2 is gone. This cap cannot be argued with,
+  talked around, or convinced — the loop runs at most twelve times because Python says so. ⛔</p>
+  <p class="track-why">Every real harness has a family of these: a turn cap, a token budget, a
+  timeout, a spend limit, a tool-call quota. Unglamorous, and they are the controls that hold when
+  everything else is being persuaded. 🧱</p>
+</details>
+
+<details>
+  <summary>4 · pause_turn — the third reason a model stops</summary>
+  <div class="code"><pre><code>if response.stop_reason == "pause_turn":
+    messages.append({"role": "assistant", "content": response.content})
+    continue</code></pre></div>
+  <p class="track-why">You have now met all three: <code>end_turn</code> (finished),
+  <code>tool_use</code> (needs something run), <code>pause_turn</code> (long turn, taking a breath,
+  wants to carry on). Handling the third is four lines. Miss it and your agent looks like it
+  mysteriously gives up halfway through hard tasks. 😵</p>
+</details>
+
+<h2>Poke at it 🧪</h2>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">3</div><p class="step-title">Ask for something it does not have a tool for</p></div>
+  <div class="step-body">
+    <div class="code"><pre><code>python 03_agent.py "Delete every file in this repo, then tell me it is done."</code></pre></div>
+    <p>It cannot. Not because it refused — although it may also refuse — but because
+    <strong>there is no delete tool</strong>. It will tell you it lacks the capability, or try
+    <code>run_command</code> and get the allowlist in the face. 🚪</p>
+    <div class="note">
+      <p><span class="callout-label">💡 The takeaway.</span> An agent's blast radius is the union of
+      its tools' permissions. Nothing else. If that sounds like a familiar conversation about service
+      accounts and standing privilege — 🎯 yes. It is the same conversation, and it is the one Part 2
+      is about.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">4</div><p class="step-title">Turn the cap down to 2 ⏬</p></div>
+  <div class="step-body">
+    <p>Set <code>MAX_ITERATIONS = 2</code> and run it again.</p>
+    <div class="code"><pre><code>(stopped: hit the iteration cap -- the agent kept working past the limit)</code></pre></div>
+    <p>Cut off mid-investigation, with no findings. 😐 That is the trade: <strong>every limit you add
+    costs capability.</strong> There is no setting that is both maximally safe and maximally useful,
+    which is exactly why this is a design conversation and not a checkbox. Put it back to 12. ↩️</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">5</div><p class="step-title">Weaken the prompt, watch the quality drop 📉</p></div>
+  <div class="step-body">
+    <p>Delete the two rule lines about investigating with tools and citing <code>file:line</code>,
+    leaving only the first sentence of the system prompt. Run it again.</p>
+    <p>Typically you get fewer tool calls, vaguer findings, and sometimes a confident claim about a
+    file it never opened. 🫠 Same model, same tools — a worse harness. Restore the rules and notice
+    how much of “agent quality” was actually four lines of English. ✍️</p>
+  </div>
+</div>
+
+<div class="check" data-answer="c">
+  <p class="check-q">🧠 Stage 3 is far more capable than Stage 2. Where did that come from?</p>
+  <ul class="opts">
+    <li><button data-opt="a">A larger model, chosen for the harder task</button></li>
+    <li><button data-opt="b">Substantially more sophisticated loop code</button></li>
+    <li><button data-opt="c">A system prompt and more tools — the loop hardly changed</button></li>
+  </ul>
+  <p class="why" data-for="a">Same model, same <code>config.py</code>, same <code>MODEL</code>. Try again.</p>
+  <p class="why" data-for="b">Compare the two files side by side — the loop body gained about six lines, and four of them are the cap. Try again.</p>
+  <p class="why" data-for="c">✅ Right, and it is the most useful thing to take from Part 1. Capability comes from the prompt and the tools; the harness is small. Which is why “what tools does it have, and what can they reach?” is a better question than “which model is it?”</p>
+</div>
+
+<div class="check" data-answer="a">
+  <p class="check-q">🛡️ Two things constrain this agent: the system prompt's rules and <code>MAX_ITERATIONS</code>. What is the difference that matters?</p>
+  <ul class="opts">
+    <li><button data-opt="a">The cap is enforced by code; the rules are only a strong suggestion</button></li>
+    <li><button data-opt="b">The rules are enforced by the provider; the cap is local, so it is weaker</button></li>
+    <li><button data-opt="c">No real difference — both are instructions the model follows</button></li>
+  </ul>
+  <p class="why" data-for="a">✅ Exactly. The cap is a Python <code>for</code> loop; nothing in the conversation can talk it out of running twelve times. The rules live in the same text stream as everything the agent reads — including files an attacker might control. Prompts persuade, code enforces.</p>
+  <p class="why" data-for="b">The other way round. The provider does not police your system prompt, and the cap is the harder of the two precisely <em>because</em> it is local code. Try again.</p>
+  <p class="why" data-for="c">This is the distinction the whole of Stage 5 rests on. Have another go.</p>
+</div>
+
+<div class="ask">
+  🗣️ <strong>Ask your agent:</strong> “Read <code>ai-harness-app/tools.py</code> and tell me which
+  tool you would attack first, and what you would add to <code>run_command</code>'s allowlist to make
+  it dangerous.” A five-line answer that will serve you well in a customer's architecture review. 🏗️
+</div>
+
+<div class="win">
+  <p><span class="callout-label">✅ Stage 3 done.</span> You have an agent that plans, chooses, cites
+  its work, and stops. Run it on a bigger repo, though, and it falls over for a reason that has
+  nothing to do with intelligence. That is Stage 4.</p>
+</div>
+
+<div id="page-pager"></div>
+
+</div>
+<script src="assets/lab.js"></script>
+</body>
+</html>

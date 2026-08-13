@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>7 · Write your own skill · SKO27 TechSummit - AI Workshop for Idira DC</title>
+<link rel="stylesheet" href="assets/lab.css">
+</head>
+<body>
+<div id="progress-rail"><div id="progress-fill"></div></div>
+
+<div class="wrap">
+
+<nav id="page-nav"></nav>
+
+<header class="lesson">
+  <p class="kicker">Optional · 2 of 3</p>
+  <h1>Write your own skill 📝</h1>
+  <p class="standfirst">
+    The <code>zsp-aws</code> skill you used in Lesson 3 is one page of plain English. Anything you
+    personally know how to do can become one — and then the agent knows it too, every time, without
+    being reminded.
+  </p>
+  <ul class="meta">
+    <li class="tag-opt">Optional</li>
+    <li>⏱️ ~15 minutes</li>
+    <li id="step-counter">&nbsp;</li>
+  </ul>
+</header>
+
+<div class="os-switch" data-os-switch></div>
+
+<h2>What a skill actually is</h2>
+
+<p>A folder with a <code>SKILL.md</code> file in it. That is the whole format. 🪆</p>
+
+<div class="code"><pre><code>.claude/skills/my-skill/SKILL.md</code></pre></div>
+
+<p>Inside, a few lines of front matter — a <strong>name</strong> and a
+<strong>description</strong> — then prose. The description is the important part: it is how the
+agent decides whether this skill applies to what you just asked for. A vague description means a
+skill that never gets used. 🎯</p>
+
+<div class="warn">
+  <p><span class="callout-label">🧩 Not the same as a tool.</span> A <strong>tool</strong> is a
+  capability an MCP server gives the agent — something it can now <em>do</em> (Lesson 5). A
+  <strong>skill</strong> is knowledge about how to do the job properly with capabilities it already
+  has. You will hear these two used interchangeably in the wild. They are not the same, and a client
+  who conflates them will design the wrong thing.</p>
+</div>
+
+<h2>Broad or narrow? Start narrow.</h2>
+
+<table>
+  <tr><th></th><th>🗺️ Broad</th><th>🎯 Narrow</th></tr>
+  <tr>
+    <td><strong>Teaches</strong></td>
+    <td>The shape of a thing, and how to discover the rest.</td>
+    <td>One ordered procedure, start to finish.</td>
+  </tr>
+  <tr>
+    <td><strong>Today's example</strong></td>
+    <td><code>skills/idsec/SKILL.md</code> — “here is how this CLI is organised, use <code>--help</code>”.</td>
+    <td><code>skills/zsp-aws/SKILL.md</code> — “do these five things in this order”.</td>
+  </tr>
+  <tr>
+    <td><strong>Fails by</strong></td>
+    <td>Being too vague to change the agent's behaviour at all.</td>
+    <td>Being wrong in a way you notice immediately. Much better. ✅</td>
+  </tr>
+</table>
+
+<p>Open both of those files now, before you write anything. Two minutes of reading saves ten of
+guessing. 📖</p>
+
+<h2>Steps</h2>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">1</div><p class="step-title">Get a skill for writing skills</p></div>
+  <div class="step-body">
+    <p>Inside the agent, open the plugin browser:</p>
+    <div class="code"><pre><code>/plugin</code></pre></div>
+    <p>Find <strong>mattpocock-skills</strong> in the marketplace and install it. Among other things
+    it gives you <code>writing-for-agents</code> — a skill whose whole job is helping you write
+    skills. 🪆</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">2</div><p class="step-title">Pick something you actually know</p></div>
+  <div class="step-body">
+    <p>The best skill is a procedure you have explained to a new colleague more than twice.
+    Candidates from your real job:</p>
+    <ul>
+      <li>How your team triages a phishing report 🎣</li>
+      <li>How you check whether a finding is a duplicate 🔁</li>
+      <li>The commands you always run when onboarding a new safe 🔐</li>
+      <li>How you assemble a customer health-check summary 📋</li>
+      <li>Your naming and tagging conventions, so the agent stops inventing its own 🏷️</li>
+    </ul>
+    <div class="note">
+      <p><span class="callout-label">💡 A Domain Consultant's version.</span> “How I set up a
+      customer demo tenant, in order, with the checks at each stage.” You do that repeatedly, the
+      steps are exact, and the cost of getting step four wrong is an embarrassing demo. That is a
+      perfect narrow skill.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">3</div><p class="step-title">Let it interview you</p></div>
+  <div class="step-body">
+    <p>Do not ask it to write the skill. Ask it to <em>interrogate</em> you first — this is the
+    difference between a skill that captures what you know and one that captures what the model
+    guessed:</p>
+    <div class="code"><pre><code>Using the writing-for-agents skill, help me write a skill that captures how
+my team does &lt;the thing you do&gt;. Interview me first, one question at a
+time, and do not guess at anything I have not told you.</code></pre></div>
+    <p>Answer properly. The awkward questions — “what do you do when that check fails?” — are where
+    the value is, because that is the part you never write down. 🤔</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">4</div><p class="step-title">Save it and test it cold 🧪</p></div>
+  <div class="step-body">
+    <p>Save the result as <code>.claude/skills/&lt;name&gt;/SKILL.md</code> — the same layout you
+    copied in Lesson 3.</p>
+    <p>Then the real test. Start a <strong>fresh</strong> conversation:</p>
+    <div class="code"><pre><code>/exit</code></pre></div>
+    <div class="code"><pre><code>claude</code></pre></div>
+    <p>…and ask for the task in your own words, <em>without mentioning the skill</em>. If the
+    description is good, the agent picks it up by itself. If it does not, the fix is almost always
+    the description, not the body. 🔧</p>
+    <div class="win">
+      <p><span class="callout-label">🎁 This one is yours to keep.</span> Copy the folder into
+      <code>~/.claude/skills/</code> and it follows you into every project on this machine. Nothing
+      about it is workshop-specific — it is a text file you wrote.</p>
+    </div>
+  </div>
+</div>
+
+<div class="check" data-answer="b">
+  <p class="check-q">🧩 Your new skill exists but the agent never uses it. Most likely cause?</p>
+  <ul class="opts">
+    <li><button data-opt="a">The body of the skill is too short for the agent to make use of</button></li>
+    <li><button data-opt="b">The description does not match the way you phrase the request</button></li>
+    <li><button data-opt="c">Skills only load after the agent has been fully restarted twice</button></li>
+  </ul>
+  <p class="why" data-for="a">Short is good. Some of the best skills are half a page — length is not what gets one selected. Try again.</p>
+  <p class="why" data-for="b">✅ Right. The description is the matchmaker between your request and the skill. Rewrite it in the words you would actually use, and test in a fresh conversation.</p>
+  <p class="why" data-for="c">No — there is no two-restart rule. Selection is about the description matching your ask. Try again.</p>
+</div>
+
+<div class="check" data-answer="a">
+  <p class="check-q">📚 Writing your first skill. Narrow or broad, and why that one?</p>
+  <ul class="opts">
+    <li><button data-opt="a">Narrow, because a wrong step shows up straight away and is fixable</button></li>
+    <li><button data-opt="b">Broad, because it covers more ground so it will be used far more</button></li>
+    <li><button data-opt="c">Broad, because listing exact steps is what the agent already does</button></li>
+  </ul>
+  <p class="why" data-for="a">✅ Correct. Narrow skills fail loudly and specifically. Broad ones fail by quietly changing nothing, which you will not notice for weeks.</p>
+  <p class="why" data-for="b">Coverage without precision tends to produce a skill the agent ignores. Earn the breadth after one narrow skill works. Try again.</p>
+  <p class="why" data-for="c">The exact steps are precisely what it does <em>not</em> know — your order, your checks, your conventions. Try again.</p>
+</div>
+
+<div class="ask">
+  🗣️ <strong>Ask your agent:</strong> “Read my new skill and tell me which step you would still get
+  wrong if I were not in the room.” Then fix that step. Two rounds of this and you have something
+  genuinely useful.
+</div>
+
+<div id="page-pager"></div>
+
+</div>
+<script src="assets/lab.js"></script>
+</body>
+</html>

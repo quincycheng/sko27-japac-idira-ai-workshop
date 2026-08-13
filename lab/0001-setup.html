@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1 · Wake up your agent · SKO27 TechSummit - AI Workshop for Idira DC</title>
+<link rel="stylesheet" href="assets/lab.css">
+</head>
+<body>
+<div id="progress-rail"><div id="progress-fill"></div></div>
+
+<div class="wrap">
+
+<nav id="page-nav"></nav>
+
+<header class="lesson">
+  <p class="kicker">Part 2 · Lesson 1 of 5</p>
+  <h1>Wake up your agent 🤖</h1>
+  <p class="standfirst">
+    By the end of this page you will have an AI agent running in your terminal,
+    answering you, powered by Claude on Amazon Bedrock.
+  </p>
+  <ul class="meta">
+    <li class="tag-must">Everyone</li>
+    <li>⏱️ ~5 minutes</li>
+    <li id="step-counter">&nbsp;</li>
+  </ul>
+</header>
+
+<div class="note">
+  <p><span class="callout-label">👋 Part 2 starts here.</span> If you did
+  <a href="stage-1-bare-call.html">Part 1</a>, you already built this: a loop, a toolbox, an iteration
+  cap, compaction, and controls that hold when the model is talked into something. Claude Code is that
+  — properly engineered. Everything from here on is a real harness on real problems. 🎸</p>
+  <p>Coming straight here instead? Nothing is missing. Work through the lesson as written.</p>
+</div>
+
+<p>Pick your machine once — the whole lab will follow your choice. 👇</p>
+<div class="os-switch" data-os-switch></div>
+
+<h2>What we are building here</h2>
+
+<figure>
+<svg viewBox="0 0 760 260" role="img" aria-label="Credentials flow from the Idira portal to your terminal, and Claude Code uses them to reach Bedrock.">
+  <defs>
+    <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"/>
+    </marker>
+  </defs>
+
+  <rect x="12" y="40" width="185" height="80" rx="9" fill="var(--paper)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="104" y="68" text-anchor="middle" font-size="19">🌐</text>
+  <text x="104" y="90" text-anchor="middle" class="svg-label" fill="var(--ink)">Idira portal</text>
+  <text x="104" y="108" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">the AWS tile</text>
+
+  <rect x="287" y="40" width="185" height="80" rx="9" fill="var(--panel)" stroke="var(--line)" stroke-width="1.5"/>
+  <text x="379" y="68" text-anchor="middle" font-size="19">📋</text>
+  <text x="379" y="90" text-anchor="middle" class="svg-label" fill="var(--ink)">Your clipboard</text>
+  <text x="379" y="108" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">3 lines of text</text>
+
+  <rect x="562" y="40" width="185" height="80" rx="9" fill="var(--paper)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="654" y="68" text-anchor="middle" font-size="19">⌨️</text>
+  <text x="654" y="90" text-anchor="middle" class="svg-label" fill="var(--ink)">Your terminal</text>
+  <text x="654" y="108" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">env variables</text>
+
+  <rect x="562" y="170" width="185" height="72" rx="9" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="654" y="197" text-anchor="middle" font-size="18">🤖</text>
+  <text x="654" y="218" text-anchor="middle" class="svg-label" fill="var(--ink)">Claude Code</text>
+  <text x="654" y="234" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">reads them itself</text>
+
+  <rect x="287" y="170" width="185" height="72" rx="9" fill="var(--panel)" stroke="var(--line)" stroke-width="1.5"/>
+  <text x="379" y="197" text-anchor="middle" font-size="18">☁️</text>
+  <text x="379" y="218" text-anchor="middle" class="svg-label" fill="var(--ink)">Amazon Bedrock</text>
+  <text x="379" y="234" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">runs Claude</text>
+
+  <line x1="200" y1="80" x2="282" y2="80" stroke="var(--accent)" stroke-width="1.6" class="flow-dash" marker-end="url(#a1)"/>
+  <text x="241" y="70" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">copy</text>
+
+  <line x1="475" y1="80" x2="557" y2="80" stroke="var(--accent)" stroke-width="1.6" class="flow-dash" marker-end="url(#a1)"/>
+  <text x="516" y="70" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">paste</text>
+
+  <line x1="654" y1="123" x2="654" y2="165" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#a1)"/>
+
+  <line x1="557" y1="206" x2="477" y2="206" stroke="var(--accent)" stroke-width="1.6" class="flow-dash" marker-end="url(#a1)"/>
+  <text x="517" y="197" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">asks</text>
+
+  <text x="104" y="200" class="svg-sub" fill="var(--ink-faint)">Nothing is saved to disk.</text>
+  <text x="104" y="218" class="svg-sub" fill="var(--ink-faint)">Close the terminal and</text>
+  <text x="104" y="236" class="svg-sub" fill="var(--ink-faint)">the access is gone. 👋</text>
+</svg>
+<figcaption>Your credentials live in one terminal window and expire on their own. Remember this picture — it is the whole point of today.</figcaption>
+</figure>
+
+<h2>Steps</h2>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">1</div><p class="step-title">Open a terminal</p></div>
+  <div class="step-body">
+    <div class="os os-mac">
+      <p>Press <code>⌘ Space</code>, type <strong>Terminal</strong>, press <code>Return</code>.</p>
+    </div>
+    <div class="os os-win">
+      <p>Press the <strong>Windows key</strong>, type <strong>PowerShell</strong>, press <code>Enter</code>.
+      Use <strong>Windows PowerShell</strong> or <strong>PowerShell 7</strong> — not Command Prompt.</p>
+    </div>
+    <p>Check the agent is installed:</p>
+    <div class="code"><pre><code>claude --version</code></pre></div>
+    <p>You should see a version number. If you see “command not found” 🙋 raise your card —
+    it is a <code>PATH</code> problem and a helper fixes it in a minute.</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">2</div><p class="step-title">Get your AWS credentials from the portal</p></div>
+  <div class="step-body">
+    <ol>
+      <li>Go to <code>https://ngid.cyberark.cloud/</code> and sign in with the login on your numbered card 🎟️</li>
+      <li>Open <strong>CYBR User Portal</strong>, then click the <strong>AWS</strong> tile</li>
+      <li>You land on a page whose address ends in <code>awsapps.com/start/#</code></li>
+      <li>Find your account, then click <strong>Access keys</strong> (some tenants label it <em>Get credentials</em>)</li>
+      <li>A dialog opens with tabs. Choose your tab:
+        <div class="os os-mac"><p>→ <strong>macOS and Linux</strong></p></div>
+        <div class="os os-win"><p>→ <strong>PowerShell</strong></p></div>
+      </li>
+      <li>Under <strong>Option 1: Set AWS environment variables</strong>, click the copy icon 📋</li>
+    </ol>
+    <div class="note">
+      <p><span class="callout-label">💡 Notice what just happened.</span> Nobody gave you a
+      permanent AWS key. You asked for access, the platform checked who you are, and handed you
+      credentials that expire. That is <strong>zero standing privileges</strong> — and you have
+      already used it before we have even explained it.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">3</div><p class="step-title">Paste them into your terminal</p></div>
+  <div class="step-body">
+    <p>Click into your terminal window and paste. You will get three lines that look like this
+    — <strong>yours will have different values</strong>:</p>
+
+    <div class="os os-mac">
+      <div class="code"><pre><code>export AWS_ACCESS_KEY_ID="ASIA...."
+export AWS_SECRET_ACCESS_KEY="....."
+export AWS_SESSION_TOKEN="....."</code></pre></div>
+      <p>Press <code>Return</code>. Nothing prints. That is success. 🤫</p>
+    </div>
+    <div class="os os-win">
+      <div class="code"><pre><code>$env:AWS_ACCESS_KEY_ID="ASIA...."
+$env:AWS_SECRET_ACCESS_KEY="....."
+$env:AWS_SESSION_TOKEN="....."</code></pre></div>
+      <p>Press <code>Enter</code>. Nothing prints. That is success. 🤫</p>
+    </div>
+
+    <div class="warn">
+      <p><span class="callout-label">⚠️ One terminal only.</span> These values live in
+      <em>this</em> window. Open a second tab and it will not know about them. If you close this
+      window, come back to Step 2.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">4</div><p class="step-title">Point Claude Code at Bedrock</p></div>
+  <div class="step-body">
+    <p>Three more lines, in the same window. These tell the agent to use Claude on your
+    company's AWS account instead of a public service:</p>
+
+    <div class="os os-mac">
+      <div class="code"><pre><code>export CLAUDE_CODE_USE_BEDROCK=1
+export AWS_REGION=us-east-1
+export ANTHROPIC_MODEL=us.anthropic.claude-sonnet-4-5-20250929-v1:0</code></pre></div>
+    </div>
+    <div class="os os-win">
+      <div class="code"><pre><code>$env:CLAUDE_CODE_USE_BEDROCK=1
+$env:AWS_REGION="us-east-1"
+$env:ANTHROPIC_MODEL="us.anthropic.claude-sonnet-4-5-20250929-v1:0"</code></pre></div>
+    </div>
+
+    <p>Use the <strong>Copy</strong> button on the block above rather than retyping it — that
+    model name is long and one wrong character produces a confusing error.</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">5</div><p class="step-title">Go to the folder and switch on your virtual environment 🐍</p></div>
+  <div class="step-body">
+    <p>Move into the workshop folder and <strong>activate</strong> the virtual environment you made
+    in the prework. This is a fresh window, so it is switched off:</p>
+    <div class="os os-mac">
+      <div class="code"><pre><code>cd ~/Downloads/vibe-coding-workshop
+source .venv/bin/activate</code></pre></div>
+      <p>Unzipped it somewhere else? Type <code>cd </code> (with the space), then drag the folder
+      from Finder onto the terminal window — it fills in the path for you. ✨</p>
+    </div>
+    <div class="os os-win">
+      <div class="code"><pre><code>cd $HOME\Downloads\vibe-coding-workshop
+.\.venv\Scripts\Activate.ps1</code></pre></div>
+      <p>Unzipped it somewhere else? Open the folder in File Explorer, click the address bar,
+      copy the path, and use that after <code>cd</code>. ✨</p>
+    </div>
+    <p>Your prompt should now start with <code>(.venv)</code>. 👀 Then move into the app itself:</p>
+    <div class="os os-mac">
+      <div class="code"><pre><code>cd sandbox-app</code></pre></div>
+    </div>
+    <div class="os os-win">
+      <div class="code"><pre><code>cd sandbox-app</code></pre></div>
+    </div>
+    <p>Check you are in the right place — you should see <code>summarize.py</code> listed:</p>
+    <div class="os os-mac">
+      <div class="code"><pre><code>ls</code></pre></div>
+    </div>
+    <div class="os os-win">
+      <div class="code"><pre><code>dir</code></pre></div>
+    </div>
+    <p>And check Python can find the library it needs:</p>
+    <div class="code"><pre><code>python -c "import boto3; print('boto3 is ready')"</code></pre></div>
+    <div class="warn">
+      <p><span class="callout-label">🙋 Any of this failing?</span> Almost always one of two things:
+      no <code>(.venv)</code> in your prompt (activate it), or you never made one (redo prework
+      step 3, or raise your card — a helper does it with you in two minutes). Do not install
+      anything globally to get past it.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">6</div><p class="step-title">Start the agent and say hello</p></div>
+  <div class="step-body">
+    <div class="code"><pre><code>claude</code></pre></div>
+    <p>The terminal turns into a chat window. Type this and press <code>Return</code>:</p>
+    <div class="code"><pre><code>In one sentence, what does this app do?</code></pre></div>
+    <p>It will read the files around you and answer. 🎉 <strong>That is it — you are vibe coding.</strong>
+    You did not open a single file yourself.</p>
+    <div class="win">
+      <p><span class="callout-label">✅ You are ready when</span> the agent gives you a sentence
+      about summarising incident reports. If it does, wait here — do not run ahead into Lesson 2
+      until the room is together.</p>
+    </div>
+  </div>
+</div>
+
+<h2>If something went wrong 🩹</h2>
+
+<table>
+  <tr><th>What you see</th><th>What it means</th><th>Do this</th></tr>
+  <tr>
+    <td><code>claude: command not found</code></td>
+    <td>Installed, but your terminal cannot see it</td>
+    <td>🙋 Raise your card</td>
+  </tr>
+  <tr>
+    <td><code>UnrecognizedClientException</code> or <code>ExpiredToken</code></td>
+    <td>Your credentials are wrong, or have expired</td>
+    <td>Redo Steps 2 and 3</td>
+  </tr>
+  <tr>
+    <td><code>AccessDeniedException</code> on a model</td>
+    <td>Region or model name is off by a character</td>
+    <td>Redo Step 4 with the Copy button</td>
+  </tr>
+  <tr>
+    <td><code>No module named boto3</code></td>
+    <td>Your virtual environment is not switched on</td>
+    <td>Activate it — see Step 5</td>
+  </tr>
+  <tr>
+    <td>No <code>(.venv)</code> in your prompt</td>
+    <td>Same thing, spotted earlier 👀</td>
+    <td>Activate it — see Step 5</td>
+  </tr>
+</table>
+
+<div class="check" data-answer="c">
+  <p class="check-q">🤔 Why did we paste the credentials into the terminal instead of saving them in a file?</p>
+  <ul class="opts">
+    <li><button data-opt="a">Because writing files needs administrator rights on Windows</button></li>
+    <li><button data-opt="b">Because a text file is slower for the agent to read from</button></li>
+    <li><button data-opt="c">Because they expire, and a file would outlive their usefulness</button></li>
+  </ul>
+  <p class="why" data-for="a">No — you can write files in your own home folder without admin rights. The real reason is about time, not permissions. Try again.</p>
+  <p class="why" data-for="b">No — speed is not the issue at all. Think about what makes a stored credential dangerous. Try again.</p>
+  <p class="why" data-for="c">✅ Right. These credentials die on their own. A file keeps them around, gets copied, gets committed, gets backed up — and turns a temporary secret into a permanent one.</p>
+</div>
+
+<div class="check" data-answer="a">
+  <p class="check-q">💥 You close the terminal, open a fresh one, and type <code>claude</code>. What happens?</p>
+  <ul class="opts">
+    <li><button data-opt="a">It fails, because the new window has none of your settings</button></li>
+    <li><button data-opt="b">It works, because the settings were saved to your user profile</button></li>
+    <li><button data-opt="c">It works, but answers noticeably slower than it did before</button></li>
+  </ul>
+  <p class="why" data-for="a">✅ Correct — and this is the single most common problem in the room today. Environment variables belong to one window. New window means redo Steps 2, 3, 4 and 5.</p>
+  <p class="why" data-for="b">Not this time. We set these with <code>export</code> / <code>$env:</code>, which only affects the current window. Nothing was written to your profile. Try again.</p>
+  <p class="why" data-for="c">Speed is not the issue. Think about where those environment variables actually lived. Try again.</p>
+</div>
+
+<div class="ask">
+  🗣️ <strong>Ask your agent:</strong> “What is an environment variable, and why does it disappear
+  when I close the terminal?” Genuinely — this is what it is good at, and you will get a better
+  answer than the one on this page.
+</div>
+
+<div id="page-pager"></div>
+
+</div>
+<script src="assets/lab.js"></script>
+</body>
+</html>

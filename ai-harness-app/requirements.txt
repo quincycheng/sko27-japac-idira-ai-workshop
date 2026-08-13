@@ -1,0 +1,21 @@
+# Install only the one(s) for the provider(s) you plan to use.
+
+# provider=bedrock : Claude on Amazon Bedrock. THE WORKSHOP DEFAULT -- this is
+# the only line most people need. The Bedrock extra pulls in boto3, which reads
+# the temporary AWS_* credentials already in your terminal window.
+anthropic[bedrock]>=0.69.0
+
+# --- Optional, for running the same stages against another provider ---------
+# Uncomment a line before installing. None of these are needed for the lab.
+
+# provider=vertex : Claude on Vertex AI.
+# The Vertex extra pulls in google-auth. Any 0.7x+ has AnthropicVertex + tool use.
+# anthropic[vertex]>=0.69.0
+
+# provider=gemini : Google AI Studio key via the native SDK.
+# google-genai>=1.0.0
+
+# provider=llama : local GGUF model, in-process (no server).
+# Prebuilt wheels exist; on Mac this builds with Metal support automatically.
+# Heavy -- it compiles. Do not install this during the workshop.
+# llama-cpp-python>=0.3.0
