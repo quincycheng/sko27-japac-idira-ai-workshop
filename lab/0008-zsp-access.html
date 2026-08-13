@@ -18,8 +18,8 @@
   <h1>Zero standing privileges 🎫</h1>
   <p class="standfirst">
     Instead of owning a key forever, you are going to hold <strong>no standing access at
-    all</strong> — you ask Idira for AWS access at the moment you need it, and it expires on its
-    own afterwards.
+    all</strong>. You ask Idira for AWS access at the moment you need it, and it expires on its own
+    afterwards.
   </p>
   <ul class="meta">
     <li class="tag-must">Everyone</li>
@@ -33,12 +33,13 @@
 <h2>The idea 💡</h2>
 
 <p>A long-lived access key is a bet: <em>nobody will ever leak this, for as long as it exists.</em>
-<strong>Zero standing privileges</strong> — ZSP — removes the bet instead of hedging it. Between
-tasks you hold no access to that AWS account whatsoever. Credentials arrive only when you ask, only
-if policy says you may, only for a few hours — and every request is recorded against your name.</p>
+<strong>Zero standing privileges</strong>, or ZSP, removes the bet rather than hedging it. Between
+tasks you hold no access to that AWS account whatsoever. Credentials arrive when you ask, if policy
+says you may, and they expire on their own a few hours later. Every request is recorded against your
+name.</p>
 
-<p>Say the phrase to yourself once, because it is exactly literal: <em>zero standing privileges</em>
-means that right now, before you run anything on this page, your entitlement to that account is
+<p>Say the phrase to yourself once, because it is literal. <em>Zero standing privileges</em> means
+that right now, before you run anything on this page, your entitlement to that account is
 <strong>nothing</strong>. 🫙</p>
 
 <figure>
@@ -91,14 +92,14 @@ means that right now, before you run anything on this page, your entitlement to 
   <text x="567" y="264" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">No key exists. Access is granted on ask,</text>
   <text x="567" y="282" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">expires by itself, and is logged to you.</text>
 </svg>
-<figcaption>Nothing in this picture is a stored secret. That is the design goal.</figcaption>
+<figcaption>There is no stored secret anywhere in this picture.</figcaption>
 </figure>
 
 <div class="note">
   <p><span class="callout-label">🪄 You have done this once already.</span> In Lesson 06 the portal
   handed you credentials starting with <code>ASIA</code> and a session token. Those were temporary
-  too. The difference now: you are going to ask for access you <em>don't currently have</em>, from
-  the terminal, through the agent.</p>
+  too. The difference now is that you are going to ask for access you <em>don't currently
+  have</em>, from the terminal, through the agent.</p>
 </div>
 
 <div class="win">
@@ -118,8 +119,8 @@ means that right now, before you run anything on this page, your entitlement to 
   the request itself, so the account does not need to be taught about you in advance.</p>
   <p>🎯 <strong>Worth remembering for client conversations.</strong> "How much do we have to build
   first?" is usually the second question you get asked, right after "how does it work?" The honest
-  answer here is that federation plumbing is the thing you are replacing, not the thing you need
-  before you start.</p>
+  answer is that federation plumbing is what Secure Cloud Access replaces. You do not have to build
+  it before you start.</p>
 </div>
 
 <h2>Steps</h2>
@@ -128,7 +129,8 @@ means that right now, before you run anything on this page, your entitlement to 
   <div class="step-head"><div class="step-num">1</div><p class="step-title">Give your agent the skills</p></div>
   <div class="step-body">
     <p>A <strong>skill</strong> is a short instruction sheet you hand the agent so it knows how to
-    do a specific job properly. We wrote two for you: <code>idsec</code> and <code>zsp-aws</code>.</p>
+    do one specific job the way you want it done. We wrote two for you, <code>idsec</code> and
+    <code>zsp-aws</code>.</p>
     <p>From inside <code>sandbox-app</code>, still outside the agent:</p>
     <div class="os os-mac">
       <div class="code"><pre><code>mkdir -p .claude/skills
@@ -141,8 +143,8 @@ Copy-Item -Recurse -Force ..\skills\idsec, ..\skills\zsp-aws .claude\skills\
 dir .claude\skills</code></pre></div>
     </div>
     <p>You should see both folder names listed. Open
-    <code>.claude/skills/zsp-aws/SKILL.md</code> and read it — it is one page of plain English.
-    <strong>That is all a skill is.</strong> No code. In optional
+    <code>.claude/skills/zsp-aws/SKILL.md</code> and read it. It is one page of plain English with no
+    code in it at all, and <strong>that is all a skill is</strong>. In optional
     <a href="0012-write-a-skill.html">Lesson 12</a> you can write your own.</p>
   </div>
 </div>
@@ -151,8 +153,8 @@ dir .claude\skills</code></pre></div>
   <div class="step-head"><div class="step-num">2</div><p class="step-title">Check the CLI is there</p></div>
   <div class="step-body">
     <div class="code"><pre><code>idsec version</code></pre></div>
-    <p>You should get a version number. This is a single file — no installer, no admin rights,
-    nothing added to your system. 🪶</p>
+    <p>You should get a version number. This is a single file, with no installer and nothing added
+    to your system. 🪶</p>
     <div class="warn">
       <p><span class="callout-label">“command not found”? Almost certainly the prework.</span> This
       is the most common single failure in this lesson, and it usually means <strong>prework step 5
@@ -175,15 +177,15 @@ bash check-prereqs.sh</code></pre></div>
     <div class="note">
       <p><span class="callout-label">🖥️ On a managed laptop, something decides whether this may run
       at all.</span> <code>idsec</code> is a <em>privileged</em> tool: anyone who can run it can ask
-      for cloud access. So the endpoint is a control point in its own right — and that is
-      <strong>Idira Endpoint Privilege Manager (EPM)</strong>, which enforces least privilege,
-      application control and credential theft protection on the machine itself. Its application
-      control policies decide which executables are allowed to run and for whom; a blocked one can be
-      routed through a <strong>Request for authorization</strong> approval flow instead of just
-      failing, and every one of those policy decisions lands in EPM's audit events. 📋</p>
-      <p>This is not hypothetical for this room: if your own laptop refused to run <code>idsec</code>
-      during the prework, that is this control working as designed. The three layers are worth saying
-      as one sentence in front of a client 🎯 —
+      for cloud access. So the endpoint is a control point in its own right, and the product that
+      governs it is <strong>Idira Endpoint Privilege Manager (EPM)</strong>, which enforces least
+      privilege and application control on the machine itself. Its application control policies
+      decide which executables are allowed to run and for whom. A blocked one can be routed through a
+      <strong>Request for authorization</strong> approval flow rather than simply failing, and every
+      one of those policy decisions lands in EPM's audit events. 📋</p>
+      <p>Some of you met this during the prework. If your own laptop refused to run
+      <code>idsec</code>, that was this control working as designed. The three layers are worth
+      saying as one sentence in front of a client 🎯:
       <strong>EPM</strong> governs <em>which tool may run on the endpoint</em>,
       <strong>Secure Cloud Access</strong> governs <em>what access that tool can obtain, and for how
       long</em>, and <strong>Secrets Manager</strong> holds whatever cannot be eliminated.</p>
@@ -196,10 +198,10 @@ bash check-prereqs.sh</code></pre></div>
   <div class="step-body">
     <div class="code"><pre><code>idsec login</code></pre></div>
     <p>Follow the prompts, using the login on your numbered card 🎟️. Usually this happens right in
-    the terminal — your password, then a multi-factor check if your tenant asks for one. If a
-    browser window opens instead, sign in there and come back to the terminal.</p>
+    the terminal, with your password followed by a multi-factor check if your tenant asks for one. If
+    a browser window opens instead, sign in there and come back to the terminal.</p>
     <div class="warn">
-      <p><span class="callout-label">Do not run <code>idsec configure</code></span> again — you did
+      <p><span class="callout-label">Do not run <code>idsec configure</code></span> again. You did
       that in the prework, and running it again would overwrite your settings.</p>
     </div>
   </div>
@@ -220,8 +222,8 @@ Show me what targets I am allowed before you elevate into anything.</code></pre>
       <li>ask which one you want, or confirm the only one</li>
       <li>run the <code>elevate</code> command for you</li>
     </ol>
-    <p>Approve each command when it asks. ✅ Read the commands before you approve them — that habit
-    is worth more than anything else on this page.</p>
+    <p>Approve each command when it asks, and read each one before you do. ✅ That habit is the one
+    thing on this page worth taking back to work with you.</p>
     <div class="note">
       <p><span class="callout-label">🕵️ Notice</span> you never learned the flag names, the account
       number or the role ARN. The skill knew the shape of the commands and the CLI supplied the
@@ -234,20 +236,20 @@ Show me what targets I am allowed before you elevate into anything.</code></pre>
   <div class="step-head"><div class="step-num">5</div><p class="step-title">Collect your temporary credentials</p></div>
   <div class="step-body">
     <p>Elevation gives you the <em>right</em> to use a role. Now pick up the credentials for it.</p>
-    <p>Leave the agent with <code>/exit</code> — environment variables have to be set in the
+    <p>Leave the agent with <code>/exit</code>. Environment variables have to be set in the
     terminal itself, and the agent cannot do it for you. Then:</p>
     <ol>
       <li>Go back to your AWS portal tab (<code>awsapps.com/start/#</code>) and <strong>refresh</strong> 🔄</li>
-      <li>Your newly elevated role now appears in the list — it was not there before</li>
+      <li>Your newly elevated role now appears in the list, where it was not before</li>
       <li>Click <strong>Access keys</strong> next to it</li>
-      <li>Choose your tab —
-        <span class="os os-inline os-mac"><strong>macOS and Linux</strong></span><span class="os os-inline os-win"><strong>PowerShell</strong></span>
-        — and copy <strong>Option 1: Set AWS environment variables</strong> 📋</li>
+      <li>Choose your tab,
+        <span class="os os-inline os-mac"><strong>macOS and Linux</strong></span><span class="os os-inline os-win"><strong>PowerShell</strong></span>,
+        and copy <strong>Option 1: Set AWS environment variables</strong> 📋</li>
       <li>Paste into your terminal and press
         <span class="os os-inline os-mac"><code>Return</code></span><span class="os os-inline os-win"><code>Enter</code></span></li>
     </ol>
     <p>This replaces the credentials from Lesson 06 with your elevated ones. Everything keeps
-    working — including the agent.</p>
+    working, including the agent.</p>
   </div>
 </div>
 
@@ -265,15 +267,16 @@ Show me what targets I am allowed before you elevate into anything.</code></pre>
   </div>
 </div>
 
-<h2>What this fixes — and what it doesn't 🧭</h2>
+<h2>What this fixes, and what it doesn't 🧭</h2>
 
-<p>Be precise about this, because it is exactly the sort of thing that gets overclaimed in a slide:</p>
+<p>This is the part that gets overclaimed on a slide, so be careful with how you say it.</p>
 
 <ul>
-  <li>✅ <strong>AWS access</strong> — no key needed, ever again. That is real elimination.</li>
-  <li>❌ <strong>GitHub token, Slack webhook, database password</strong> — completely untouched.
-  They are still sitting in <code>config/integrations.json</code>. They need a vault, which is a
-  different tool and a different session.</li>
+  <li>✅ <strong>AWS access</strong>. No key is needed, ever again. The secret is gone rather than
+  moved somewhere safer.</li>
+  <li>❌ <strong>GitHub token, Slack webhook, database password</strong>. Completely untouched, and
+  still sitting in <code>config/integrations.json</code>. They need a vault, which is a different
+  tool and a different session.</li>
 </ul>
 
 <p>Three out of four secrets are still there when you finish this lab. Say that out loud when you
@@ -286,8 +289,8 @@ show this to your team. 🫱</p>
     <li><button data-opt="b">It encrypts the credentials so that AWS cannot read them</button></li>
     <li><button data-opt="c">It caches the credentials so you can reuse them next week</button></li>
   </ul>
-  <p class="why" data-for="a">✅ Right. AWS can mint temporary credentials; Idira is what turns that into a governed process — policy on the way in, an audit trail on the way out, and one place to revoke.</p>
-  <p class="why" data-for="b">No — AWS issues those credentials, so of course it can read them. Encryption is not what is being added here. Try again.</p>
+  <p class="why" data-for="a">✅ Right. AWS can mint temporary credentials. Idira is what turns that into a governed process, with policy on the way in and an audit trail on the way out.</p>
+  <p class="why" data-for="b">No. AWS issues those credentials, so of course it can read them. Encryption is not what is being added here. Try again.</p>
   <p class="why" data-for="c">The opposite, in fact. Caching credentials for later is the problem we are removing. Try again.</p>
 </div>
 
@@ -295,18 +298,18 @@ show this to your team. 🫱</p>
   <p class="check-q">⏳ Tomorrow your credentials have expired and the app fails. What is the fix?</p>
   <ul class="opts">
     <li><button data-opt="a">Save yesterday's credentials into a config file so they persist</button></li>
-    <li><button data-opt="b">Log in, elevate again, and paste in fresh credentials — a minute</button></li>
+    <li><button data-opt="b">Log in, elevate again, and paste in fresh credentials, about a minute</button></li>
     <li><button data-opt="c">Ask an administrator to issue you a permanent AWS access key</button></li>
   </ul>
-  <p class="why" data-for="a">That is precisely the habit we just removed — and it converts a temporary secret back into a permanent one. Try again.</p>
-  <p class="why" data-for="b">✅ Yes. Expiry is not a bug you work around, it is the feature you are paying for. Asking again is cheap; that is what makes it acceptable.</p>
+  <p class="why" data-for="a">That is the habit we just removed, and it turns a temporary secret back into a permanent one. Try again.</p>
+  <p class="why" data-for="b">✅ Yes. Expiry is the feature you are paying for, so asking again is the intended workflow rather than a workaround. It costs you a minute.</p>
   <p class="why" data-for="c">A permanent key is the thing this whole lesson exists to avoid. Try again.</p>
 </div>
 
 <div class="ask">
   🗣️ <strong>Ask your agent:</strong> “Which <code>idsec</code> commands did you just run, and what
-  would I type to do that again by hand tomorrow?” Then keep the answer — that is your Monday
-  morning cheat sheet, written for your tenant, not a generic one.
+  would I type to do that again by hand tomorrow?” Keep the answer, because it is your Monday
+  morning cheat sheet, written for your own tenant rather than a generic one.
 </div>
 
 <div id="page-pager"></div>

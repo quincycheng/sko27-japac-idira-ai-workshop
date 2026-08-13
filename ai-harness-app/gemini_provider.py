@@ -9,7 +9,7 @@ minted for one backend and rejected by the other, so the two are not
 interchangeable.
 
 Unlike the OpenAI-compatible shim we used before, this talks to Gemini in its
-OWN format and translates both directions, so the harness (Stages 1-4) never
+OWN format and translates both directions, so the harness (Lessons 01-4) never
 learns the difference:
 
   * messages: Anthropic uses typed content blocks (text / tool_use /

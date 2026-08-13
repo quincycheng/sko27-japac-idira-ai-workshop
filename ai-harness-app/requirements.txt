@@ -5,6 +5,11 @@
 # the temporary AWS_* credentials already in your terminal window.
 anthropic[bedrock]>=0.69.0
 
+# The terminal UI for every lesson (ui.py). One pure-Python wheel, no build step.
+# Required, not optional: a fallback renderer would only ever run on the machine
+# you can't debug.
+rich>=13.7.0
+
 # --- Optional, for running the same stages against another provider ---------
 # Uncomment a line before installing. None of these are needed for the lab.
 

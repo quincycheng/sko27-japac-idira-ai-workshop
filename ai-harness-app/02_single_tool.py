@@ -1,4 +1,4 @@
-"""STAGE 2 — The loop. This is the harness.
+"""LESSON 02 — The loop. This is the harness.
 
 A model can't *do* anything. It can only produce text and, when you give it
 tools, ask to call them. The "harness" is the loop that:
@@ -9,13 +9,14 @@ tools, ask to call them. The "harness" is the loop that:
 
 That's it. That loop is the entire difference between "a chatbot" and "an agent".
 This file is deliberately self-contained (one inline tool) so you can see every
-moving part. Stage 3 swaps in a real toolbox.
+moving part. Lesson 03 swaps in a real toolbox.
 
 Run it:
     python 02_single_tool.py
 """
 
-from config import MODEL, client
+import ui
+from config import MODEL, PROVIDER, client
 from tools import search_code  # reuse the sandboxed implementation
 
 # One tool. One schema. That's all the model knows exists.
@@ -41,17 +42,18 @@ def run_agent(task: str) -> None:
     messages = [{"role": "user", "content": task}]
 
     while True:
-        response = client.messages.create(
-            model=MODEL,
-            max_tokens=2048,
-            tools=TOOLS,
-            messages=messages,
-        )
+        with ui.thinking():
+            response = client.messages.create(
+                model=MODEL,
+                max_tokens=2048,
+                tools=TOOLS,
+                messages=messages,
+            )
 
         # Show the model's narration for this turn.
         for block in response.content:
             if block.type == "text":
-                print(f"\n[model] {block.text}")
+                ui.plain(block.text)
 
         # No tool requested -> the model is done talking. Exit the loop.
         if response.stop_reason != "tool_use":
@@ -67,7 +69,7 @@ def run_agent(task: str) -> None:
         for block in response.content:
             if block.type == "tool_use":
                 pattern = block.input.get("pattern")
-                print(f"[tool ] search_code(pattern={pattern!r})")
+                ui.tool("search_code", {"pattern": pattern})
                 # The model occasionally emits a tool call with missing/empty
                 # args. Validate before calling so a bad request comes back as a
                 # normal tool_result the model can recover from -- never a crash.
@@ -88,5 +90,6 @@ def run_agent(task: str) -> None:
 
 
 if __name__ == "__main__":
-    print(f"TASK: {TASK}")
+    ui.banner("Lesson 02 — the loop", PROVIDER, MODEL)
+    ui.task(TASK)
     run_agent(TASK)

@@ -183,6 +183,44 @@ TOOL_FUNCTIONS = {
 }
 
 
+# --- The human-approval gate ------------------------------------------------
+# A THIRD class of control, different from the two above:
+#   _safe_path      constrains WHERE the agent can look.
+#   _ALLOWED_COMMANDS constrains WHAT it can execute.
+#   needs_approval  constrains nothing by itself -- it asks a person.
+#
+# Worth saying out loud to a security audience: `sandbox/.env` sits INSIDE the
+# boundary, so _safe_path happily permits reading it. A sandbox limits where,
+# never what. Sensitive-filename review is a different control, and it's the one
+# that needs a human.
+#
+# This function returns a REASON, not a decision. It draws nothing and asks
+# nothing -- the harness decides what to do with the reason (see 03 and 05).
+_SENSITIVE = re.compile(
+    r"(^|/)\.env$|secret|credential|password|token|\.pem$|id_rsa", re.IGNORECASE
+)
+
+# The refusal text a human denial produces. Lesson 05 matches on it so the
+# post-mortem can credit the strongest control in the demo.
+HUMAN_DENIED = "Refused: denied by the human operator."
+
+
+def needs_approval(name: str, tool_input: dict) -> str | None:
+    """Why this call needs a person's sign-off, or None if it's routine."""
+    if name == "run_command":
+        return "Runs a shell command. Allowlisted or not, execution deserves a human."
+
+    path = (tool_input or {}).get("path") or ""
+    if path:
+        try:
+            _safe_path(path)
+        except ValueError:
+            return "The path escapes the sandbox."
+        if _SENSITIVE.search(path):
+            return "The path looks like it holds credentials."
+    return None
+
+
 def execute_tool(name: str, tool_input: dict) -> str:
     """Run one tool by name. Catch everything -- a tool that raises should hand
     the error back to the model as a normal result, not crash the harness."""

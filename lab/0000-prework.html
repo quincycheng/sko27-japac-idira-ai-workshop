@@ -40,7 +40,7 @@
 
 <h2>The two-minute way ⚡</h2>
 
-<p>There is a script in the workshop folder that checks all eight items below, tells you which ones
+<p>There is a script in the workshop folder that checks all seven items below, tells you which ones
 are missing, and <strong>asks before it fixes anything</strong>. Most people are done in a couple of
 minutes. Open a terminal, go to the workshop folder, and run it:</p>
 
@@ -77,9 +77,11 @@ list. Every offer is a <code>[y/N]</code> question — answer <code>n</code> and
   also <em>refuse</em> to install Python — on a managed laptop that is the one step that needs admin
   rights, so it tells you to email us instead. 📧</p>
   <p>Two things it cannot do for you: the <strong>idsec login</strong> check (step 6) and the
-  <strong>AWS portal</strong> check (step 7 — it will remind you loudly). And if any step fails or you
-  would rather understand what you are running, the manual steps below are the same work, explained.
-  🧑‍🏫</p>
+  <strong>AWS portal</strong> check (step 7, where it will remind you loudly).</p>
+  <p><strong>Either route is fine.</strong> 🧑‍🏫 The manual steps below are the same work with the
+  reasoning attached, so use them if the script will not run on your laptop, if a step fails, or if
+  you would rather see what you are agreeing to before you agree to it. Nobody is checking which one
+  you used.</p>
 </div>
 
 <h2>What you will end up with</h2>
@@ -293,13 +295,25 @@ source .venv/bin/activate</code></pre></div>
     silicon, <code>x86_64</code> means Intel.</span>
     <span class="os os-inline os-win">Switch this page to 🍎 macOS if you are on a Mac.</span></p>
 
+    <div class="note">
+      <p><span class="callout-label">📛 The file inside is not called <code>idsec</code>.</span> The
+      archive names the program after the platform it was built for, so on a Mac you get
+      <code>idsec-darwin</code> and on Windows you get <code>idsec-windows.exe</code>, next to a
+      licence and a readme. Every command in this guide says <code>idsec</code>, so the install below
+      renames it. That rename is the only fiddly part of this step, and it is why the commands look
+      longer than a one-liner.</p>
+    </div>
+
     <div class="os os-mac">
-      <p>Make a folder for personal tools, unpack <code>idsec</code> into it, and tell your shell
-      where to look:</p>
+      <p>Make a folder for personal tools, unpack just the program into it under the name the rest of
+      the guide uses, and tell your shell where to look:</p>
       <div class="code"><pre><code>mkdir -p ~/bin
-tar -xzf ~/Downloads/idsec*.tar.gz -C ~/bin
+tar -xzf ~/Downloads/idsec_*.tar.gz -C ~/bin idsec-darwin
+mv ~/bin/idsec-darwin ~/bin/idsec
 chmod +x ~/bin/idsec
 echo 'export PATH="$HOME/bin:$PATH"' &gt;&gt; ~/.zshrc</code></pre></div>
+      <p>If you downloaded more than one archive while working out which Mac you have, put the exact
+      file name in place of <code>idsec_*.tar.gz</code> so it is unambiguous.</p>
       <p>Close the terminal, open a new one, then check:</p>
       <div class="code"><pre><code>idsec version</code></pre></div>
       <p>If macOS refuses to run it (“cannot be opened because the developer cannot be verified”),
@@ -307,14 +321,18 @@ echo 'export PATH="$HOME/bin:$PATH"' &gt;&gt; ~/.zshrc</code></pre></div>
     </div>
 
     <div class="os os-win">
-      <p>Make a folder for personal tools, unpack <code>idsec.exe</code> into it, and add it to your
-      own <code>PATH</code> — this is the user-level setting, so no admin rights are needed:</p>
+      <p>Make a folder for personal tools, unpack just the program into it under the name the rest of
+      the guide uses, and add that folder to your own <code>PATH</code>. This is the user-level
+      setting, so no admin rights are needed:</p>
       <div class="code"><pre><code>New-Item -ItemType Directory -Force $HOME\bin | Out-Null
-tar -xzf $HOME\Downloads\idsec_windows.tar.gz -C $HOME\bin
+$archive = (Get-ChildItem $HOME\Downloads\idsec_*windows*.tar.gz)[0].FullName
+tar -xzf $archive -C $HOME\bin idsec-windows.exe
+Move-Item $HOME\bin\idsec-windows.exe $HOME\bin\idsec.exe -Force
 $user = [Environment]::GetEnvironmentVariable("Path", "User")
 [Environment]::SetEnvironmentVariable("Path", "$user;$HOME\bin", "User")</code></pre></div>
-      <p>Adjust the archive name to match what you downloaded. Then <strong>close PowerShell and
-      open a new window</strong> (the <code>PATH</code> change only applies to new windows) and check:</p>
+      <p>The second line finds the archive you downloaded so you do not have to type a version
+      number. Then <strong>close PowerShell and open a new window</strong>, because the
+      <code>PATH</code> change only applies to new windows, and check:</p>
       <div class="code"><pre><code>idsec version</code></pre></div>
       <p>If Windows blocks the file, right-click <code>$HOME\bin\idsec.exe</code> →
       <strong>Properties</strong> → tick <strong>Unblock</strong> → <strong>OK</strong>.</p>

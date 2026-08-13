@@ -144,5 +144,7 @@ else:
 # After this point `client` behaves the same regardless of provider:
 # same client.messages.create(...), same response shape (.content blocks,
 # .stop_reason, .usage). The harness never learns which one it's talking to.
-
-print(f"[config] provider={PROVIDER}  model={MODEL}")
+#
+# PROVIDER and MODEL are printed by ui.banner() at the top of each stage --
+# "which provider am I actually on" is the question you'll be asked most during
+# the lab, so it belongs in the header, not in a stray log line.

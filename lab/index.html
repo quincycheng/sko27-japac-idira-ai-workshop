@@ -14,38 +14,20 @@
 <nav id="page-nav"></nav>
 
 <header class="lesson">
-  <p class="kicker">Hands-on for Idira Domain Consultants · today: vibe coding</p>
+  <p class="kicker">Hands-on for Idira Domain Consultants · build an agent, then secure one</p>
   <h1>AI Workshop for Idira DC 🎸</h1>
   <p class="standfirst">
-    First you will build an AI agent out of parts, in five short steps, so nothing about it is
-    mysterious. Then you will point a real one at a real security problem, take that problem away for
-    good — and finish with a demo you can run for a client. No coding experience needed.
+    By the end of today you will be able to explain what an AI agent is to a customer without
+    hand-waving, because you will have built one yourself from fifteen lines of Python. You will also
+    be able to demo how Idira secures one — zero standing privileges, no credential in the app, every
+    call brokered and audited. No coding experience needed.
   </p>
   <ul class="meta">
-    <li>⏱️ ~85 min together · ~18 min self-paced</li>
+    <li>⏱️ Part 1 ~45 min · Part 2 ~50 min · Optional advanced ~45 min</li>
     <li>💻 macOS or Windows</li>
     <li>🚫 No admin rights needed</li>
   </ul>
 </header>
-
-<div class="note">
-  <p><span class="callout-label">👋 Start here.</span> Thirteen lessons, numbered in the order you
-  do them. <strong>Part 1 is lessons 01 to 05</strong>, where you build an AI harness starting from
-  fifteen lines of Python, so you can see for yourself what an agent is. <strong>Part 2 is 06 to
-  10</strong>, where you use a proper one, Claude Code, on Idira problems. Those ten are for
-  everyone. <strong>Lessons 11 to 13 are optional advanced courses</strong>, so pick one if you
-  finish early and do not worry if you never reach them.</p>
-  <p>We will run lessons 01, 02 and 05 together as a room. <strong>Lessons 03 and 04 are
-  self-paced</strong>, which means you read them whenever suits you, including after today. They are
-  written to work that way. 📖</p>
-</div>
-
-<div class="warn">
-  <p><span class="callout-label">🎯 You are a Domain Consultant, so read every lesson twice.</span>
-  Once as someone learning to use an agent, and once as someone who will be asked to explain this to
-  a customer next month. Part 1 gives you the explanation; Lesson 10 is written specifically as a demo
-  you can reuse, and the last section of it is a script. 🎬</p>
-</div>
 
 <h2>Before the session</h2>
 
@@ -326,15 +308,27 @@ cd $HOME\Downloads\vibe-coding-workshop
 </div>
 
 <div class="check" data-answer="b">
-  <p class="check-q">🎸 What does “vibe coding” actually mean here?</p>
+  <p class="check-q">⌨️ What is <code>idsec</code>?</p>
   <ul class="opts">
-    <li><button data-opt="a">You write the code and the AI reviews all of it afterwards</button></li>
-    <li><button data-opt="b">You describe the outcome and the AI writes the code for you</button></li>
-    <li><button data-opt="c">You install a plugin and the app finishes building itself</button></li>
+    <li><button data-opt="a">A Python library the sandbox app imports to read secrets out of a vault</button></li>
+    <li><button data-opt="b">Idira's command-line tool — how you talk to the Idira platform from your own laptop</button></li>
+    <li><button data-opt="c">An AWS CLI plugin that saves a long-lived access key to your disk</button></li>
   </ul>
-  <p class="why" data-for="a">Not quite — that is code review, which is useful but different. Today <em>you</em> describe what you want in plain English and the agent does the typing. Try again.</p>
-  <p class="why" data-for="b">✅ Exactly. You stay in charge of <em>what</em> and <em>why</em>; the agent handles <em>how</em>. That is also why reviewing what it produced matters — which is Lesson 07.</p>
-  <p class="why" data-for="c">Sadly no. There is no button. You still have to say what you want, read what came back, and decide if it is right. Try again.</p>
+  <p class="why" data-for="a">Nothing in the sandbox app imports it — <code>idsec</code> is something you run, not something your code calls. Try again.</p>
+  <p class="why" data-for="b">✅ Correct. One file, no installer, no admin rights. You ran <code>idsec configure</code> once in the prework; today you just run <code>idsec login</code>, and from Lesson 08 onwards it is how you ask Idira for cloud access that expires.</p>
+  <p class="why" data-for="c">The opposite, and this is the bit worth remembering: <code>idsec</code> is not an AWS tool, and the whole point is that no long-lived key ever lands on your laptop. Try again.</p>
+</div>
+
+<div class="check" data-answer="c">
+  <p class="check-q">🔐 Which Claude account does Claude Code sign in to today?</p>
+  <ul class="opts">
+    <li><button data-opt="a">Your personal Claude account — you will be prompted on first run</button></li>
+    <li><button data-opt="b">A shared workshop account from your numbered card</button></li>
+    <li><button data-opt="c">None — it reaches the model through Amazon Bedrock in your company's AWS account</button></li>
+  </ul>
+  <p class="why" data-for="a">No sign-in, and nothing to sign up for. Try again.</p>
+  <p class="why" data-for="b">Your card gets you into the Idira portal and AWS, not into Claude. Try again.</p>
+  <p class="why" data-for="c">✅ Exactly, and this is the version of the answer a customer will ask you for: the model runs as an AWS service inside their own account, so prompts and code do not leave their AWS environment. Lesson 06 proves it from your terminal.</p>
 </div>
 
 <div id="page-pager"></div>

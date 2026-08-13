@@ -300,8 +300,17 @@ else
           *.zip)          unzip -qo "$FILE" -d "$TMP" ;;
           *.tar.gz|*.tgz) tar -xzf "$FILE" -C "$TMP" ;;
         esac
-        FOUND="$(find "$TMP" -type f -name 'idsec' -perm -u+x 2>/dev/null | head -1)"
-        [ -z "$FOUND" ] && FOUND="$(find "$TMP" -type f -name 'idsec' 2>/dev/null | head -1)"
+        # The archive names the binary after its platform. On a Mac that is
+        # idsec-darwin, and it arrives next to a LICENSE.txt and a README.md.
+        # So match the prefix rather than an exact name, which also means a
+        # release that renames again still installs. It becomes plain 'idsec'
+        # a few lines down.
+        find_binary() {
+          find "$TMP" -type f -name 'idsec*' \
+            ! -name '*.txt' ! -name '*.md' "$@" 2>/dev/null | head -1
+        }
+        FOUND="$(find_binary -perm -u+x)"
+        [ -z "$FOUND" ] && FOUND="$(find_binary)"
         if [ -n "$FOUND" ]; then
           mv "$FOUND" "$BINDIR/idsec"
           chmod +x "$BINDIR/idsec"
@@ -317,7 +326,7 @@ else
           esac
           fixed "idsec CLI" "installed (new terminal needed)"
         else
-          bad "no 'idsec' binary inside the archive"
+          bad "downloaded the archive, but found no idsec binary inside it"
           fail "idsec CLI" "unexpected archive" "Install idsec by hand — see prework step 5 in the lab guide"
         fi
       else

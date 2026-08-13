@@ -1,24 +1,32 @@
-"""STAGE 3 — From "a loop with a tool" to "an agent".
+"""LESSON 03 — From "a loop with a tool" to "an agent".
 
-Same loop as Stage 2. Three things turn it into something that feels agentic:
+Same loop as Lesson 02. Three things turn it into something that feels agentic:
 
   1. A SYSTEM PROMPT  -> gives the model a role, a goal, and rules of engagement.
   2. A TOOLBOX        -> several tools, so the model has to *choose* and *sequence*.
-  3. GUARDRAILS       -> an iteration cap and pause_turn handling so the loop is
-                          safe to run unattended on stage.
+  3. GUARDRAILS       -> an iteration cap, pause_turn handling, and a human
+                          approval gate on the calls that deserve one.
 
-Point out to the audience: the loop body barely changed from Stage 2. Capability
+Point out to the audience: the loop body barely changed from Lesson 02. Capability
 came from the tools and the prompt, not from more harness code.
+
+The approval gate is the three lines marked (!) below, and they are worth reading
+out loud: `tools.needs_approval` decides WHETHER a call is sensitive, `ui.approve`
+draws the prompt, and THE LOOP -- not the model, not the tool -- decides what
+happens. That is the whole thesis of the talk in three lines.
 
 Run it:
     python 03_agent.py
     python 03_agent.py "Look for command-injection risks in this repo."
+    python 03_agent.py --yes    # approve everything (unattended rehearsal)
+    python 03_agent.py --no     # refuse everything
 """
 
 import sys
 
-from config import MODEL, client
-from tools import TOOLS, execute_tool
+import ui
+from config import MODEL, PROVIDER, client
+from tools import HUMAN_DENIED, TOOLS, execute_tool, needs_approval
 
 SYSTEM_PROMPT = """You are a security triage agent investigating a code repository.
 
@@ -34,21 +42,18 @@ Rules:
 MAX_ITERATIONS = 12  # a runaway agent is a security problem; always bound the loop
 
 
-def run_agent(task: str) -> str:
+def run_agent(task: str, auto: bool | None = None) -> str:
     messages = [{"role": "user", "content": task}]
 
     for step in range(1, MAX_ITERATIONS + 1):
-        response = client.messages.create(
-            model=MODEL,
-            max_tokens=4096,
-            system=SYSTEM_PROMPT,
-            tools=TOOLS,
-            messages=messages,
-        )
-
-        for block in response.content:
-            if block.type == "text" and block.text.strip():
-                print(f"\n[model] {block.text.strip()}")
+        with ui.thinking():
+            response = client.messages.create(
+                model=MODEL,
+                max_tokens=4096,
+                system=SYSTEM_PROMPT,
+                tools=TOOLS,
+                messages=messages,
+            )
 
         # pause_turn: the model paused a long turn (common with server tools).
         # Just echo its turn back and let it continue -- no tools to run yet.
@@ -56,16 +61,34 @@ def run_agent(task: str) -> str:
             messages.append({"role": "assistant", "content": response.content})
             continue
 
+        # The model stopped asking for tools, so this turn IS the answer. Return
+        # it and let the caller render it once -- printing narration here too
+        # would show the same text twice.
         if response.stop_reason != "tool_use":
             return _final_text(response)
+
+        # Mid-investigation narration: only reached when tools are still coming.
+        for block in response.content:
+            if block.type == "text" and block.text.strip():
+                ui.model(block.text)
 
         messages.append({"role": "assistant", "content": response.content})
 
         tool_results = []
         for block in response.content:
             if block.type == "tool_use":
-                print(f"[tool ] {block.name}({_fmt(block.input)})")
-                output = execute_tool(block.name, block.input)
+                ui.tool(block.name, block.input)
+
+                # (!) THE GATE. tools.py says whether a person should look;
+                # ui.py asks them; this loop decides. The model gets a normal
+                # tool_result either way, so a refusal is something it can
+                # reason about rather than a crash.
+                reason = needs_approval(block.name, block.input)
+                if reason and not ui.approve(block.name, block.input, reason, auto):
+                    output = HUMAN_DENIED
+                else:
+                    output = execute_tool(block.name, block.input)
+
                 tool_results.append(
                     {
                         "type": "tool_result",
@@ -82,16 +105,12 @@ def _final_text(response) -> str:
     return "\n".join(b.text for b in response.content if b.type == "text").strip()
 
 
-def _fmt(tool_input: dict) -> str:
-    return ", ".join(f"{k}={v!r}" for k, v in tool_input.items())
-
-
 if __name__ == "__main__":
-    task = sys.argv[1] if len(sys.argv) > 1 else (
+    auto, argv = ui.parse_auto(sys.argv[1:])
+    task = argv[0] if argv else (
         "Audit this repo for hardcoded secrets and dangerous code. "
         "Give me a prioritized findings list."
     )
-    print(f"TASK: {task}")
-    final = run_agent(task)
-    print("\n" + "=" * 60)
-    print(final)
+    ui.banner("Lesson 03 — the agent", PROVIDER, MODEL)
+    ui.task(task)
+    ui.final(run_agent(task, auto))

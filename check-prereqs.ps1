@@ -297,7 +297,13 @@ if (Have-Command 'idsec') {
                 } else {
                     & tar -xzf $file -C $tmp
                 }
-                $found = Get-ChildItem -Path $tmp -Recurse -Filter 'idsec.exe' | Select-Object -First 1
+                # The archive names the binary after its platform — on Windows
+                # that is idsec-windows.exe — and ships a LICENSE.txt and a
+                # README.md beside it. Match the prefix rather than an exact
+                # name, so a release that renames again still installs. It
+                # becomes plain idsec.exe on the Copy-Item below.
+                $found = Get-ChildItem -Path $tmp -Recurse -Filter 'idsec*.exe' |
+                         Select-Object -First 1
                 if ($found) {
                     Copy-Item $found.FullName $idsecExe -Force
                     # Windows marks anything downloaded as untrusted; clear it so
@@ -310,7 +316,7 @@ if (Have-Command 'idsec') {
                     }
                     Add-Fixed 'idsec CLI' 'installed (new window needed)'
                 } else {
-                    Write-Bad "no 'idsec.exe' inside the archive"
+                    Write-Bad 'downloaded the archive, but found no idsec binary inside it'
                     Add-Fail 'idsec CLI' 'unexpected archive' 'Install idsec by hand — see prework step 5 in the lab guide'
                 }
             } catch {
