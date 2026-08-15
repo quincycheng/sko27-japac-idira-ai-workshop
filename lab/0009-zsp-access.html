@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>09 · Skills: ZSP by Idsec CLI · SKO27 TechSummit - AI Workshop for Idira DC</title>
+<link rel="icon" type="image/svg+xml" href="assets/idira-icon.svg">
+<link rel="stylesheet" href="assets/lab.css">
+</head>
+<body>
+<div id="progress-rail"><div id="progress-fill"></div></div>
+
+<div class="wrap">
+
+<nav id="page-nav"></nav>
+
+<header class="lesson">
+  <p class="kicker">Part 2 · Practical Guide to AI Harness</p>
+  <h1>Skills: ZSP by Idsec CLI 🎫</h1>
+  <p class="standfirst">
+    You will ask for AWS access you do not have, be granted it by policy, and use it under your own name.
+    No key is stored anywhere. You will also be able to explain what a <strong>skill</strong> is, because
+    one is what tells your agent how to do it.
+  </p>
+  <ul class="meta">
+    <li class="tag-must">Everyone</li>
+    <li>Zero standing privileges</li>
+    <li id="step-counter">&nbsp;</li>
+  </ul>
+</header>
+
+<div class="os-switch" data-os-switch></div>
+
+<p><strong>The idea.</strong> A long-lived access key is a bet: <em>nobody will ever leak this, for as
+long as it exists.</em>
+<strong>Zero standing privileges</strong>, or ZSP, removes the bet rather than hedging it. Between
+tasks you hold no access to that AWS account whatsoever. Credentials arrive when you ask, if policy
+says you may, and they expire on their own a few hours later. Every request is recorded against your
+name.</p>
+
+<p>Say the phrase to yourself once, because it is literal. <em>Zero standing privileges</em> means
+that right now, before you run anything on this page, your entitlement to that account is
+<strong>nothing</strong>.</p>
+
+<figure>
+<svg viewBox="0 0 760 320" role="img" aria-label="You ask Claude Code, which runs idsec, which asks Idira Secure Cloud Access, which grants an AWS role and returns credentials that expire.">
+  <defs>
+    <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"/>
+    </marker>
+    <marker id="a3w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--win)"/>
+    </marker>
+  </defs>
+
+  <rect x="15" y="55" width="150" height="76" rx="9" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="90" y="82" text-anchor="middle" font-size="18">🧑‍💻</text>
+  <text x="90" y="104" text-anchor="middle" class="svg-label" fill="var(--ink)">You ask</text>
+  <text x="90" y="120" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">in Claude Code</text>
+
+  <rect x="215" y="55" width="150" height="76" rx="9" fill="var(--panel)" stroke="var(--line)" stroke-width="1.5"/>
+  <text x="290" y="82" text-anchor="middle" font-size="18">⌨️</text>
+  <text x="290" y="104" text-anchor="middle" class="svg-label" fill="var(--ink)">idsec</text>
+  <text x="290" y="120" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">the Idira CLI</text>
+
+  <rect x="415" y="55" width="150" height="76" rx="9" fill="var(--paper)" stroke="var(--accent)" stroke-width="2"/>
+  <text x="490" y="82" text-anchor="middle" font-size="18">🛡️</text>
+  <text x="490" y="104" text-anchor="middle" class="svg-label" fill="var(--ink)">Idira SCA</text>
+  <text x="490" y="120" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">policy + audit</text>
+
+  <rect x="615" y="55" width="130" height="76" rx="9" fill="var(--panel)" stroke="var(--line)" stroke-width="1.5"/>
+  <text x="680" y="82" text-anchor="middle" font-size="18">☁️</text>
+  <text x="680" y="104" text-anchor="middle" class="svg-label" fill="var(--ink)">AWS role</text>
+  <text x="680" y="120" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">sandbox</text>
+
+  <line x1="168" y1="93" x2="210" y2="93" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#a3)"/>
+  <line x1="368" y1="93" x2="410" y2="93" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#a3)"/>
+  <line x1="568" y1="93" x2="610" y2="93" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#a3)"/>
+
+  <text x="490" y="38" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">“is attendee 27 allowed this role?”</text>
+
+  <polyline points="680,134 680,176 90,176 90,136" fill="none" stroke="var(--win)" stroke-width="1.8" class="flow-dash" marker-end="url(#a3w)"/>
+  <text x="385" y="168" text-anchor="middle" class="svg-label" fill="var(--win)">credentials that expire ⏳</text>
+
+  <rect x="15" y="216" width="355" height="86" rx="9" fill="var(--danger-soft)" stroke="var(--danger)" stroke-width="1.5"/>
+  <text x="192" y="242" text-anchor="middle" class="svg-label" fill="var(--ink)">Before</text>
+  <text x="192" y="264" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">A key sits in a file. It works forever.</text>
+  <text x="192" y="282" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">Nobody knows who used it, or when.</text>
+
+  <rect x="390" y="216" width="355" height="86" rx="9" fill="var(--win-soft)" stroke="var(--win)" stroke-width="1.5"/>
+  <text x="567" y="242" text-anchor="middle" class="svg-label" fill="var(--ink)">After</text>
+  <text x="567" y="264" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">No key exists. Access is granted on ask,</text>
+  <text x="567" y="282" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">expires by itself, and is logged to you.</text>
+</svg>
+<figcaption>There is no stored secret anywhere in this picture.</figcaption>
+</figure>
+
+<div class="note">
+  <p><span class="callout-label">🪄 You have done this once already.</span> In Lesson 07 you ran one
+  command and got credentials that expire. We wrote that command for you, with the account number and
+  the role already in it. This time nobody writes it for you. The agent finds out what you are allowed,
+  and writes the command itself.</p>
+</div>
+
+<div class="win">
+  <p><span class="callout-label">🪶 Notice what nobody had to set up for this.</span> Before you
+  start, look at what is <em>not</em> on the prerequisite list for the seven steps below:</p>
+  <ul>
+    <li><strong>No OIDC provider.</strong> Nobody registered an identity provider in that AWS
+    account.</li>
+    <li><strong>No IAM trust policy.</strong> There is no trust relationship written to say which
+    external identities may assume which role.</li>
+    <li><strong>No role per person.</strong> Sixty attendees, and nobody created sixty roles or sixty
+    mappings.</li>
+    <li><strong>No CloudFormation, Terraform or bootstrap stack.</strong> Nothing was deployed into
+    the account to make this work.</li>
+  </ul>
+  <p>You logged in to Idira. That is the whole of your side of the setup. Secure Cloud Access brokers
+  the request itself, so the account does not need to be taught about you in advance.</p>
+  <p><strong>Worth remembering for client conversations.</strong> "How much do we have to build
+  first?" is usually the second question you get asked, right after "how does it work?" The honest
+  answer is that federation plumbing is what Secure Cloud Access replaces. You do not have to build
+  it before you start.</p>
+</div>
+
+<h2>Your Tasks</h2>
+
+<p class="section-intro">Seven steps, then two optional ones. One of them hands work to the agent, and
+the rest are yours because environment variables only ever belong to a real terminal. Tick each one
+off as you go.</p>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">1</div><p class="step-title">Give your agent the skills</p></div>
+  <div class="step-body">
+    <p>A <strong>skill</strong> is a short instruction sheet you hand the agent so it knows how to
+    do one specific job the way you want it done. We wrote three for you: <code>idsec</code>,
+    <code>zsp-aws</code> and <code>zsp-azure</code>.</p>
+    <p>From inside <code>sandbox-app</code>, still outside the agent:</p>
+    <div class="os os-mac">
+      <div class="code"><pre><code>mkdir -p .claude/skills
+cp -R ../skills/idsec ../skills/zsp-aws ../skills/zsp-azure .claude/skills/
+ls .claude/skills</code></pre></div>
+    </div>
+    <div class="os os-win">
+      <div class="code"><pre><code>New-Item -ItemType Directory -Force .claude\skills | Out-Null
+Copy-Item -Recurse -Force ..\skills\idsec, ..\skills\zsp-aws, ..\skills\zsp-azure .claude\skills\
+dir .claude\skills</code></pre></div>
+    </div>
+    <p>You should see all three folder names listed.</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">2</div><p class="step-title">Read the skills</p></div>
+  <div class="step-body">
+    <p>Have a quick look at all three. Press the space bar to page down, and <code>q</code> to quit.</p>
+    <div class="os os-mac">
+      <div class="code"><pre><code>more .claude/skills/idsec/SKILL.md
+more .claude/skills/zsp-aws/SKILL.md
+more .claude/skills/zsp-azure/SKILL.md</code></pre></div>
+    </div>
+    <div class="os os-win">
+      <div class="code"><pre><code>more .claude\skills\idsec\SKILL.md
+more .claude\skills\zsp-aws\SKILL.md
+more .claude\skills\zsp-azure\SKILL.md</code></pre></div>
+    </div>
+    <p>Each one is a page of plain English with no code in it at all, and <strong>that is all a skill
+    is</strong>. In optional <a href="0012-write-a-skill.html">Lesson 12</a> you can write your own.</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">3</div><p class="step-title">Check the CLI is there</p></div>
+  <div class="step-body">
+    <div class="code"><pre><code>idsec version</code></pre></div>
+    <p>You should get a version number. This is a single file, with no installer and nothing added
+    to your system.</p>
+    <div class="warn">
+      <p><span class="callout-label">“command not found”?</span> Prework step 5 was skipped, or your
+      <code>PATH</code> change needs a new terminal. Run the prework script from the workshop folder,
+      then open a <strong>new</strong> terminal and try again.</p>
+      <div class="os os-mac">
+        <div class="code"><pre><code>cd ~/Downloads/sko27-japac-idira-ai-workshop
+bash check-prereqs.sh</code></pre></div>
+      </div>
+      <div class="os os-win">
+        <div class="code"><pre><code>cd $HOME\Downloads\sko27-japac-idira-ai-workshop
+.\check-prereqs.ps1</code></pre></div>
+      </div>
+      <p>A new terminal holds no credentials, so redo your <a href="0007-setup.html">Lesson 07</a>
+      elevate command there. Raise your card if the script cannot download the binary, or if
+      <code>idsec</code> is found but refuses to start.</p>
+    </div>
+    <div class="note">
+      <p><span class="callout-label">🖥️ Why a managed laptop may block this.</span> <code>idsec</code>
+      is a single file that needs no admin privilege. But it reaches the Idira Identity Security
+      Platform, and anyone who can run it can ask for cloud access.
+      <strong>Idira Endpoint Privilege Manager (EPM)</strong> decides which programs may run, and can
+      send a blocked one to an approval flow instead of failing it. If your own laptop refused to run
+      <code>idsec</code> in the prework, that was this control working as designed.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">4</div><p class="step-title">Log in</p></div>
+  <div class="step-body">
+    <div class="code"><pre><code>idsec login</code></pre></div>
+    <p>Sign in with your own CYBRWorld account, the one ending in <code>@cyberarklab.com</code>. Your
+    tenant is <code>demo.cyberark.cloud</code>. Usually this happens right in the terminal, with your
+    password followed by a multi-factor check. If a browser window opens instead, sign in there and come
+    back to the terminal.</p>
+    <p>Already logged in from Lesson 07? You do not need to do it again.</p>
+    <div class="note">
+      <p><span class="callout-label">👥 Logged in to a different tenant?</span> Make a second
+      <strong>profile</strong>, a named set of connection settings, and log in with that one:</p>
+      <div class="code"><pre><code>idsec configure --profile-name cybrworld</code></pre></div>
+      <div class="code"><pre><code>idsec login --profile-name cybrworld</code></pre></div>
+      <p>Then add <code>--profile-name cybrworld</code> to every <code>idsec</code> command on this page.
+      <code>idsec profiles list</code> shows what you have.</p>
+    </div>
+    <div class="warn">
+      <p><span class="callout-label">Do not run <code>idsec configure</code></span> again on your
+      existing profile. You did that in the prework, and running it again would overwrite your
+      settings.</p>
+    </div>
+    <div class="note">
+      <p><span class="callout-label">📖 The full CLI documentation.</span>
+      <a href="https://cyberark.github.io/idsec-cli-golang/"><code>cyberark.github.io/idsec-cli-golang</code></a>.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">5</div><p class="step-title">Let the agent do the rest</p></div>
+  <div class="step-body">
+    <p>Start the agent:</p>
+    <div class="code"><pre><code>claude</code></pre></div>
+    <p>Press <code>Shift+Tab</code> a few times until the bottom line says <strong>auto</strong>. Went
+    past it? Keep pressing. It cycles round again.</p>
+    <p>Then ask, in plain English:</p>
+    <div class="code"><pre><code>Use the zsp-aws skill. Show me which AWS targets I am allowed, then print the one command I should run myself to get credentials for the target you recommend. Do not run that command.</code></pre></div>
+    <p>Watch what it does. It will:</p>
+    <ol>
+      <li>read the skill</li>
+      <li>run <code>idsec exec sca cloud-access list-targets --csp aws</code> and show you the list</li>
+      <li>ask which one you want, or confirm the only one</li>
+      <li>print an <code>elevate</code> command with your account number and role already in it, and
+        stop there</li>
+    </ol>
+    <p>Read that command before you go on. Copy it.</p>
+    <div class="note">
+      <p><span class="callout-label">💡 Notice.</span> You never learned the flag names, the account
+      number or the role ARN. The skill knew the shape of the commands and the CLI supplied the
+      values. That is the difference between an agent with a skill and an agent guessing.</p>
+    </div>
+    <div class="note">
+      <p><span class="callout-label">🛑 Why it stops there.</span> The skill tells it to print that
+      command, not run it. Credentials the agent fetches would sit in its context and in its transcript.
+      Yours go into your terminal instead. That line is worth taking back to work with you: let the
+      agent find out what you may do, and keep the secret out of it.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">6</div><p class="step-title">Run the command yourself</p></div>
+  <div class="step-body">
+    <p>Leave the agent with <code>/exit</code>. Environment variables have to be set in the terminal
+    itself, and the agent cannot do it for you.</p>
+    <p>Now paste the command the agent printed and press
+    <span class="os os-inline os-mac"><code>Return</code></span><span class="os os-inline os-win"><code>Enter</code></span>.
+    It looks like this:</p>
+    <div class="os os-mac">
+      <div class="code"><pre><code>eval "$(idsec exec sca cloud-access elevate --csp aws --workspace-id &lt;account&gt; --roleIds &lt;role-arn&gt; --raw | jq -r '.response.results[0].accessCredentials | fromjson | "export AWS_ACCESS_KEY_ID=\(.aws_access_key)\nexport AWS_SECRET_ACCESS_KEY=\(.aws_secret_access_key)\nexport AWS_SESSION_TOKEN=\(.aws_session_token)"')"</code></pre></div>
+    </div>
+    <div class="os os-win">
+      <div class="code"><pre><code>idsec exec sca cloud-access elevate --csp aws --workspace-id &lt;account&gt; --roleIds &lt;role-arn&gt; --raw | jq -r '.response.results[0].accessCredentials | fromjson | "$env:AWS_ACCESS_KEY_ID=\"\(.aws_access_key)\"\n$env:AWS_SECRET_ACCESS_KEY=\"\(.aws_secret_access_key)\"\n$env:AWS_SESSION_TOKEN=\"\(.aws_session_token)\""' | Invoke-Expression</code></pre></div>
+    </div>
+    <p>Use the agent's version, with the real account and role in it, not this one. Nothing prints. That
+    is success.</p>
+    <p>This replaces the credentials from Lesson 07 with your elevated ones. Everything keeps
+    working, including the agent.</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">7</div><p class="step-title">Prove who you are now</p></div>
+  <div class="step-body">
+    <div class="code"><pre><code>python -c "import boto3; print(boto3.client('sts').get_caller_identity()['Arn'])"</code></pre></div>
+    <p>You will get a long line ending in something like
+    <code>assumed-role/&lt;the-role-you-elevated-into&gt;/&lt;your-name&gt;</code>.</p>
+    <div class="win">
+      <p><span class="callout-label">✅ Read that carefully.</span> Two things are true at once:
+      you are <strong>in</strong> that AWS role, and your <strong>own name</strong> is attached to
+      the session. A shared access key can never tell you that second part.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step step-opt">
+  <div class="step-head"><div class="step-num">🧪</div><p class="step-title">Optional: the same thing, for Azure</p></div>
+  <div class="step-body">
+    <p>Secure Cloud Access is not AWS only. Start the agent again and ask:</p>
+    <div class="code"><pre><code>Use the zsp-azure skill. Show me which Azure targets I am allowed, then print the elevate command for an Azure role I am entitled to.</code></pre></div>
+    <p>Leave the agent and run the command it prints. You get back a <code>sessionId</code> and nothing
+    else. There is no access key, nothing to export, and nothing to clean up. The role is active for
+    your own Azure sign-in, and it expires on its own.</p>
+    <p>That response holds no secret, so you can paste it back to the agent and ask what it means. The
+    AWS rule and the Azure rule come from the same principle: keep credentials out of the transcript.
+    Here there is no credential.</p>
+    <p>This step changes nothing about the sandbox app, which is an AWS application. The point is that
+    one CLI, one login and one audit trail cover more than one cloud.</p>
+  </div>
+</div>
+
+<div class="step step-opt">
+  <div class="step-head"><div class="step-num">🧪</div><p class="step-title">Optional: now remove the secret</p></div>
+  <div class="step-body">
+    <p>The app still has an AWS key in it. Elevation made that key unnecessary. An unnecessary secret
+    should be deleted, not left where it is.</p>
+    <p><a href="0014-fix-the-app.html">Lesson 14</a> is the follow-up to this one. You point an agent at
+    the same <code>sandbox-app</code>, and it takes the key out while keeping the app working. Do it
+    after the workshop if you run out of time here.</p>
+  </div>
+</div>
+
+<h2>What this fixes, and what it does not</h2>
+
+<p class="section-intro">This is the part that gets overclaimed on a slide. One of the four secrets is
+now gone. The other three are untouched, and saying so is what makes the first claim credible.</p>
+
+<ul>
+  <li><strong>Fixed: AWS access</strong>. No key is needed, ever again. The secret is gone rather than
+  moved somewhere safer.</li>
+  <li><strong>Not fixed: GitHub token, Slack webhook, database password</strong>. Completely untouched, and
+  still sitting in <code>config/integrations.json</code>. They need a vault, which is a different
+  tool and a different session.</li>
+</ul>
+
+<p>Three out of four secrets are still there when you finish this lab. Say that out loud when you
+show this to your team.</p>
+
+<p><strong>Three layers, and one sentence for a client.</strong> <strong>Endpoint Privilege
+Manager</strong> governs the agents and tools that run on the laptop, <strong>Secure Cloud
+Access</strong> and <strong>Secure Infrastructure Access</strong> govern the access they can obtain,
+and <strong>Secrets Management</strong> governs your machine identities everywhere else.</p>
+
+<h2>Knowledge Check</h2>
+
+<p class="section-intro">Two questions on what the broker added. Pick an answer to see why it is right
+or wrong. A wrong one is worth reading.</p>
+
+<div class="check" data-answer="a">
+  <p class="check-q">Idira sits in the middle of this. What does it add that AWS alone does not?</p>
+  <ul class="opts">
+    <li><button data-opt="a">It decides who may ask, and records every request by name</button></li>
+    <li><button data-opt="b">It encrypts the credentials so that AWS cannot read them</button></li>
+    <li><button data-opt="c">It caches the credentials so you can reuse them next week</button></li>
+  </ul>
+  <p class="why" data-for="a">✅ Correct. AWS can mint temporary credentials. Idira turns that into a governed process, with policy on the way in and an audit trail on the way out.</p>
+  <p class="why" data-for="b">No. AWS issues those credentials, so of course it can read them. Encryption is not what is being added here. Try again.</p>
+  <p class="why" data-for="c">The opposite, in fact. Caching credentials for later is the problem we are removing. Try again.</p>
+</div>
+
+<div class="check" data-answer="b">
+  <p class="check-q">⏳ Tomorrow your credentials have expired and the app fails. What is the fix?</p>
+  <ul class="opts">
+    <li><button data-opt="a">Save yesterday's credentials into a config file so they persist</button></li>
+    <li><button data-opt="b">Log in, run the elevate command again, and get fresh credentials</button></li>
+    <li><button data-opt="c">Ask an administrator to issue you a permanent AWS access key</button></li>
+  </ul>
+  <p class="why" data-for="a">That is the habit we just removed, and it turns a temporary secret back into a permanent one. Try again.</p>
+  <p class="why" data-for="b">✅ Correct. Expiry is the feature you are paying for, so asking again is the intended workflow, not a workaround. It costs you a minute.</p>
+  <p class="why" data-for="c">A permanent key is the thing this whole lesson exists to avoid. Try again.</p>
+</div>
+
+<div class="ask">
+  🗣️ <strong>Ask your agent:</strong> “Which <code>idsec</code> commands did you just run, and what
+  would I type to do that again by hand tomorrow?” Keep the answer, because it is your Monday
+  morning cheat sheet, written for your own tenant rather than a generic one.
+</div>
+
+<h2>Where Idira fits</h2>
+
+<p class="section-intro">Each lesson names the risk it just demonstrated and the Palo Alto Networks
+product that answers it.</p>
+
+<!-- idira: 09 -->
+<!-- BEGIN GENERATED: idira 09 — build-lab-code.py owns this block -->
+<div class="idira">
+  <p class="idira-risk"><span class="callout-label">🧨 The risk you just saw.</span> The elevation worked because a <strong>skill</strong> told the agent which commands to run. A Markdown file ended in a privileged CLI running.</p>
+  <p class="idira-kicker">What answers it</p>
+  <dl>
+    <dt>Secure Cloud Access</dt>
+    <dd>Issues the AWS access on request and expires it soon after, so the key in the sandbox app needs no replacement.</dd>
+    <dt>Endpoint Privilege Manager</dt>
+    <dd>Governs which programs may run, and with what privilege. A skill is only a document until it runs <code>idsec</code>.</dd>
+  </dl>
+  <p class="idira-say">🗣️ “Zero standing privileges is not a stricter key. It is no key at all, and access you ask for every time.”</p>
+  <p class="idira-more"><a href="reference/securing-agentic-ai.html">One platform, every identity. The deck and the videos →</a></p>
+</div>
+<!-- END GENERATED: idira 09 -->
+
+<h2>Key takeaways</h2>
+
+<ul>
+  <li><strong>You held nothing, then you held something, and it expires.</strong> Before this page your
+    entitlement to that account was zero. Access arrived because policy said it could, and it goes away
+    on a clock.</li>
+  <li><strong>Your name is on the session.</strong> A shared access key can never tell you the second
+    half of <code>assumed-role/&lt;role&gt;/&lt;you&gt;</code>.</li>
+  <li><strong>A skill is a page of plain English, and it ends in a privileged command.</strong> The
+    agent knew the flags because a Markdown file told it. That is convenience and it is privilege at
+    the same time.</li>
+  <li><strong>Nobody built federation plumbing first.</strong> No OIDC provider, no trust policy, no
+    role per person. That is the answer to "how much do we have to build before we start?"</li>
+</ul>
+
+<div id="page-pager"></div>
+
+</div>
+<script src="assets/lab.js"></script>
+</body>
+</html>

@@ -10,6 +10,13 @@ teaches. You are removing obstacles.
 **Do the attendee prework yourself before the session**, on your own laptop, both the macOS
 and Windows steps if you can. Ten minutes now saves you improvising in front of someone.
 
+**Run all five Part 1 scripts once**, from `ai-harness-app/`. They take about ten minutes end to
+end and it is the half of the day where sixty non-developers meet a terminal, so it is where you
+will be busiest. Two things to notice while you do it: Part 1 needs **`anthropic` and `rich`**,
+which are a *different* requirements file from Part 2's `boto3`; and every script fails with a
+plain-English panel rather than a traceback, which means the screen usually tells you the answer
+before you do.
+
 **And do [Lesson 10](../lab/0010-identity-broker.html) at least once**, including the browser
 sign-in. It is the only module with an authentication flow, and if you have never seen it you
 cannot tell "not signed in yet" from "no policy allows this" — which are the same-looking
@@ -41,14 +48,20 @@ laptop lid and reopened onto a fresh session — all the same problem.
 **Tell:** `NoCredentialsError`, or Claude Code failing to reach Bedrock, right after
 something that had been working.
 
-**Fix:** cheat sheet §1. Re-paste the AWS credentials, re-set the three Bedrock variables,
-re-activate the virtual environment, `cd` back to `sandbox-app`. About 40 seconds.
+**Fix:** cheat sheet §1. Re-run the one-line `idsec` elevate command from §2, re-set the three
+Bedrock variables, re-activate the virtual environment, `cd` back to the folder the lesson uses —
+`ai-harness-app` in Part 1, `sandbox-app` in Part 2. About 40 seconds.
 
 **Prevent:** as you walk the room, say "keep that window open" more often than feels necessary.
 
+**In Part 1 the script says it for you.** The lesson scripts print *"those AWS credentials are no
+longer good"* in a panel, with the fix, instead of a traceback. Read the panel to the attendee
+rather than diagnosing from scratch.
+
 ### 2 · No `(.venv)` in the prompt 🥈
 
-**Tell:** `No module named boto3`, or `ModuleNotFoundError: boto3`, from any `python` command.
+**Tell:** `No module named boto3`, or `ModuleNotFoundError: boto3`, from any `python` command —
+or, in Part 1, `No module named anthropic` or `No module named rich`.
 
 Look at their prompt before you look at anything else. If it does not start with `(.venv)`,
 that is the whole problem. The virtual environment is **per terminal window**, exactly like the
@@ -58,13 +71,21 @@ environment variables — same cause, different symptom.
 
 ```
 # macOS
-cd ~/Downloads/vibe-coding-workshop && source .venv/bin/activate
+cd ~/Downloads/sko27-japac-idira-ai-workshop && source .venv/bin/activate
 
 # Windows
-cd $HOME\Downloads\vibe-coding-workshop; .\.venv\Scripts\Activate.ps1
+cd $HOME\Downloads\sko27-japac-idira-ai-workshop; .\.venv\Scripts\Activate.ps1
 ```
 
-Then `cd sandbox-app` again. Prompt shows `(.venv)`, boto3 works.
+Then `cd` back into the lesson's folder. Prompt shows `(.venv)`, the imports work.
+
+⚠️ **Part 1 needs a different requirements file from Part 2.** `boto3` is Part 2's;
+`anthropic` and `rich` are Part 1's. Someone whose venv was built before Part 1 existed — or who
+installed one file by hand — will have one and not the other. One command fixes it either way:
+
+```
+python -m pip install -r ai-harness-app/requirements.txt -r sandbox-app/requirements.txt
+```
 
 **Windows variant:** `Activate.ps1 cannot be loaded because running scripts is disabled on this
 system`. Execution policy, no admin rights needed:
@@ -80,7 +101,7 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 # macOS                          # Windows
 python -m venv .venv             py -m venv .venv
 source .venv/bin/activate        .\.venv\Scripts\Activate.ps1
-pip install -r sandbox-app/requirements.txt
+pip install -r ai-harness-app/requirements.txt -r sandbox-app/requirements.txt
 ```
 
 **Do not** `pip install --user boto3` as a shortcut. It sometimes works, it sometimes hits a
@@ -89,12 +110,13 @@ The venv is thirty seconds.
 
 ### 3 · `command not found` 🥉
 
-For `claude` or `idsec`. The tool is installed; the shell cannot see it.
+For `claude`, `idsec` or `jq`. The tool is installed; the shell cannot see it. `idsec` and `jq` both
+live in `~/bin`, so one `PATH` fix covers both.
 
 **macOS**
 
 ```
-ls ~/bin/idsec              # is the file actually there?
+ls ~/bin/idsec ~/bin/jq     # are the files actually there?
 echo $PATH                  # does it contain /Users/<name>/bin?
 ```
 
@@ -114,7 +136,7 @@ export PATH="$HOME/.local/bin:$PATH"
 **Windows**
 
 ```
-Test-Path $HOME\bin\idsec.exe
+Test-Path $HOME\bin\idsec.exe, $HOME\bin\jq.exe
 $env:Path -split ';' | Select-String 'bin'
 ```
 
@@ -135,7 +157,7 @@ or **Idira EPM** — that is endpoint **application control**, not a `PATH` prob
 desk-side fix: the attendee has no admin rights, and working around application control is the
 opposite of what we are teaching. If a **Request authorization** button is offered, have them use it.
 Otherwise 🙋 **escalate** and move them to a loaner laptop. Say the useful sentence while you do it:
-*this is Idira EPM deciding which tools may run on a managed endpoint — the same idea as Lesson 08,
+*this is Idira EPM deciding which tools may run on a managed endpoint — the same idea as Lesson 09,
 one layer lower down.*
 
 ### 4 · Expired or rejected credentials
@@ -143,14 +165,16 @@ one layer lower down.*
 **Tell:** `ExpiredToken`, `ExpiredTokenException`, `UnrecognizedClientException`,
 `InvalidClientTokenId`.
 
-**Fix:** back to the portal, re-copy Option 1, re-paste. Cheat sheet §2.
+**Fix:** run the one-line `idsec` elevate command again, in that same terminal window. Cheat sheet §2.
 
-The permission set is configured for a 4-hour session, so genuine expiry should not happen
-inside the slot. If you see it repeatedly, tell a trainer — it may mean G1 in the owner prep
-was not applied, which affects the whole room.
+The permission set is configured for at least a 4-hour session against a day that runs 1:00pm to
+4:30pm, so genuine expiry is unlikely — but it is *possible* late in slot 2 for anyone who ran the
+command well before 1:00pm, and the fix is simply to run it again. If you see it repeatedly, and
+early, tell a trainer — it may mean G1 in the owner prep was not applied, which affects the whole
+room.
 
-Partial paste is more common than real expiry: three lines, and people sometimes get two.
-Have them check all three variables are set:
+A wrong terminal window is more common than real expiry. The credentials live in the one window that
+ran the command, and nowhere else. Have them check all three variables are set:
 
 ```
 # macOS
@@ -166,25 +190,87 @@ A missing session token is the classic silent failure.
 
 ## The rest, by lesson
 
-### Lesson 06
+### Lessons 01–06 — Part 1 and the break time activity 🏗️
+
+**The single most important thing to know about this half:** most of what looks broken is the
+lesson working. The old model forgetting, the agent stopping mid-investigation, a hook refusing a
+file read, the numbers not matching the trainer's — all scripted. Before you fix anything, ask
+yourself whether the page predicted it.
+
+**Where they should be:** `ai-harness-app/`, not `sandbox-app/`. Same venv, same three `AWS_*`
+lines, plus `AWS_REGION`. Cheat sheet §5, "Part 1, lessons 01 to 05".
+
+**The two real failures** both print a titled panel with the fix in it, so read the panel out
+loud rather than guessing:
+
+| Panel says | What it is | Who fixes it |
+| --- | --- | --- |
+| *"those AWS credentials are no longer good"* | Expired, partly pasted, or a different terminal window | 🙋 You. Top four #1 and #4. |
+| *"this account cannot call that model"* | Bedrock **model access** not enabled, or the role lacks `bedrock:InvokeModel` on that model | 🚩 **Escalate — owner-prep G2/G2b.** Affects the whole room, and note *which* tier failed: the legacy model is a separate access grant from Sonnet. |
+
+🔓 **There used to be a third: a TLS-interception panel.** It is gone, because Part 1 no longer
+verifies certificates at all — see the note at the top of `ai-harness-app/config.py`. So in Part 1,
+**a certificate error is not a thing that can happen**, and a corporate CA bundle variable is not
+worth checking. If somebody asks why the banner says `tls=unverified`, that is deliberate and the
+answer is on the cheat sheet: it stops a proxy ending their lesson 01, and it is a shortcut nobody
+should copy. It **does** still bite Claude Code in Part 2 — see Lesson 07 below.
+
+Everything else, by lesson:
+
+| Lesson | Symptom | What is going on |
+| --- | --- | --- |
+| 01 | "It didn't answer my follow-up properly" | 🎯 That is the lesson. No history is attached. Ask them to say out loud *why*, then move on. |
+| 01 | Output is short, blunt, or a bit odd | Also the lesson. It is a 2024 8B model with a 200-token cap. Do not apologise for it. |
+| 01–06 | Their token counts differ from the trainer's | Expected, every time, for everyone. The *shape* is the lesson, never the digits. The trainer says this at the front; you will say it twenty more times. |
+| 02 | Second answer costs more input tokens than the first | 🎯 The whole point. The conversation is re-sent every turn. |
+| 03 | `/fill` makes the answers noticeably worse | 🎯 The dumb zone, on purpose. `/compact` or `/reset` gets it back. |
+| 03 | A panel saying *"The request did not fit"* | 🎯 The wall, reached on purpose. The panel names both ways out: `/compact` or `/reset`. |
+| 03 | `/style eli5` did not change the answer's length | 🎯 The best beat in Part 1 — history outweighs instructions. `/reset`, then the same command works. Let them see it. |
+| 04 | The first call errors out about tools | 🎯 The legacy model has no tool support. The error *is* the demonstration. |
+| 04 | The agent stops before finding all six secrets | Check `MAX_ITERATIONS` — the lesson invites them to set it to 2. If they did, that is the answer. |
+| 04 | They cannot find the sixth secret by hand | Nobody does. The hidden `.env` and the password inside a `postgres://` URL are the point of the hunt. |
+| 05 | The agent refuses to read a file, or refuses a command | 🎯 `_safe_path` and the command allowlist. Not a bug. `--no` makes every refusal visible. |
+| 05 | The injection "didn't work" | Correct — the controls held. `prove_the_controls()`, which the script prints when they quit, is the evidence to point at. |
+| 05 | `could not reach the local MCP server` | The script carries on without it and says so. Everything else in the lesson still works. Not worth two minutes. |
+| 05 | `--remote` cannot reach the playground server | Not an attendee step any more, so they should not be running it. If they are: very likely the venue proxy. Drop the flag and use the local server. |
+| 05 | `/remember` seems to do nothing | It appends to `ai-harness-app/memory.md`. Have them open the file, or `/context`. |
+| any | `No module named anthropic` / `rich` | Top four #2 — and note it is Part 1's requirements file, not Part 2's. |
+
+⚠️ **One thing to actually prevent:** attendees editing `ai-harness-app/` files and not putting
+them back. The lessons invite exactly that — change `MAX_ITERATIONS`, widen `_ALLOWED_COMMANDS`,
+delete a hook. That is fine within a lesson, but a widened allowlist carried into Lesson 05 makes
+`prove_the_controls()` report a pass where it should report a refusal, and the lesson then teaches the
+opposite of its point. If someone's controls behave
+strangely, ask what they changed before you look at anything else. `git diff` in the workshop
+folder answers it in five seconds.
+
+### Lesson 07
 
 | Symptom | Cause | Fix |
 | --- | --- | --- |
 | `AccessDeniedException` naming a model | Typo in `ANTHROPIC_MODEL` or wrong region | Re-set with the Copy button; region is `us-east-1` |
+| The elevate one-liner printed something instead of nothing | The `eval` or `Invoke-Expression` at the end was lost in the paste | Use the Copy button rather than selecting the text. If a credential did print, it is short-lived and scoped to a sandbox account, so re-run and move on. |
+| `jq: command not found` | Prework `jq` install did not stick | Prework step 5. One binary in `~/bin`, and this window has to see it on `PATH`. |
+| `idsec: command not found` | Same, for `idsec` | Prework step 5. If the shell finds it but it will not *start*, that is EPM — top-four #3. |
+| Bottom line of the agent does not say **auto** | They missed the `Shift+Tab` presses | Keep pressing `Shift+Tab`. It cycles round. Every lesson after this one assumes auto mode. |
 | `python` opens the Microsoft Store | Windows app alias | Use `py` — but inside an active `.venv`, plain `python` works |
-| `python: command not found` (mac) | Only `python3` exists, and no alias | `python3` for now; `alias python="python3"` in `~/.zshrc` afterwards |
+| `python: command not found` (mac) | Only `python3` exists on that machine | Use `python3` to create the venv. Once it is active, plain `python` works. No alias needed. |
 | `No module named boto3` | Virtual environment not active | Top-four #2. Check the prompt for `(.venv)` first. |
 | `Activate.ps1 cannot be loaded` | PowerShell execution policy | `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`, then activate |
 | Agent starts but asks them to log in | `CLAUDE_CODE_USE_BEDROCK` is not set in *this* window | Cheat sheet §1(b) |
-| Certificate or TLS error reaching Bedrock | A corporate CA bundle variable set by laptop policy | `unset AWS_CA_BUNDLE REQUESTS_CA_BUNDLE CURL_CA_BUNDLE` (Windows: `Remove-Item Env:AWS_CA_BUNDLE, Env:REQUESTS_CA_BUNDLE, Env:CURL_CA_BUNDLE -ErrorAction SilentlyContinue`), then retry. Still failing → escalate. |
+| Claude Code: `self signed certificate in certificate chain` / `UNABLE_TO_VERIFY_LEAF_SIGNATURE` | The network inspects HTTPS. **Part 2 only** — Part 1 does not verify certificates, so this is the first time it bites. Node ignores `AWS_CA_BUNDLE`. | Corporate root CA path on the card → `NODE_EXTRA_CA_CERTS=/path/to/corp-root.pem` in that window. No path and the room is moving → `NODE_TLS_REJECT_UNAUTHORIZED=0`, today only, and say out loud it is the same shortcut Part 1 takes and the same one you would refuse at a client. Several people → 🚩 tell the trainer, it is the venue network. |
 | `cd` fails | Unzipped somewhere other than Downloads | macOS: type `cd ` then drag the folder in. Windows: copy the path from Explorer's address bar. |
 
-### Lesson 07
+### Lesson 08
 
-Mostly prompt-driven, so mostly fine. Four things:
+Mostly prompt-driven, so mostly fine. Five things:
 
 - **The agent asks permission to run a command and they do not notice.** They sit waiting.
-  Point at the prompt.
+  Point at the prompt, then check the bottom line of the window. If it does not say **auto**, they
+  missed the `Shift+Tab` presses in Lesson 07. Keep pressing `Shift+Tab`; it cycles round.
+- **`/security-review` is now the optional step at the end.** It runs for a few minutes. If somebody
+  started it early and is now stuck watching it, that is fine. Move them on to Lesson 09 and let it
+  finish in the background.
 - **The review finds three secrets, not four.** Fine — the database password is inside a
   connection URL and is easy to miss. Have them ask: *"is there a credential inside any URL
   in this project?"* That is a better outcome than being told the answer.
@@ -195,9 +281,12 @@ Mostly prompt-driven, so mostly fine. Four things:
   expect at the front; if they did not, this is the line.
 - **Step 1 ends in a raw traceback, not a friendly message.** The lesson expects the app to say
   the credentials were *rejected*. Look at the last line of the traceback:
-  - `SSLError` or `CERTIFICATE_VERIFY_FAILED` — the certificate chain is not trusted. On a
-    managed laptop this is usually a corporate CA bundle left pointing at the office proxy.
-    **Try this first, in that window** (it is a 20-second fix and it works):
+  - `SSLError` or `CERTIFICATE_VERIFY_FAILED` — the certificate chain is not trusted. Note that
+    `sandbox-app/summarize.py` is **not** one of the Part 1 scripts: it does verify certificates,
+    on purpose, because it is the file the agent reviews in this lesson and rewrites in Lesson 14,
+    and we are not putting a second vulnerability into it. On a managed laptop this is usually a
+    corporate CA bundle left pointing at the office proxy. **Try this first, in that window** (it
+    is a 20-second fix and it works):
 
     ```
     # macOS
@@ -207,60 +296,65 @@ Mostly prompt-driven, so mostly fine. Four things:
     ```
 
     Then re-run. Still failing, or failing for several people? 🙋 **Escalate** — the network is
-    inspecting TLS, and that breaks Claude Code on Bedrock for those people too.
+    inspecting HTTPS, and the same person is about to hit it in Claude Code as well (row above:
+    `NODE_EXTRA_CA_CERTS`).
   - `EndpointConnectionError` — no route to Bedrock at all. Check Wi-Fi, then escalate.
   Anything else that names a credential (`UnrecognizedClientException`, `InvalidClientTokenId`)
   is the expected outcome — the app *does* have credentials, they are just fake. That is the
   point of the step.
 
-### Lesson 08
-
-| Symptom | Cause | Fix |
-| --- | --- | --- |
-| `idsec login` asks for a password and they expected a browser | On most tenant configurations the sign-in is entirely in the terminal — password, then an MFA check | It is the password on their card. Nothing echoes as they type. If it *does* print a URL and no browser opens, they paste that URL into a browser by hand. |
-| Authentication error on any `idsec` command | Token expired | `idsec login --force` |
-| `list-targets` returns empty | No elevation policy for this user | **Escalate to a trainer.** This is a tenant config problem, not fixable at the desk. |
-| Agent invents a flag that does not exist | Old CLI build | Have them ask the agent to run `idsec sca cloud-access elevate --help` and use what it actually reports |
-| Elevated role missing from the portal | Not refreshed | Refresh the portal tab. It takes a few seconds to appear. |
-| Agent tries to set environment variables itself | It cannot — it runs in a subprocess | They must `/exit` first. This is by design and worth saying out loud. |
-| Something failed with no useful message | — | `~/.idsec/logs/idsec-cli.log` has the detail |
-
 ### Lesson 09
 
 | Symptom | Cause | Fix |
 | --- | --- | --- |
-| App still fails after the edit | Elevated credentials not in this window | `get_caller_identity()` check at the top of the lesson |
-| `AccessDeniedException` on Bedrock after elevating | The elevated role may lack `bedrock:InvokeModel` | **Escalate immediately** — this is owner-prep gate G2 and it affects everyone |
-| Agent also removed `region_name` | Over-eager edit | Have them ask it to put `region_name=AWS_REGION` back |
-| Agent moved the keys to a `.env` file instead of deleting them | It solved the wrong problem | Great teaching moment. "You have hidden it, not removed it. Ask it again, and say *delete*." |
-| `ImportError: cannot import name 'AWS_ACCESS_KEY_ID' from 'config.settings'` | The agent deleted the constants but left the `import` in `summarize.py` that asks for them | **The most likely Lesson 09 failure.** Back into the agent: *"summarize.py still imports the constants you deleted — remove them from the import and run the app."* The lesson's diff shows all seven removed lines. |
-| `grep` still finds `AKIA` | Usually `config/__pycache__/*.pyc` — Python's compiled copy still holds the old string. Otherwise `.claude/` history or a backup file | The lesson's command already excludes `__pycache__`; if they typed a plain `grep -r`, that is what they hit. Worth thirty seconds: caches, images and git history keep copies, which is why the real last step is deleting the key at the source. |
+| `idsec login` asks for a password and they expected a browser | On most tenant configurations the sign-in is entirely in the terminal — password, then an MFA check | It is their own CYBRWorld password, the account ending in `@cyberarklab.com`. Nothing echoes as they type. If it *does* print a URL and no browser opens, they paste that URL into a browser by hand. |
+| Authentication error on any `idsec` command | Token expired | `idsec login --force` |
+| Signed in, but to the wrong tenant | They already used `idsec` against another tenant | `idsec login --profile-name cybrworld`. If that profile does not exist yet, `idsec configure --profile-name cybrworld` first, with the three values from the prework email. |
+| `list-targets` returns empty | No elevation policy for this user | **Escalate to a trainer.** This is a tenant config problem, not fixable at the desk. |
+| Agent invents a flag that does not exist | Old CLI build | Have them ask the agent to run `idsec exec sca cloud-access elevate --help` and use what it actually reports |
+| `jq: command not found` | The prework `jq` install did not stick | Prework step 5. It is one binary in `~/bin`, and the new terminal window has to see it on `PATH`. |
+| Agent ran the elevate command instead of printing it | It ignored the skill | Not a disaster, but the credentials are now in its transcript. Have them `/exit`, run the command themselves, and say why: what the agent reads, it keeps. |
+| Agent tries to set environment variables itself | It cannot — it runs in a subprocess | This is exactly why the lesson has the attendee run the command. Worth saying out loud. |
+| Something failed with no useful message | — | `~/.idsec/logs/idsec-cli.log` has the detail |
+| Optional Azure step: the response has no credentials in it | Working as designed | Azure elevation returns a `sessionId` and nothing else. There is nothing to export and nothing to clean up. The `zsp-azure` skill says so, and the attendee may paste the response back to the agent. |
+| Optional Azure step: `list-targets --csp azure` is empty, or elevate is rejected | No Azure entitlement for this user | Leave it. The step is optional and the mandatory work does not touch Azure. 🙋 tell a trainer so the owner knows the room's entitlement. |
 
-### Lesson 10 — the Identity Broker 🛡️
+### Lesson 10 — MCP: AI Agent Identity Broker 🛡️
 
 This is the only module with an authentication flow, so it fails in ways the rest of the day
 does not. **Read this one properly before the session, and do the lesson yourself once.**
 
-The one rule: **a refused tool call is escalated, not debugged.** Refusals mean the server is
-disabled or no policy matches, and both are tenant-side.
+Two things to know before you walk the room. It runs on the **`apj-secrets` tenant**, not the Lesson 09
+one, so a sign-in that "works" in the wrong tab is a real failure mode. And the lesson has a second half
+in the console: steps 5 to 8 are read-only clicking, not terminal work.
+
+The one rule: **a refused tool call is escalated, not debugged.** Refusals mean no policy matches or the
+server is disabled, and both are tenant-side.
 
 | Symptom | Cause | Fix |
 | --- | --- | --- |
 | `claude mcp add` complains about arguments | It was run *inside* the agent | Run it in the terminal, before starting `claude`. `/exit` first if needed. |
 | It never prompted for the client secret | They typed `--client-secret <value>` | The flag takes **no** value. Re-run without it and let it prompt. |
+| They cannot find the Client Secret | It is not on the lesson page, deliberately | Slack channel `#cybr-japac-ts-all`. The Gateway URL and Client ID *are* on the page, so those can be copied. |
 | Server listed but *needs authentication* | They have not signed in yet | `/mcp` inside the agent → pick the server → sign in in the browser |
 | Browser opens, then the callback page will not load | The redirect goes to `http://localhost:<port>` — a VPN or proxy ate it | Try again; if it repeats, have them disconnect the VPN for that one step. 🙋 tell a trainer if several people hit it. |
 | Browser never opens | Default browser not set | Copy the URL from the terminal into a browser manually |
+| Signs in, but authentication still fails | The browser opened a **different profile**, signed into another tenant | Copy the URL from the terminal into the browser profile that has their `apj-secrets` session. The error does not say this. |
+| They have no account on `apj-secrets` at all | They skipped prework step 9 | 🙋 tell a trainer. Anyone on the team has administrator rights on that tenant and can create the account, so it is minutes, not days. Pair them with a neighbour meanwhile. |
 | Signed in, but the tools are not listed | The connection has not refreshed | `/mcp` again. Tools appear automatically once authentication completes. |
+| Worked earlier, now says the server **needs re-authorization** | The token expired. Expected, and it is the lesson's point | `/mcp` and sign in again. Say why: the agent holds a short-lived token, not a credential. |
 | Tool count reads *Not discovered yet* in the console | No agent has connected to that server yet | Expected before the first connection. Not an attendee problem. |
-| A tool call is **refused** | Server disabled, or no policy matches this user + agent + tool | **Escalate to a trainer.** Do not debug it — it is tenant-side and affects everyone. |
-| It worked, then everything stopped, room-wide | The trainer just clicked **Disable** 😄 | That is the demo. Say "watch the front of the room." |
-| Wrong Gateway URL | One character off in a long URL | Compare against the slide. Errors here often *look* like auth failures. |
+| A tool call is **refused** | No policy matches this user + agent + tool, or the server is disabled | **Escalate to a trainer.** Do not debug it — it is tenant-side and affects everyone. |
+| It worked, then everything stopped, room-wide | **Not** a demo. Nothing in the tenant is changed during the session | **Escalate immediately.** This is a real outage, not the kill switch. |
+| Wrong Gateway URL | One character off in a long URL | Copy it from the lesson page rather than typing it. Errors here often *look* like auth failures. |
+| Console page shows an error or an empty list (steps 5–8) | Wrong tenant, or the read role is missing | Check they are signed into `apj-secrets.cyberark.cloud`, not the Lesson 09 tenant. If the tenant is right, 🙋 tell a trainer: it affects everyone. |
+| Console is very slow on steps 5–8 | Sixty people are hitting the same tenant | Expected. Have them wait rather than reloading repeatedly. |
+| They cannot find their own call in the audit log | Filter not set | Time range = last 24 hours, Service name = **Secure AI Agents**, filter by **Username** with their own username. |
 
 **Do not let anyone paste their Client Secret into a chat, a shared doc, or the projector.**
 It is a lab credential in a lab tenant, but the habit is the thing we are teaching.
 
-### Lessons 11–13 — the optional ones
+### Lessons 11–14 — the optional ones
 
 Nobody is expected to reach these, and none of them can break the mandatory work. Help
 lightly and prefer pointing at the page over explaining.
@@ -272,6 +366,20 @@ lightly and prefer pointing at the page over explaining.
 | Lesson 12: the new skill is never used | Description too vague, or wrong folder | `.claude/skills/<name>/SKILL.md`, and test it in a **fresh** conversation |
 | Lesson 13: `/to-spec` etc. do not appear | `/setup-matt-pocock-skills` not run | Run it once, then retry. Those skills are deliberately not auto-selectable. |
 | Lesson 13: `/implement` is taking ages | Working as designed — that is the AFK part ☕ | Tell them to leave it alone and read the ticket list while it runs |
+
+**Lesson 14 is the one that fails in real ways**, because it edits code the attendee then has to run.
+It is the follow-up to Lesson 09 on the same sandbox app, so it needs elevated credentials in that
+window.
+
+| Symptom | Cause | Fix |
+| --- | --- | --- |
+| App still fails after the edit | Elevated credentials not in this window | `get_caller_identity()` check at the top of the lesson |
+| `AccessDeniedException` on Bedrock after elevating | The elevated role may lack `bedrock:InvokeModel` | **Escalate immediately** — this is owner-prep gate G2 and it affects everyone |
+| Agent also removed `region_name` | Over-eager edit | Have them ask it to put `region_name=AWS_REGION` back |
+| Agent moved the keys to a `.env` file instead of deleting them | It solved the wrong problem | Great teaching moment. "You have hidden it, not removed it. Ask it again, and say *delete*." |
+| `ImportError: cannot import name 'AWS_ACCESS_KEY_ID' from 'config.settings'` | The agent deleted the constants but left the `import` in `summarize.py` that asks for them | **The most likely Lesson 14 failure.** Back into the agent: *"summarize.py still imports the constants you deleted — remove them from the import and run the app."* The lesson's diff shows all seven removed lines. |
+| `grep` still finds `AKIA` | Usually `config/__pycache__/*.pyc` — Python's compiled copy still holds the old string. Otherwise `.claude/` history or a backup file | The lesson's command already excludes `__pycache__`; if they typed a plain `grep -r`, that is what they hit. Worth thirty seconds: caches, images and git history keep copies, which is why the real last step is deleting the key at the source. |
+
 
 ---
 
@@ -314,6 +422,7 @@ typing anything yourself:
 | `idsec: command not found` | Prework step 5 skipped, or `PATH` edited without a new terminal | Run the script. It downloads `idsec` and fixes `PATH`. Then **new terminal**. |
 | `claude: command not found` | Same shape: installed under `~/.local/bin`, not on `PATH` | Run the script, then **new terminal**. |
 | `No module named boto3` / `anthropic` / `rich` | No `.venv`, or libraries never installed | Run the script. It builds the venv and installs both requirements files. |
+| A CA bundle variable pointing at a file that is gone | Set by policy on a laptop that has moved networks | Harmless for this workshop now — nothing here reads it. Only chase it if something *else* on the laptop is failing; step 9 of the script names the variable and prints the `unset` line. |
 | No `.venv` folder at all | Prework step 3 skipped | Run the script. Do **not** `pip install --user`. |
 | `idsec configure` never run | Prework step 6 skipped | Their card has the tenant subdomain and username. Two minutes. |
 
@@ -321,9 +430,15 @@ typing anything yourself:
 credentials in it. Tell them that in the same breath, or they will fix `idsec` and immediately break
 Bedrock. Cheat sheet §1 puts it back.
 
-**The most common misdiagnosis of the day:** `idsec version` failing in Lesson 08 gets reported as
+**The most common misdiagnosis of the day:** `idsec version` failing in Lesson 09 gets reported as
 "the CLI is broken". It is not. It is prework step 5, and the lesson now says so before it mentions
 your card.
+
+**And the most common misdiagnosis of Part 1:** the lesson working, reported as the lesson broken.
+A model that forgets, an agent that stops early, a hook that refuses, a style instruction that gets
+ignored — every one of those is a scripted beat with a callout next to it on the page. The question
+to ask first is *"what does the page say should happen?"*, not *"what went wrong?"*. Part 1 has
+exactly three real failures and they all arrive in a titled panel.
 
 ### Tier 2 · Helper — the four you actually fix
 
@@ -340,13 +455,15 @@ gate failures from [owner-prep.md](owner-prep.md) that will hit everybody within
 
 | Symptom | What it means | Gate |
 | --- | --- | --- |
+| *"this account cannot call that model"* in **any** Part 1 lesson | Bedrock model access is not enabled for that tier, or the policy is missing `bedrock:InvokeModel` on it. Say **which tier** — legacy and frontier are separate grants. Affects the room, in lesson 01. | G2b |
 | `list-targets` empty, for more than one person | No elevation policy covers these users | G2 |
 | Bedrock `AccessDeniedException` **after** elevating | The elevated role lacks `bedrock:InvokeModel`. Affects the room. | G2 |
 | Repeated genuine credential expiry | Session duration still 1 hour | G1 |
 | Any **refused** MCP tool call in Lesson 10 | Server disabled, or no policy matches user + agent + tool | G5 |
 | `localhost` callback fails for more than one person | The venue network is intercepting the Broker sign-in redirect | — |
 | `idsec` or `claude` **blocked** by endpoint application control 🖥️ | Needs an EPM policy change. Nobody in the room has the rights. One person → loaner laptop. Several → the fleet will do it to everybody. | — |
-| `SSLError` / `CERTIFICATE_VERIFY_FAILED` after unsetting the CA bundle variables | The network is inspecting TLS. Everything that talks to AWS is affected. | — |
+| Claude Code failing on certificates for more than one person | The venue network inspects HTTPS. **Part 2 only** — Part 1 does not verify, so this surfaces for the first time at Lesson 07 and can look like a new problem when it is not. What the trainer needs is one corporate root CA path for `NODE_EXTRA_CA_CERTS`; failing that, tell the room to set `NODE_TLS_REJECT_UNAUTHORIZED=0` from the front, once, with the caveat said out loud. The prework script reports this a week early under *"How this network treats HTTPS"* — worth knowing whether the replies mentioned it. | — |
+| `--remote` in lesson 05 blocked for more than one person | Egress filtering on the venue network. Harmless — the local MCP server covers the lesson — but the trainer should stop offering the flag from the front. | — |
 | The share link or clone URL not loading | Everyone downstream is blocked | G3 / G6 |
 | `/security-review` behaving differently for different people | The repo shipped without a first commit | G6 |
 
@@ -356,7 +473,7 @@ application control, not `PATH`, and the prework script cannot help. If a **Requ
 option is offered, have them use it. Otherwise escalate and move them to a loaner laptop. Say the
 useful sentence while you walk them over:
 
-> This is Idira EPM deciding which tools may run on a managed endpoint. Same idea as Lesson 08, one
+> This is Idira EPM deciding which tools may run on a managed endpoint. Same idea as Lesson 09, one
 > layer lower down.
 
 ### What the prework was supposed to catch

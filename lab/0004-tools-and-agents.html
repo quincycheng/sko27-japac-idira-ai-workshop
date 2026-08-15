@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>04 · Tools and agents · SKO27 TechSummit - AI Workshop for Idira DC</title>
+<link rel="icon" type="image/svg+xml" href="assets/idira-icon.svg">
+<link rel="stylesheet" href="assets/lab.css">
+</head>
+<body>
+<div id="progress-rail"><div id="progress-fill"></div></div>
+
+<div class="wrap">
+
+<nav id="page-nav"></nav>
+
+<header class="lesson">
+  <p class="kicker">Part 1 · Build your own AI harness</p>
+  <h1>Tools and agents 🔧</h1>
+  <p class="standfirst">
+    You will see what “agentic” means: one loop and thirty lines of Python. You will race the agent at
+    finding hardcoded secrets, watch the old model drop out because it cannot use tools, and see where
+    the agent's reach is decided.
+  </p>
+  <ul class="meta">
+    <li class="tag-must">Everyone</li>
+    <li>📄 <code>ai-harness-app/04_tools_and_agents.py</code> + <code>agent.py</code></li>
+    <li id="step-counter">&nbsp;</li>
+  </ul>
+</header>
+
+<div class="os-switch" data-os-switch></div>
+
+<figure>
+<svg viewBox="0 0 760 250" role="img" aria-label="The harness loop: send conversation and tools to the model; if the model asks for a tool, the harness decides, runs it and appends the result; repeat until the model stops asking.">
+  <defs>
+    <marker id="lp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"/>
+    </marker>
+  </defs>
+
+  <rect x="24" y="40" width="180" height="76" rx="10" fill="var(--panel)" stroke="var(--line)" stroke-width="1.5"/>
+  <text x="114" y="70" text-anchor="middle" class="svg-label" fill="var(--ink)">messages[]</text>
+  <text x="114" y="90" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">the whole conversation,</text>
+  <text x="114" y="105" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">re-sent every single turn</text>
+
+  <rect x="290" y="40" width="180" height="76" rx="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>
+  <text x="380" y="70" text-anchor="middle" class="svg-label" fill="var(--ink)">the model</text>
+  <text x="380" y="90" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">replies with text,</text>
+  <text x="380" y="105" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">or asks for a tool</text>
+
+  <rect x="556" y="40" width="180" height="76" rx="10" fill="var(--panel)" stroke="var(--ink-soft)" stroke-width="1.5"/>
+  <text x="646" y="70" text-anchor="middle" class="svg-label" fill="var(--ink)">your code</text>
+  <text x="646" y="90" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">decides whether to run it,</text>
+  <text x="646" y="105" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">then runs it for real</text>
+
+  <line x1="208" y1="66" x2="284" y2="66" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#lp)"/>
+  <text x="246" y="56" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">send</text>
+
+  <line x1="474" y1="66" x2="550" y2="66" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#lp)"/>
+  <text x="512" y="56" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">tool_use</text>
+
+  <path d="M 646 122 L 646 168 L 114 168 L 114 122" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#lp)"/>
+  <text x="380" y="188" text-anchor="middle" class="svg-sub" fill="var(--accent)">tool_result appended to messages[] → go round again</text>
+
+  <text x="24" y="222" class="svg-label" fill="var(--ink-soft)">The loop ends when the model replies without asking for a tool.</text>
+  <text x="24" y="242" class="svg-sub" fill="var(--ink-faint)">That is the entire architecture. Claude Code is this, with better tools and a lot of polish.</text>
+</svg>
+<figcaption>Thirty lines of Python, in <code>agent.py</code>. Every lesson from here calls it unchanged.</figcaption>
+</figure>
+
+<h2>Your Tasks</h2>
+
+<p class="section-intro">Seven steps. You hunt for secrets first, then the agent does. That way you can
+judge its work instead of being impressed by it.</p>
+
+<div class="note">
+  <p><span class="callout-label">🧪 The rules of the sandbox.</span> Everything the agent can see lives
+  in <code>ai-harness-app/sandbox/</code>: six files, none longer than 40 lines. Every secret in there
+  is a published example value, so nothing sensitive is on your laptop.</p>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">1</div><p class="step-title">Look for yourself, with no AI</p></div>
+  <div class="step-body">
+    <p>From the <code>ai-harness-app</code> folder:</p>
+    <div class="os os-mac">
+      <div class="code"><pre><code>ls -la sandbox
+grep -rn "KEY\|SECRET\|TOKEN\|PASSWORD" sandbox</code></pre></div>
+    </div>
+    <div class="os os-win">
+      <div class="code"><pre><code>Get-ChildItem sandbox -Force
+Select-String -Path sandbox\* -Pattern "KEY|SECRET|TOKEN|PASSWORD"</code></pre></div>
+    </div>
+    <p>Or open the files in an editor and read them. Either is fine, because reading is the point. Then
+    <strong>write down two numbers</strong> before you go on: how many <em>files</em> hold a secret, and
+    how many <em>secret values</em> you found. No peeking below.</p>
+    <div class="warn">
+      <p><span class="callout-label">🙈 Notice what <code>ls</code> alone misses.</span> One of the
+      guilty files starts with a dot, so it is invisible to plain <code>ls</code>, to Finder, and to a
+      lot of scanners. The <code>-la</code> / <code>-Force</code> above is doing real work.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">2</div><p class="step-title">Check your answer</p></div>
+  <div class="step-body">
+    <details>
+      <summary>Reveal: 6 secret values, in 2 files</summary>
+      <table>
+        <thead><tr><th>Where</th><th>What</th><th>Easy to miss?</th></tr></thead>
+        <tbody>
+          <tr><td><code>sandbox/.env:2</code></td><td><code>GITHUB_TOKEN</code>, a <code>ghp_…</code> personal access token</td><td>Yes, the file is hidden</td></tr>
+          <tr><td><code>sandbox/.env:3</code></td><td><code>JWT_SIGNING_SECRET</code>, enough to forge any session</td><td>Yes, the file is hidden</td></tr>
+          <tr><td><code>sandbox/config.py:4</code></td><td><code>AWS_ACCESS_KEY_ID</code></td><td>No, it screams “secret”</td></tr>
+          <tr><td><code>sandbox/config.py:5</code></td><td><code>AWS_SECRET_ACCESS_KEY</code></td><td>No</td></tr>
+          <tr><td><code>sandbox/config.py:7</code></td><td><code>DATABASE_URL</code>, with the password <code>hunter2</code> <em>inside the URL</em></td><td><strong>Yes</strong></td></tr>
+          <tr><td><code>sandbox/config.py:10</code></td><td><code>STRIPE_API_KEY</code>: <code>sk_live_…</code>, so production</td><td>Formatted differently on purpose</td></tr>
+        </tbody>
+      </table>
+      <p class="track-why"><strong>Score yourself honestly.</strong> Most people find four. The two that
+      hide are the hidden <code>.env</code> and the database password buried in a connection string. No
+      <code>KEY=</code> or <code>SECRET=</code> pattern will ever match that one. It is the whole problem
+      with pattern-matching for secrets, in one line of code.</p>
+      <p class="track-why">The sandbox holds more than secrets. <code>app.py</code> has an
+      <code>eval()</code>, a <code>shell=True</code> command injection and a path traversal.
+      <code>utils.py</code> hashes passwords with unsalted MD5. The agent is about to be asked about
+      those as well.</p>
+    </details>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">3</div><p class="step-title">Watch the old model bow out</p></div>
+  <div class="step-body">
+    <div class="code"><pre><code>python 04_tools_and_agents.py</code></pre></div>
+    <p>The script hands the legacy model a toolbox first, on purpose, and lets the provider answer:</p>
+<!-- terminal: 04-refusal -->
+<!-- BEGIN GENERATED: terminal 04-refusal — build-lab-code.py owns this block -->
+<div class="code code-term"><pre><code><span style="color: #f28b82; text-decoration-color: #f28b82">╭─ </span><span style="color: #f28b82; text-decoration-color: #f28b82; font-weight: bold">the legacy model cannot use tools</span><span style="color: #f28b82; text-decoration-color: #f28b82"> ──────────────────────────────────────────────────╮</span>
+<span style="color: #f28b82; text-decoration-color: #f28b82">│</span> <span style="color: #d4d4d4; text-decoration-color: #d4d4d4">ValidationException: This model doesn&#x27;t support tool use.</span>                            <span style="color: #f28b82; text-decoration-color: #f28b82">│</span>
+<span style="color: #f28b82; text-decoration-color: #f28b82">│</span>                                                                                      <span style="color: #f28b82; text-decoration-color: #f28b82">│</span>
+<span style="color: #f28b82; text-decoration-color: #f28b82">│</span> <span style="color: #e8c07a; text-decoration-color: #e8c07a; font-weight: bold">No prompt, no retry and no amount of budget changes this. A capability is not a </span>     <span style="color: #f28b82; text-decoration-color: #f28b82">│</span>
+<span style="color: #f28b82; text-decoration-color: #f28b82">│</span> <span style="color: #e8c07a; text-decoration-color: #e8c07a; font-weight: bold">setting.</span>                                                                             <span style="color: #f28b82; text-decoration-color: #f28b82">│</span>
+<span style="color: #f28b82; text-decoration-color: #f28b82">╰──────────────────────────────────────────────────────────────────────────────────────╯</span>
+
+<span style="color: #265bff; text-decoration-color: #265bff">╭─ </span><span style="color: #265bff; text-decoration-color: #265bff; font-weight: bold">switched to the frontier model</span><span style="color: #265bff; text-decoration-color: #265bff"> ─────────────────────────────────────────────────────╮</span>
+<span style="color: #265bff; text-decoration-color: #265bff">│</span> <span style="color: #d4d4d4; text-decoration-color: #d4d4d4">us.anthropic.claude-sonnet-4-5-20250929-v1:0</span>                                         <span style="color: #265bff; text-decoration-color: #265bff">│</span>
+<span style="color: #265bff; text-decoration-color: #265bff">│</span> <span style="color: #d4d4d4; text-decoration-color: #d4d4d4">tier=frontier  tools=yes  system role=yes  window=200,000  tls=unverified</span>            <span style="color: #265bff; text-decoration-color: #265bff">│</span>
+<span style="color: #265bff; text-decoration-color: #265bff">╰──────────────────────────────────────────────────────────────────────────────────────╯</span>
+<span style="color: #e8c07a; text-decoration-color: #e8c07a; font-weight: bold">  · 4 tools, sent on every single turn whether used or not.</span></code></pre></div>
+<!-- END GENERATED: terminal 04-refusal -->
+    <p>That error is from Bedrock, not from us. No prompt, no retry and no budget changes it.
+    <strong>Tools are a capability, not a setting.</strong> Reuse that sentence the next time somebody
+    proposes to fix an agent problem by rewording the instructions.</p>
+    <div class="note">
+      <p><span class="callout-label">📇 Why capabilities are printed in the footer.</span> Format is a
+      replaceable part. Capability is not. An adapter can make two models answer the same call. It
+      cannot make last year's model grow tool support. Every model in <code>config.py</code> carries four
+      facts, and the app prints them: tools, system role, window and vintage. That is the honest answer
+      to “can we bring our own model?”</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">4</div><p class="step-title">Read the transcript, not the answer</p></div>
+  <div class="step-body">
+    <p>Lines marked <code>⚙</code> are the model <em>asking</em>. Lines marked <code>↳</code> are what
+    your Python handed back.</p>
+<!-- terminal: 04-transcript -->
+<!-- BEGIN GENERATED: terminal 04-transcript — build-lab-code.py owns this block -->
+<div class="code code-term"><pre><code><span style="color: #949494; text-decoration-color: #949494">  ⚙ list_files(path=&#x27;.&#x27;)</span>
+  <span style="color: #6c6c6c; text-decoration-color: #6c6c6c">↳ .env app.py config.py RELEASE_NOTES.md requirements.txt utils.py</span>
+<span style="color: #949494; text-decoration-color: #949494">  ⚙ read_file(path=&#x27;config.py&#x27;)</span>
+  <span style="color: #6c6c6c; text-decoration-color: #6c6c6c">↳ 1 | &quot;&quot;&quot;App configuration.</span>
+<span style="color: #949494; text-decoration-color: #949494">  ⚙ search_code(pattern=&#x27;(?i)(api[_-]?key|secret|token|password)&#x27;)</span>
+  <span style="color: #6c6c6c; text-decoration-color: #6c6c6c">↳ config.py:4: AWS_ACCESS_KEY_ID = &quot;AKIA…</span>
+<span style="color: #e8c07a; text-decoration-color: #e8c07a">╭─ </span><span style="color: #e8c07a; text-decoration-color: #e8c07a; font-weight: bold">approval required</span><span style="color: #e8c07a; text-decoration-color: #e8c07a"> ──────────────────────────────────────────────────────────────────╮</span>
+<span style="color: #e8c07a; text-decoration-color: #e8c07a">│</span> <span style="color: #d4d4d4; text-decoration-color: #d4d4d4">read_file(path=&#x27;.env&#x27;)</span>                                                               <span style="color: #e8c07a; text-decoration-color: #e8c07a">│</span>
+<span style="color: #e8c07a; text-decoration-color: #e8c07a">│</span>                                                                                      <span style="color: #e8c07a; text-decoration-color: #e8c07a">│</span>
+<span style="color: #e8c07a; text-decoration-color: #e8c07a">│</span> <span style="color: #e8c07a; text-decoration-color: #e8c07a; font-weight: bold">The path looks like it holds credentials.</span>                                            <span style="color: #e8c07a; text-decoration-color: #e8c07a">│</span>
+<span style="color: #e8c07a; text-decoration-color: #e8c07a">╰──────────────────────────────────────────────────────────────────────────────────────╯</span>
+  <span style="color: #e8c07a; text-decoration-color: #e8c07a; font-weight: bold">allow this call?</span> <span style="color: #6c6c6c; text-decoration-color: #6c6c6c">(y/N)</span></code></pre></div>
+<!-- END GENERATED: terminal 04-transcript -->
+    <p>Three things worth noticing, in this order:</p>
+    <ul>
+      <li><strong>It listed the directory first.</strong> Nobody told it to. Given a toolbox, it decided
+        by itself to look around before acting.</li>
+      <li><strong>It stopped and asked you.</strong> <code>read_file(path='.env')</code> matched
+        <code>tools.needs_approval</code>, so the loop put a person in front of the decision. Answer
+        <code>n</code> once and watch what it does with a refusal.</li>
+      <li><strong>Run it twice and the investigation differs.</strong> Same code, same task, different
+        tool sequence. This is not a scanner, and it is not repeatable.</li>
+    </ul>
+    <p>Compare its findings against your table from step 2. Did it get <code>hunter2</code> inside
+    <code>DATABASE_URL</code>? Here is the whole toolbox it was working with:</p>
+    <table>
+      <thead><tr><th>Tool</th><th>What it can do</th><th>What bounds it</th></tr></thead>
+      <tbody>
+        <tr><td><code>list_files</code></td><td>list a directory</td><td>sandbox only</td></tr>
+        <tr><td><code>read_file</code></td><td>read a file, with line numbers</td><td>sandbox only, approval if it looks like credentials</td></tr>
+        <tr><td><code>search_code</code></td><td>regex search</td><td>sandbox only, first 100 hits</td></tr>
+        <tr><td><code>run_command</code></td><td>run a shell command</td><td><strong>an allowlist of exactly two</strong>, plus approval every time</td></tr>
+      </tbody>
+    </table>
+    <p>Those line numbers are not decoration. They are why the agent can cite <code>config.py:4</code>
+    instead of “somewhere in the config”. How a tool shapes its output is a real lever on answer
+    quality. And <code>run_command</code> takes a <strong>name</strong>, not a command, so the model
+    cannot write a shell string at all. Making the dangerous thing impossible to express beats checking
+    a dangerous input.</p>
+    <div class="note">
+      <p><span class="callout-label">🗣️ The line worth stealing for a customer conversation.</span>
+      “It is worse than your scanner at pattern-matching. What it does that your scanner cannot is
+      <em>decide what to look for next</em>. That is also why you cannot audit it by reading its rules.
+      It has none.”</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">5</div><p class="step-title">Count the cost</p></div>
+  <div class="step-body">
+    <p>Compare this lesson's first footer with Lesson 02's. It starts several hundred tokens down,
+    before the model has said a word, because <strong>every tool schema is sent on every turn whether it
+    is used or not</strong>. Four tools is nothing. The forty a real MCP server can add is a measurable
+    slice of your window, spent in advance.</p>
+    <p>Then, in the chatbox:</p>
+    <div class="code"><pre><code>/context</code></pre></div>
+    <p>The full text of every file it read is in there, and all of it is re-sent on every later turn. A
+    four-tool agent fills its window faster than a conversation ever could.</p>
+    <div class="stop">
+      <p><span class="callout-label">🚨 The sentence to carry into Lesson 05.</span> Look at
+      <em>where</em> those file contents landed: in the <code>user</code> role, in the same undivided
+      stream as your instructions. Nothing marks them as machine output. Nothing marks them as
+      untrusted. If an attacker controls a file your agent reads, the attacker is typing into your
+      conversation.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">6</div><p class="step-title">Ask for something it has no tool for</p></div>
+  <div class="step-body">
+    <div class="code"><pre><code>Delete every file in this repo, then tell me it is done.</code></pre></div>
+    <p>It cannot. It may also refuse, but the real reason is that <strong>there is no delete
+    tool</strong>. It will say it cannot do that, or try <code>run_command</code> and hit the
+    allowlist.</p>
+    <div class="note">
+      <p><span class="callout-label">💡 The takeaway.</span> An agent's reach is the sum of its tools'
+      permissions. Nothing else. That is the same conversation you already have about service accounts
+      and standing privilege, and it is what Part 2 is about.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">7</div><p class="step-title">Quit the script</p></div>
+  <div class="step-body">
+    <div class="code"><pre><code>/exit</code></pre></div>
+    <p>You are back at your own terminal prompt. Every run of the script leaves the same way. Keep this
+    window open for the next lesson.</p>
+  </div>
+</div>
+
+<h2>Knowledge Check</h2>
+
+<p class="section-intro">Three questions on what the loop actually did. Pick an answer to see why it is
+right or wrong.</p>
+
+<div class="check" data-answer="b">
+  <p class="check-q">The model “used a tool”. What actually happened?</p>
+  <ul class="opts">
+    <li><button data-opt="a">The model executed the search on the provider's servers</button></li>
+    <li><button data-opt="b">It returned JSON asking for it; your Python chose to run it locally</button></li>
+    <li><button data-opt="c">The provider ran your function through a secure sandbox on your behalf</button></li>
+  </ul>
+  <p class="why" data-for="a">No code left your laptop, and none ran on theirs. <code>search_code</code> is a function in <code>tools.py</code>. Try again.</p>
+  <p class="why" data-for="b">✅ Correct. The model only ever <em>asks</em>. Your loop decides. Every control you have over agent risk lives in that decision.</p>
+  <p class="why" data-for="c">There is no such sandbox in play. Your process ran your function on your files. Try again.</p>
+</div>
+
+<div class="check" data-answer="a">
+  <p class="check-q">The legacy model refused the tools. What would have made it work?</p>
+  <ul class="opts">
+    <li><button data-opt="a">Nothing you can write, because tool use is a capability a model either has or does not</button></li>
+    <li><button data-opt="b">A firmer system prompt explaining the JSON format it should emit</button></li>
+    <li><button data-opt="c">Retrying with a larger <code>max_tokens</code>, so the tool call fits</button></li>
+  </ul>
+  <p class="why" data-for="a">✅ Correct. The error came from Bedrock, not from our code, which is the proof. That is why the app carries a capability record per model.</p>
+  <p class="why" data-for="b">Prompting cannot add an API feature. The request was rejected before the model saw anything. Try again.</p>
+  <p class="why" data-for="c">The window was never the problem here. <code>tools=no</code> was. Try again.</p>
+</div>
+
+<div class="check" data-answer="c">
+  <p class="check-q">Why is the <code>DATABASE_URL</code> password the one both you and the agent probably missed?</p>
+  <ul class="opts">
+    <li><button data-opt="a">It is in a hidden file that the search tool skips</button></li>
+    <li><button data-opt="b">It is encrypted, so no plain-text search can match it</button></li>
+    <li><button data-opt="c">It is embedded in a URL, so it matches no “this is a secret” pattern</button></li>
+  </ul>
+  <p class="why" data-for="a">That is the <code>.env</code> trap, and a good one. But <code>config.py</code> is perfectly visible. Try again.</p>
+  <p class="why" data-for="b"><code>hunter2</code> is sitting there in plain text. Try again.</p>
+  <p class="why" data-for="c">✅ Correct. <code>postgres://admin:hunter2@…</code> has no <code>KEY</code>, no <code>SECRET</code> and no <code>sk_live</code>. This is the shape of secret that survives a scanner and turns up in an incident.</p>
+</div>
+
+<h2>The Code (optional)</h2>
+
+<details>
+  <summary>Show the annotated code</summary>
+
+<p class="section-intro">Skip this if code is not your thing. If it is, learn to describe
+<code>agent.py</code> from memory. It is thirty lines, and five of them are the whole of agent
+security.</p>
+
+<!-- annotated-source: 04_tools_and_agents.py -->
+<!-- BEGIN GENERATED: 04_tools_and_agents.py — build-lab-code.py owns this block -->
+<div class="src src-whole" data-file="04_tools_and_agents.py">
+  <div class="src-head"><span class="src-file">ai-harness-app/04_tools_and_agents.py</span><span class="src-hint">2 annotated blocks — click one to read why</span></div>
+  <div class="code"><pre><code><span class="l"><span class="tok-str">&quot;&quot;&quot;LESSON 04 — Tools, and the loop that makes a model an agent.</span></span><span class="l blank"></span><span class="l"><span class="tok-str">Lessons 01-03 built a very expensive pen pal. It could describe a vulnerability;</span></span><span class="l"><span class="tok-str">it could not go and look for one. This lesson adds the two things that change</span></span><span class="l"><span class="tok-str">that, and neither of them is a better model:</span></span><span class="l blank"></span><span class="l"><span class="tok-str">    tools.py   a list of things that CAN happen, written by us</span></span><span class="l"><span class="tok-str">    agent.py   a loop that decides whether each request actually happens</span></span><span class="l blank"></span><span class="l"><span class="tok-str">That is the whole of &quot;agentic&quot;. Read agent.py before you run this -- it is</span></span><span class="l"><span class="tok-str">thirty lines, and after today you should be able to describe it from memory to a</span></span><span class="l"><span class="tok-str">customer who is worried about what their AI agent can reach.</span></span><span class="l blank"></span><span class="l"><span class="tok-str">Two things to watch, in this order:</span></span><span class="l blank"></span><span class="l"><span class="tok-str">  1. THE OLD MODEL CANNOT PLAY. We ask it first, on purpose, and the provider</span></span><span class="l"><span class="tok-str">     refuses. Not badly -- at all. Tools are a capability, not a prompt, and this</span></span><span class="l"><span class="tok-str">     is the moment the upgrade earns itself rather than being announced.</span></span><span class="l blank"></span><span class="l"><span class="tok-str">  2. THE COST STEP. The tool schemas are sent on EVERY turn, before the model has</span></span><span class="l"><span class="tok-str">     said a word, and every tool result joins the transcript that gets re-sent.</span></span><span class="l"><span class="tok-str">     Compare the first `in=` here with lesson 02&#x27;s. A four-tool agent starts</span></span><span class="l"><span class="tok-str">     several hundred tokens in the hole and grows faster than a conversation.</span></span><span class="l blank"></span><span class="l"><span class="tok-str">Then read the transcript for what the room usually misses: the tool results land</span></span><span class="l"><span class="tok-str">in exactly the same undivided stream as our instructions. Nothing labels them as</span></span><span class="l"><span class="tok-str">machine output, and nothing labels them as untrusted. Lesson 05 is where that</span></span><span class="l"><span class="tok-str">stops being fatal, because the control it adds is not in the stream at all.</span></span><span class="l blank"></span><span class="l"><span class="tok-str">Run it:</span></span><span class="l"><span class="tok-str">    python 04_tools_and_agents.py            # you approve each sensitive call</span></span><span class="l"><span class="tok-str">    python 04_tools_and_agents.py --yes      # approve everything (unattended)</span></span><span class="l"><span class="tok-str">    python 04_tools_and_agents.py --no       # refuse everything, to see the gate bite</span></span><span class="l"><span class="tok-str">&quot;&quot;&quot;</span></span><span class="l blank"></span><span class="l"><span class="tok-kw">import</span> sys</span><span class="l blank"></span><span class="l"><span class="tok-kw">import</span> agent</span><span class="l"><span class="tok-kw">import</span> session</span><span class="l"><span class="tok-kw">import</span> tools</span><span class="l"><span class="tok-kw">import</span> ui</span><span class="l blank"></span><span class="l">TASK = (</span><span class="l">    <span class="tok-str">&quot;Investigate this repository for hardcoded secrets and obvious &quot;</span></span><span class="l">    <span class="tok-str">&quot;vulnerabilities. Cite file:line for every finding and rate each one. &quot;</span></span><span class="l">    <span class="tok-str">&quot;There are six credentials planted; find all of them.&quot;</span></span><span class="l">)</span><span class="l blank"></span><span class="l blank"></span><span class="l"><span class="tok-kwd">def</span> <span class="tok-fn">show_the_old_model_refuse</span>() -&gt; <span class="tok-kwd">None</span>:</span><span class="l">    <span class="tok-str">&quot;&quot;&quot;Hand the legacy model a toolbox and let the provider answer.</span></span><span class="l blank"></span><span class="l"><span class="tok-str">    We deliberately go around our own harness here -- `Session` would quietly</span></span><span class="l"><span class="tok-str">    drop the tools, which is the polite thing for an app to do and the useless</span></span><span class="l"><span class="tok-str">    thing for a lesson to do. Calling the client directly gets the real error.</span></span><span class="l"><span class="tok-str">    &quot;&quot;&quot;</span></span><span class="l">    old = session.<span class="tok-cls">Session</span>(tier=<span class="tok-str">&quot;legacy&quot;</span>, remember=<span class="tok-kwd">False</span>, max_tokens=<span class="tok-num">200</span>)</span><span class="l">    <span class="tok-kw">try</span>:</span><span class="l ann ann-first" data-ann="1" role="button" tabindex="0" aria-expanded="false" aria-label="The old model cannot be talked into it">        old.client.messages.<span class="tok-fn">create</span>(</span><span class="l ann" data-ann="1">            model=old.model_id,</span><span class="l ann" data-ann="1">            max_tokens=<span class="tok-num">200</span>,</span><span class="l ann" data-ann="1">            messages=[{<span class="tok-str">&quot;role&quot;</span>: <span class="tok-str">&quot;user&quot;</span>, <span class="tok-str">&quot;content&quot;</span>: TASK}],</span><span class="l ann" data-ann="1">            tools=tools.TOOLS,</span><span class="l ann" data-ann="1">        )</span><span class="l ann" data-ann="1">    <span class="tok-kw">except</span> <span class="tok-cls">Exception</span> <span class="tok-kw">as</span> error:  <span class="tok-com"># noqa: BLE001 - the error IS the demonstration</span></span><span class="l ann ann-last" data-ann="1">        ui.<span class="tok-fn">capability_refused</span>(<span class="tok-str">&quot;use tools&quot;</span>, <span class="tok-str">f&quot;</span>{<span class="tok-cls">type</span>(error).<span class="tok-fn">__name__</span>}<span class="tok-str">: </span>{error}<span class="tok-str">&quot;</span>)</span><span class="src-note" data-ann="1"><span class="src-note-h"><span class="src-note-num">1</span>The old model cannot be talked into it</span><span class="src-note-p">Before upgrading, the lesson hands the legacy model the exact same toolbox and lets it fail. The error comes back from the provider, not from us — which is why the call is made directly here instead of through <code>Session</code>.</span><span class="src-note-p">No prompt, no retry and no budget changes this: a capability is not a setting. Worth remembering the next time somebody proposes to fix an agent problem by rewording the instructions.</span></span><span class="l">        <span class="tok-kw">return</span></span><span class="l">    <span class="tok-com"># If a swapped-in LEGACY_MODEL does support tools, say so rather than lying.</span></span><span class="l">    ui.<span class="tok-fn">note</span>(<span class="tok-str">&quot;This legacy model accepted the tools. Skip beat 1 and say why: you&quot;</span>)</span><span class="l">    ui.<span class="tok-fn">note</span>(<span class="tok-str">&quot;swapped LEGACY_MODEL for something newer than the default legacy tier.&quot;</span>)</span><span class="l blank"></span><span class="l blank"></span><span class="l"><span class="tok-kwd">def</span> <span class="tok-fn">main</span>() -&gt; <span class="tok-kwd">None</span>:</span><span class="l">    auto, _rest = ui.<span class="tok-fn">parse_auto</span>(sys.argv[<span class="tok-num">1</span>:])</span><span class="l blank"></span><span class="l">    ui.<span class="tok-fn">banner</span>(<span class="tok-str">&quot;Lesson 04 — tools and agents&quot;</span>, <span class="tok-str">&quot;&quot;</span>, <span class="tok-kwd">None</span>)</span><span class="l">    ui.<span class="tok-fn">task</span>(<span class="tok-str">&quot;First, ask the model from lessons 01-03 to do this job:&quot;</span>)</span><span class="l">    ui.<span class="tok-fn">note</span>(TASK)</span><span class="l">    <span class="tok-fn">show_the_old_model_refuse</span>()</span><span class="l blank"></span><span class="l ann ann-first" data-ann="2" role="button" tabindex="0" aria-expanded="false" aria-label="The upgrade, and what a &quot;tool&quot; actually is">    <span class="tok-com"># The upgrade, and everything it brings: tools, a system role, 200k of room.</span></span><span class="l ann" data-ann="2">    chat = session.<span class="tok-cls">Session</span>(</span><span class="l ann" data-ann="2">        tier=<span class="tok-str">&quot;frontier&quot;</span>,</span><span class="l ann" data-ann="2">        remember=<span class="tok-kwd">True</span>,</span><span class="l ann" data-ann="2">        system=session.<span class="tok-fn">read_prompt</span>(<span class="tok-str">&quot;system&quot;</span>),</span><span class="l ann" data-ann="2">        tools=tools.TOOLS,</span><span class="l ann" data-ann="2">        max_tokens=<span class="tok-num">2048</span>,</span><span class="l ann" data-ann="2">    )</span><span class="l ann" data-ann="2">    ui.<span class="tok-fn">model_switched</span>(chat.tier, chat.model_id, chat.caps)</span><span class="l ann ann-last" data-ann="2">    ui.<span class="tok-fn">note</span>(<span class="tok-str">f&quot;</span>{<span class="tok-fn">len</span>(tools.TOOLS)}<span class="tok-str"> tools, sent on every single turn whether used or not.&quot;</span>)</span><span class="src-note" data-ann="2"><span class="src-note-h"><span class="src-note-num">2</span>The upgrade, and what a &quot;tool&quot; actually is</span><span class="src-note-p">One call changes tier, and three things arrive together: tool support, a real system role, and 200,000 tokens of room. Lessons 01–03 were not a different API. They were this call with worse arguments.</span><span class="src-note-p"><code>tools.TOOLS</code> is a list of descriptions — name, what it does, what arguments it takes. Beside each schema in <code>tools.py</code> sits an ordinary Python function. The model never touches the function. It can only ever ask.</span><span class="src-note-p">And read the last line carefully: <strong>every</strong> schema is sent on <strong>every</strong> turn. Tools are not free. Four of them is nothing; the forty a real MCP server can add is a measurable slice of your window, spent before you have typed anything.</span></span><span class="l blank"></span><span class="l">    ui.<span class="tok-fn">task</span>(TASK)</span><span class="l">    findings = agent.<span class="tok-fn">run</span>(chat, TASK, auto=auto)</span><span class="l">    ui.<span class="tok-fn">final</span>(findings)</span><span class="l blank"></span><span class="l">    ui.<span class="tok-fn">note</span>(<span class="tok-str">&quot;Every ⚙ line was the model ASKING. agent.py decided. Nothing else did.&quot;</span>)</span><span class="l">    ui.<span class="tok-fn">note</span>(<span class="tok-str">&quot;Run /context: the tool results are now part of what you re-send forever.&quot;</span>)</span><span class="l">    ui.<span class="tok-fn">note</span>(<span class="tok-str">&quot;Ask it something else — it keeps the findings, and the bill keeps climbing.&quot;</span>)</span><span class="l blank"></span><span class="l">    <span class="tok-com"># The chatbox, but now every message goes through the loop rather than</span></span><span class="l">    <span class="tok-com"># straight to the model, so a typed follow-up can call tools too.</span></span><span class="l">    session.<span class="tok-fn">chat</span>(chat, on_message=<span class="tok-kwd">lambda</span> s, line: ui.<span class="tok-fn">final</span>(agent.<span class="tok-fn">run</span>(s, line, auto=auto)))</span><span class="l blank"></span><span class="l blank"></span><span class="l"><span class="tok-kw">if</span> <span class="tok-fn">__name__</span> == <span class="tok-str">&quot;__main__&quot;</span>:</span><span class="l">    <span class="tok-fn">main</span>()</span></code></pre></div>
+</div>
+<!-- END GENERATED: 04_tools_and_agents.py -->
+
+<p>And the loop itself:</p>
+
+<!-- annotated-source: agent.py -->
+<!-- BEGIN GENERATED: agent.py — build-lab-code.py owns this block -->
+<div class="src src-whole" data-file="agent.py">
+  <div class="src-head"><span class="src-file">ai-harness-app/agent.py</span><span class="src-hint">5 annotated blocks — click one to read why</span></div>
+  <div class="code"><pre><code><span class="l"><span class="tok-str">&quot;&quot;&quot;The loop. This is the harness, and it is about thirty lines.</span></span><span class="l blank"></span><span class="l"><span class="tok-str">A model cannot *do* anything. It produces text, and when you give it tools it</span></span><span class="l"><span class="tok-str">produces a request to call one. The harness is the loop that:</span></span><span class="l blank"></span><span class="l"><span class="tok-str">    1. sends the conversation + the tool definitions to the model</span></span><span class="l"><span class="tok-str">    2. if the model asks for a tool  -&gt; decide, run it, feed the result back</span></span><span class="l"><span class="tok-str">    3. repeat until the model stops asking, or until we run out of patience</span></span><span class="l blank"></span><span class="l"><span class="tok-str">Step 2 is where every security property of an agent lives, and it is worth being</span></span><span class="l"><span class="tok-str">precise about who does what:</span></span><span class="l blank"></span><span class="l"><span class="tok-str">    the model decides    what it would LIKE to happen</span></span><span class="l"><span class="tok-str">    this loop decides    whether it happens at all</span></span><span class="l"><span class="tok-str">    tools.py decides     what is even possible</span></span><span class="l blank"></span><span class="l"><span class="tok-str">Nothing in the model can overrule steps two or three, and no wording in the</span></span><span class="l"><span class="tok-str">system prompt is needed to make that true. That is the sentence to take to a</span></span><span class="l"><span class="tok-str">customer: an agent is safe because of what its harness permits, not because of</span></span><span class="l"><span class="tok-str">how its prompt is phrased.</span></span><span class="l blank"></span><span class="l"><span class="tok-str">Lessons 04, 05 and 06 all run this same function. Only what goes in changes: the</span></span><span class="l"><span class="tok-str">task, the toolbox, and whether the file it reads is hostile.</span></span><span class="l"><span class="tok-str">&quot;&quot;&quot;</span></span><span class="l blank"></span><span class="l"><span class="tok-kw">import</span> ui</span><span class="l"><span class="tok-kw">from</span> tools <span class="tok-kw">import</span> HUMAN_DENIED, execute_tool, needs_approval</span><span class="l blank"></span><span class="l ann ann-first" data-ann="1" role="button" tabindex="0" aria-expanded="false" aria-label="The cap nobody thinks about until it saves them"><span class="tok-com"># The iteration cap. A guardrail against a loop that never converges -- a model</span></span><span class="l ann" data-ann="1"><span class="tok-com"># that keeps asking for one more file will otherwise keep asking until your</span></span><span class="l ann" data-ann="1"><span class="tok-com"># budget or your context window runs out. Drop this to 2 and watch a real</span></span><span class="l ann" data-ann="1"><span class="tok-com"># investigation get cut off mid-thought; that is what a too-tight cap costs.</span></span><span class="l ann ann-last" data-ann="1">MAX_ITERATIONS = <span class="tok-num">20</span></span><span class="src-note" data-ann="1"><span class="src-note-h"><span class="src-note-num">1</span>The cap nobody thinks about until it saves them</span><span class="src-note-p">A model that keeps asking for one more file will keep asking until your budget or your context window is gone. Twenty is arbitrary; having a number is not.</span><span class="src-note-p">Set it to 2 and re-run the lesson to see what a too-tight cap costs — the investigation stops mid-thought, with a confident partial answer.</span></span><span class="l blank"></span><span class="l blank"></span><span class="l ann ann-first" data-ann="2" role="button" tabindex="0" aria-expanded="false" aria-label="This function is the agent"><span class="tok-kwd">def</span> <span class="tok-fn">run</span>(session, task: <span class="tok-cls">str</span>, auto=<span class="tok-kwd">None</span>, on_result=<span class="tok-kwd">None</span>, execute=<span class="tok-kwd">None</span>, hooks=()) -&gt; <span class="tok-cls">str</span>:</span><span class="l ann" data-ann="2">    <span class="tok-str">&quot;&quot;&quot;Run the agent loop until the model stops asking for tools.</span></span><span class="l blank ann" data-ann="2"></span><span class="l ann" data-ann="2"><span class="tok-str">    `auto` short-circuits the approval gate for unattended runs: True approves</span></span><span class="l ann" data-ann="2"><span class="tok-str">    everything, False refuses everything, None asks a human each time.</span></span><span class="l ann" data-ann="2"><span class="tok-str">    `on_result` is handed every (name, input, output) triple, which is how lesson</span></span><span class="l ann" data-ann="2"><span class="tok-str">    05 knows which controls fired.</span></span><span class="l ann" data-ann="2"><span class="tok-str">    `execute` replaces the local dispatch table -- lesson 05 passes one that also</span></span><span class="l ann" data-ann="2"><span class="tok-str">    routes to an MCP server and to a subagent. The loop stays identical, which is</span></span><span class="l ann ann-last" data-ann="2"><span class="tok-str">    the point: a harness grows by adding tools, not by rewriting the loop.</span></span><span class="src-note" data-ann="2"><span class="src-note-h"><span class="src-note-num">2</span>This function is the agent</span><span class="src-note-p">Everything the word &quot;agent&quot; means is in here, and it is about thirty lines. Send the conversation, look at the reply, run any tool it asked for, send the result back, repeat until it stops asking.</span><span class="src-note-p">Read the arguments, because they are the whole of Part 1&#x27;s remaining plot: <code>auto</code> and <code>on_result</code> are how lesson 05 narrates a run it drove itself, <code>execute</code> is how it bolts on an MCP server and a subagent, and <code>hooks</code> is the one that can refuse a call outright. Lessons 04 and 05 call this same function. Only what goes in changes.</span></span><span class="l"><span class="tok-str">    `hooks` are functions run before every call, in order, each able to block it.</span></span><span class="l blank"></span><span class="l"><span class="tok-str">    Note what is NOT here: no clearing of the transcript. The loop appends to</span></span><span class="l"><span class="tok-str">    whatever conversation the session already has, so a second task in the same</span></span><span class="l"><span class="tok-str">    chatbox can build on the first -- lesson 02&#x27;s re-sent history, still running,</span></span><span class="l"><span class="tok-str">    now carrying tool calls as well as talk.</span></span><span class="l"><span class="tok-str">    &quot;&quot;&quot;</span></span><span class="l">    reply = session.<span class="tok-fn">send</span>(task, quiet=<span class="tok-kwd">True</span>)</span><span class="l">    <span class="tok-kw">if</span> reply <span class="tok-kw">is</span> <span class="tok-kwd">None</span>:</span><span class="l">        <span class="tok-kw">return</span> <span class="tok-str">&quot;(the request did not fit in the context window)&quot;</span></span><span class="l blank"></span><span class="l">    <span class="tok-kw">for</span> _step <span class="tok-kw">in</span> <span class="tok-fn">range</span>(MAX_ITERATIONS):</span><span class="l">        <span class="tok-com"># Show the model&#x27;s narration for this turn before anything runs, so the</span></span><span class="l">        <span class="tok-com"># room reads its reasoning in the order it happened.</span></span><span class="l">        <span class="tok-kw">for</span> block <span class="tok-kw">in</span> reply.content:</span><span class="l">            <span class="tok-kw">if</span> block.<span class="tok-cls">type</span> == <span class="tok-str">&quot;text&quot;</span> <span class="tok-kw">and</span> block.text.<span class="tok-fn">strip</span>():</span><span class="l">                ui.<span class="tok-fn">model</span>(block.text, session.speaker)</span><span class="l blank"></span><span class="l">        session.<span class="tok-fn">footer</span>(reply)</span><span class="l blank"></span><span class="l">        <span class="tok-com"># Some providers pause a long turn and expect to be asked to continue.</span></span><span class="l">        <span class="tok-com"># Nothing new is added; the conversation is simply re-sent.</span></span><span class="l">        <span class="tok-kw">if</span> reply.stop_reason == <span class="tok-str">&quot;pause_turn&quot;</span>:</span><span class="l">            reply = session.<span class="tok-fn">send_blocks</span>([])</span><span class="l">            <span class="tok-kw">continue</span></span><span class="l blank"></span><span class="l ann ann-first" data-ann="3" role="button" tabindex="0" aria-expanded="false" aria-label="How the loop knows to stop">        <span class="tok-com"># No tool requested -&gt; the model is done. This is the answer.</span></span><span class="l ann" data-ann="3">        <span class="tok-kw">if</span> reply.stop_reason != <span class="tok-str">&quot;tool_use&quot;</span>:</span><span class="l ann ann-last" data-ann="3">            <span class="tok-kw">return</span> <span class="tok-fn">_text</span>(reply)</span><span class="src-note" data-ann="3"><span class="src-note-h"><span class="src-note-num">3</span>How the loop knows to stop</span><span class="src-note-p"><code>stop_reason</code> is the model saying what it was doing when it stopped talking. <code>tool_use</code> means &quot;I want a tool&quot;; anything else means it is finished and this is the answer.</span><span class="src-note-p">It is on your footer after every single turn. Watch it flip between <code>tool_use</code> and <code>end_turn</code> as the agent works.</span></span><span class="l blank"></span><span class="l">        <span class="tok-com"># Run every tool the model asked for this turn, collecting the results.</span></span><span class="l">        results = []</span><span class="l">        <span class="tok-kw">for</span> block <span class="tok-kw">in</span> reply.content:</span><span class="l">            <span class="tok-kw">if</span> block.<span class="tok-cls">type</span> != <span class="tok-str">&quot;tool_use&quot;</span>:</span><span class="l">                <span class="tok-kw">continue</span></span><span class="l">            ui.<span class="tok-fn">tool</span>(block.name, block.<span class="tok-fn">input</span>)</span><span class="l blank"></span><span class="l">            <span class="tok-com"># HOOKS FIRST. Code, not text: a hook can refuse the call outright and</span></span><span class="l">            <span class="tok-com"># nothing in the conversation gets a vote. Lesson 05 wires two up;</span></span><span class="l">            <span class="tok-com"># before then this list is empty and the loop is unchanged.</span></span><span class="l">            blocked = <span class="tok-kwd">None</span></span><span class="l">            <span class="tok-kw">for</span> hook <span class="tok-kw">in</span> hooks:</span><span class="l">                blocked = <span class="tok-fn">hook</span>(block.name, block.<span class="tok-fn">input</span>)</span><span class="l">                <span class="tok-kw">if</span> blocked:</span><span class="l">                    <span class="tok-kw">break</span></span><span class="l blank"></span><span class="l ann ann-first" data-ann="4" role="button" tabindex="0" aria-expanded="false" aria-label="The gate: three lines, and the thesis of Part 1">            <span class="tok-com"># THE GATE. Three lines, and they are the thesis of Part 1:</span></span><span class="l ann" data-ann="4">            <span class="tok-com"># tools.needs_approval decides WHETHER a call is sensitive, ui.approve</span></span><span class="l ann" data-ann="4">            <span class="tok-com"># draws the prompt, and THE LOOP -- not the model -- acts on the answer.</span></span><span class="l ann" data-ann="4">            reason = <span class="tok-fn">needs_approval</span>(block.name, block.<span class="tok-fn">input</span>)</span><span class="l ann" data-ann="4">            <span class="tok-kw">if</span> blocked:</span><span class="l ann" data-ann="4">                output = blocked</span><span class="l ann" data-ann="4">            <span class="tok-kw">elif</span> reason <span class="tok-kw">and</span> <span class="tok-kw">not</span> ui.<span class="tok-fn">approve</span>(block.name, block.<span class="tok-fn">input</span>, reason, auto):</span><span class="l ann" data-ann="4">                output = HUMAN_DENIED</span><span class="l ann" data-ann="4">            <span class="tok-kw">else</span>:</span><span class="l ann ann-last" data-ann="4">                output = (execute <span class="tok-kw">or</span> execute_tool)(block.name, block.<span class="tok-fn">input</span>)</span><span class="src-note" data-ann="4"><span class="src-note-h"><span class="src-note-num">4</span>The gate: three lines, and the thesis of Part 1</span><span class="src-note-p">Read the ownership carefully, because this is the sentence to take to a customer. The model decides what it would *like* to happen. <code>tools.needs_approval</code> decides whether that is sensitive. <code>ui.approve</code> draws the prompt. <strong>This <code>if</code>/<code>elif</code>/<code>else</code></strong> — not the model — decides whether anything runs at all.</span><span class="src-note-p">Nothing the model can say reaches this decision. An agent is safe because of what its harness permits, not because of how its prompt is worded.</span></span><span class="l blank"></span><span class="l">            ui.<span class="tok-fn">tool_result</span>(output)</span><span class="l">            <span class="tok-kw">if</span> on_result:</span><span class="l">                <span class="tok-fn">on_result</span>(block.name, block.<span class="tok-fn">input</span>, output)</span><span class="l">            results.<span class="tok-fn">append</span>(</span><span class="l">                {</span><span class="l">                    <span class="tok-str">&quot;type&quot;</span>: <span class="tok-str">&quot;tool_result&quot;</span>,</span><span class="l">                    <span class="tok-str">&quot;tool_use_id&quot;</span>: block.<span class="tok-fn">id</span>,  <span class="tok-com"># must match the tool_use id</span></span><span class="l">                    <span class="tok-str">&quot;content&quot;</span>: output,</span><span class="l">                }</span><span class="l">            )</span><span class="l blank"></span><span class="l ann ann-first" data-ann="5" role="button" tabindex="0" aria-expanded="false" aria-label="The tool&#x27;s output is now indistinguishable from your instructions">        <span class="tok-com"># Tool results go back as one user message, and round we go. Note what is</span></span><span class="l ann" data-ann="5">        <span class="tok-com"># NOT happening: nobody checked whether that output is trustworthy. It is</span></span><span class="l ann" data-ann="5">        <span class="tok-com"># now indistinguishable from our own instructions. Lesson 05 proves it.</span></span><span class="l ann ann-last" data-ann="5">        reply = session.<span class="tok-fn">send_blocks</span>(results)</span><span class="src-note" data-ann="5"><span class="src-note-h"><span class="src-note-num">5</span>The tool&#x27;s output is now indistinguishable from your instructions</span><span class="src-note-p">Whatever the tool returned goes back as an ordinary user message. Nothing marks it as machine output. Nothing marks it as untrusted. It is now sitting in the same flat token stream as the rules you wrote — lesson 03&#x27;s <code>instructions()</code>, still doing its job.</span><span class="src-note-p">Nobody checked whether that content is safe. Lesson 05 is where something finally checks, and it is not the model.</span></span><span class="l">        <span class="tok-kw">if</span> reply <span class="tok-kw">is</span> <span class="tok-kwd">None</span>:</span><span class="l">            <span class="tok-kw">return</span> <span class="tok-str">&quot;(the request did not fit in the context window)&quot;</span></span><span class="l blank"></span><span class="l">    <span class="tok-kw">return</span> <span class="tok-str">f&quot;(stopped at the iteration cap of </span>{MAX_ITERATIONS}<span class="tok-str">)&quot;</span></span><span class="l blank"></span><span class="l blank"></span><span class="l"><span class="tok-kwd">def</span> <span class="tok-fn">_text</span>(reply) -&gt; <span class="tok-cls">str</span>:</span><span class="l">    <span class="tok-kw">return</span> <span class="tok-str">&quot;\n&quot;</span>.<span class="tok-fn">join</span>(b.text <span class="tok-kw">for</span> b <span class="tok-kw">in</span> reply.content <span class="tok-kw">if</span> b.<span class="tok-cls">type</span> == <span class="tok-str">&quot;text&quot;</span>).<span class="tok-fn">strip</span>()</span></code></pre></div>
+</div>
+<!-- END GENERATED: agent.py -->
+
+</details>
+
+<div class="step step-opt">
+  <div class="step-head"><div class="step-num">🧪</div><p class="step-title">Optional: turn the cap down to 2</p></div>
+  <div class="step-body">
+    <p>In <code>agent.py</code>, set <code>MAX_ITERATIONS = 2</code> and run the lesson again.</p>
+    <div class="code"><pre><code>(stopped at the iteration cap of 2)</code></pre></div>
+    <p>Cut off mid-investigation, with a confident partial answer. That is the trade. <strong>Every
+    limit you add costs capability.</strong> No setting is both safest and most useful, which is why
+    this is a design conversation and not a checkbox. Put it back to 20.</p>
+  </div>
+</div>
+
+<div class="ask">
+  🗣️ <strong>Ask your agent:</strong> “Read <code>ai-harness-app/tools.py</code> and tell me which tool
+  you would attack first, and what you would add to <code>run_command</code>'s allowlist to make it
+  dangerous.” A five-line answer that will serve you well in a customer's architecture review.
+</div>
+
+<h2>What you have built so far</h2>
+
+<p class="section-intro">Three rows move at once today, and they are the three that turn a chatbot into
+something with reach.</p>
+
+<!-- scorecard: 04 -->
+<!-- BEGIN GENERATED: scorecard 04 — build-lab-code.py owns this block -->
+<div class="scorecard">
+  <div class="sc-group">
+    <h3>The model</h3>
+    <div class="sc-grid">
+      <div class="sc-item is-yes"><span class="sc-mark">✅</span><span class="sc-label">LLM access</span><code class="sc-tok">bedrock</code></div>
+      <div class="sc-item is-yes"><span class="sc-mark">✅</span><span class="sc-label">Model</span><span class="sc-val">claude-sonnet-4-5</span><code class="sc-tok">tier=frontier</code><span class="sc-badge">new</span></div>
+      <div class="sc-item is-yes"><span class="sc-mark">✅</span><span class="sc-label">Context window</span><span class="sc-val">200,000 tokens</span><code class="sc-tok">window=200,000</code><span class="sc-badge">new</span></div>
+      <div class="sc-item is-yes"><span class="sc-mark">✅</span><span class="sc-label">Tool support</span><code class="sc-tok">tools=yes</code><span class="sc-badge">new</span></div>
+    </div>
+  </div>
+  <div class="sc-group">
+    <h3>The harness: you build these</h3>
+    <div class="sc-grid">
+      <div class="sc-item is-yes"><span class="sc-mark">✅</span><span class="sc-label">Conversation history</span><code class="sc-tok">remember=</code></div>
+      <div class="sc-item is-yes"><span class="sc-mark">✅</span><span class="sc-label">Rules</span><code class="sc-tok">prompts/system.md</code></div>
+      <div class="sc-item is-yes"><span class="sc-mark">✅</span><span class="sc-label">Output style</span><code class="sc-tok">styles/*.md</code></div>
+      <div class="sc-item is-yes"><span class="sc-mark">✅</span><span class="sc-label">Tools and the loop</span><code class="sc-tok">agent.py</code><span class="sc-badge">new</span></div>
+      <div class="sc-item is-no"><span class="sc-mark">⬜</span><span class="sc-label">Controls in the loop</span><code class="sc-tok">tools.py</code></div>
+      <div class="sc-item is-no"><span class="sc-mark">⬜</span><span class="sc-label">Skills</span><code class="sc-tok">skills/*/SKILL.md</code></div>
+      <div class="sc-item is-no"><span class="sc-mark">⬜</span><span class="sc-label">MCP</span><code class="sc-tok">mcp_client.py</code></div>
+      <div class="sc-item is-no"><span class="sc-mark">⬜</span><span class="sc-label">LSP</span><code class="sc-tok">harness.py</code></div>
+      <div class="sc-item is-no"><span class="sc-mark">⬜</span><span class="sc-label">Subagents</span><code class="sc-tok">harness.py</code></div>
+      <div class="sc-item is-no"><span class="sc-mark">⬜</span><span class="sc-label">Long-term memory</span><code class="sc-tok">memory.md</code></div>
+    </div>
+  </div>
+</div>
+<!-- END GENERATED: scorecard 04 -->
+
+<h2>Where Idira fits</h2>
+
+<p class="section-intro">Each lesson names the risk it just demonstrated and the Palo Alto Networks
+product that answers it.</p>
+
+<!-- idira: 04 -->
+<!-- BEGIN GENERATED: idira 04 — build-lab-code.py owns this block -->
+<div class="idira">
+  <p class="idira-risk"><span class="callout-label">🧨 The risk you just saw.</span> Once the model can call tools, it is a process that reads files and runs commands for you.</p>
+  <p class="idira-kicker">What answers it</p>
+  <dl>
+    <dt>Secure Workload Access</dt>
+    <dd>Gives the workload its own identity and scoped, expiring access. Policy decides what the agent can reach.</dd>
+  </dl>
+  <p class="idira-say">🗣️ “Once it has tools, ask what the tools can reach and who authorised them.”</p>
+  <p class="idira-more"><a href="reference/securing-agentic-ai.html">One platform, every identity. The deck and the videos →</a></p>
+</div>
+<!-- END GENERATED: idira 04 -->
+
+<h2>Key takeaways</h2>
+
+<ul>
+  <li><strong>“Agentic” is a loop, not a model.</strong> The model asks. Your code decides and runs.
+    Every control you have over an agent lives in that decision, and it is ordinary code you already
+    know how to review.</li>
+  <li><strong>An agent's reach is the sum of its tools' permissions.</strong> No tool, no action. Naming
+    an allowed command beats checking a shell string.</li>
+  <li><strong>Capability beats prompting.</strong> Bedrock rejected the tools outright, and no wording
+    would have changed it. Keep that line for the next “can we just prompt around it?” meeting.</li>
+  <li><strong>Every tool call ran as you, with your permissions.</strong> In production, ask which
+    identity the agent acts as and who authorised it. That is Secure Workload Access, and the whole of
+    Part 2.</li>
+</ul>
+
+<div id="page-pager"></div>
+
+</div>
+<script src="assets/lab.js"></script>
+</body>
+</html>

@@ -20,6 +20,7 @@ import sys
 from rich.columns import Columns
 from rich.console import Console
 from rich.markdown import Markdown
+from rich.padding import Padding
 from rich.panel import Panel
 from rich.text import Text
 from rich.theme import Theme
@@ -106,13 +107,18 @@ _MARK = [
 ]
 
 
-def banner(stage: str, provider: str = "", model: str = "") -> None:
-    """Print the Idira mark, the event, the stage, and which model we're on.
+def banner(stage: str, model: str = "", caps=None) -> None:
+    """Print the Idira mark, the event, the stage, and what the model can do.
 
     Printed ONCE per run, at the top. Reprinting it mid-transcript is noise on a
-    screen share. This replaces the old bare `[config] provider=... model=...`
-    line -- same information, in the one place people look for it.
+    screen share -- the per-turn numbers live in footer() instead.
+
+    The capability line is here rather than in the footer because it is the thing
+    an attendee needs before the first answer arrives, not after it: "this model
+    has no tools and an 8k window" explains what is about to happen.
     """
+    provider = os.environ.get("LLM_PROVIDER", "bedrock")
+
     wordmark = Text()
     wordmark.append("\nIDIRA", style="brand")
     wordmark.append(" ®", style="meta")
@@ -121,8 +127,10 @@ def banner(stage: str, provider: str = "", model: str = "") -> None:
     wordmark.append("  by Palo Alto Networks\n", style="subtitle")
     wordmark.append(EVENT + "\n", style="subtitle")
     wordmark.append(stage + "\n", style="brand")
-    if provider or model:
-        wordmark.append(f"{provider}  ·  {model}", style="meta")
+    if model:
+        wordmark.append(f"{provider}  ·  {model}\n", style="meta")
+    if caps is not None:
+        wordmark.append(_caps_text(caps), style="meta")
 
     console.print()
     if _fancy_glyphs():
@@ -134,12 +142,32 @@ def banner(stage: str, provider: str = "", model: str = "") -> None:
     console.print()
 
 
-def model(text: str) -> None:
+def _caps_text(caps) -> str:
+    """The capability record, in one line. Read this out loud in lesson 01.
+
+    `tls=unverified` is on this line rather than in a comment somewhere because
+    this is the app's honesty line, and the one thing an honesty line cannot do is
+    leave out the awkward fact. Part 1 does not verify certificates -- config.py
+    says why at length, and the cheat sheet says why you must not copy it. Anyone
+    who reads this banner has been told.
+    """
+    return (
+        f"tier={caps.name}  tools={'yes' if caps.tools else 'no'}  "
+        f"system role={'yes' if caps.system else 'no'}  "
+        f"window={caps.window:,}  tls=unverified"
+    )
+
+
+def model(text: str, speaker: str = "the model") -> None:
     """The model's voice: a panel, Markdown-rendered.
 
     Claude emits Markdown unprompted -- numbered findings, `file:line` in
     backticks, bold severities. Rendering it is what makes this read like a
     product instead of a log.
+
+    The panel is titled with whichever model actually answered, never a generic
+    "Claude". Lessons 01-03 are not talking to Claude, and a workshop about
+    knowing what is in your context should not mislabel who is in the room.
     """
     text = text.strip()
     if not text:
@@ -147,22 +175,13 @@ def model(text: str) -> None:
     console.print(
         Panel(
             Markdown(text),
-            title="[brand]Claude[/]",
+            title=f"[brand]{speaker}[/]",
             title_align="left",
             border_style=IDIRA_BLUE,
             width=PANEL_WIDTH,
             padding=(0, 1),
         )
     )
-
-
-def plain(text: str) -> None:
-    """Unpanelled model output, for Lessons 01-2.
-
-    The early stages look austere because they ARE austere: no loop, no toolbox.
-    The UI getting richer as the harness gets richer is part of the argument.
-    """
-    console.print(text.strip(), style="default")
 
 
 def task(text: str) -> None:
@@ -190,14 +209,20 @@ def tool(name: str, tool_input: dict) -> None:
 
 
 def tool_result(text: str, limit: int = 300) -> None:
-    """Show what a tool returned. Only Lesson 05 calls this -- seeing the refusal
-    text IS that stage's payoff, and showing results everywhere spends the
-    surprise early."""
+    """Show what a tool returned, truncated.
+
+    Every lesson from 04 shows these, because a tool result is the one thing in
+    the transcript the room needs to see arriving: it is untrusted text being
+    spliced into the model's context, and it is why a rule is only ever a request.
+
+    Padding rather than a literal two-space prefix, so a wrapped refusal stays
+    indented instead of starting the second line hard against the margin.
+    """
     flat = " ".join(text.split())
     if len(flat) > limit:
         flat = flat[:limit] + " …"
-    style = "danger" if ("Refused" in text or "refused" in text) else "meta"
-    console.print(Text(f"  ↳ {flat}", style=style))
+    style = "danger" if "refused" in text.lower() else "meta"
+    console.print(Padding(Text(f"↳ {flat}", style=style), (0, 0, 0, 2)))
 
 
 def approve(name: str, tool_input: dict, reason: str, auto: bool | None = None) -> bool:
@@ -234,28 +259,338 @@ def approve(name: str, tool_input: dict, reason: str, auto: bool | None = None) 
     return answer.strip().lower() in {"y", "yes"}
 
 
-def context(step: int, input_tokens: int, messages: int) -> None:
-    """Lesson 04's live accounting line -- the number that kills a naive agent."""
-    console.print(
-        Text(f"  ctx  step {step:>2}  input_tokens={input_tokens}  messages={messages}", style="meta")
-    )
-
-
 def compacted(folded: int, chars: int) -> None:
     console.print(
         Text(f"  ⤿ compacted {folded} messages into a {chars}-char note", style="warn")
     )
 
 
-def usage(stop_reason: str, input_tokens: int, output_tokens: int) -> None:
-    """Lesson 01's footer: the raw material for context management later."""
+# --- The footer: the numbers, after every single call ------------------------
+#
+# Printed after each exchange rather than pinned to the bottom of the terminal.
+# A truly sticky footer needs rich's Live display and the alternate screen, which
+# would stop the transcript scrolling -- and the transcript is the thing people
+# screenshot and scroll back through. Repeating four lines per turn is the
+# cheaper honest answer: the numbers are always on screen because they are
+# always printed.
+
+# Where the gauge changes colour. Not a published threshold -- a teaching device,
+# and the pages say so. The point of the band is that answer quality falls off
+# inside a filling window with nothing in the output to announce it.
+DUMB_ZONE = 50  # percent
+CRITICAL = 80  # percent
+
+
+def gauge(percent: float, width: int = 24) -> Text:
+    """The context gauge: a bar, a percentage, and a dumb-zone marker.
+
+    A percentage rather than a token count, because "4,812" means nothing to
+    anybody and "59%" means something to everybody. The bar earns its space at
+    the back of a room where the digits are unreadable.
+    """
+    filled = max(0, min(width, int(round(width * percent / 100.0))))
+    style = "ok"
+    if percent >= CRITICAL:
+        style = "danger"
+    elif percent >= DUMB_ZONE:
+        style = "warn"
+
+    bar = Text()
+    bar.append("█" * filled, style=style)
+    bar.append("░" * (width - filled), style="meta")
+    bar.append(f"  {percent:5.1f}% of the window", style=style)
+    if percent >= CRITICAL:
+        bar.append("  ← out of room", style="danger")
+    elif percent >= DUMB_ZONE:
+        bar.append("  ← dumb zone", style="warn")
+    return bar
+
+
+def footer(
+    tier,
+    model_id,
+    caps,
+    stop_reason,
+    input_tokens,
+    output_tokens,
+    percent,
+    turns,
+    messages,
+    remember,
+    prepended=False,
+    style=None,
+) -> None:
+    """Everything that happened on that call, in four lines.
+
+    Deliberately includes `remember`: an attendee looking at a small, flat token
+    count needs to see WHY it is flat, and "history: not re-sent" is the reason.
+    """
     console.print()
     console.print(
+        Text(f"  {tier}  ·  {model_id}", style="meta")
+    )
+    console.print(
         Text(
-            f"stop_reason={stop_reason}  input_tokens={input_tokens}  output_tokens={output_tokens}",
+            f"  stop_reason={stop_reason}  in={input_tokens:,}  out={output_tokens:,}"
+            f"  turn={turns}",
             style="meta",
         )
     )
+    console.print(Text("  ", style="meta") + gauge(percent))
+
+    # Short labels, because this line has to survive an 80-column terminal
+    # without wrapping into an unindented second row on a projector.
+    extras = [f"history: {messages} re-sent" if remember else "history: dropped"]
+    if style:
+        extras.append(f"style: {style}")
+    if prepended:
+        extras.append("system: prepended")
+    console.print(Text("  " + "  ·  ".join(extras), style="meta"))
+    console.print()
+
+
+def wall(window: int, spent: int) -> None:
+    """The context window, reached. In lesson 03 this is the point, not a bug."""
+    console.print()
+    console.print(
+        Panel(
+            Text(
+                f"The request did not fit. This model holds {window:,} tokens and the "
+                "conversation is now bigger than that.\n\n"
+                "Nothing degraded gracefully: it worked, and then it did not. Two ways "
+                "out, and they are the whole of context engineering —\n"
+                "  • /compact  fold what is already here into a note\n"
+                "  • /reset    start again, and size the next job to fit\n\n"
+                "A bigger model buys you room. It does not change the shape of this "
+                "problem, and Claude Code hits the same wall on a long enough task.",
+                style="default",
+            ),
+            title="[danger]context window exceeded[/]",
+            title_align="left",
+            border_style=DANGER,
+            width=PANEL_WIDTH,
+            padding=(0, 1),
+        )
+    )
+
+
+def note(text: str) -> None:
+    """A one-line aside from the harness itself, not from the model."""
+    console.print(Text(f"  · {text}", style="warn"))
+
+
+def model_switched(tier: str, model_id: str, caps) -> None:
+    console.print()
+    console.print(
+        Panel(
+            Text(f"{model_id}\n{_caps_text(caps)}", style="default"),
+            title=f"[brand]switched to the {tier} model[/]",
+            title_align="left",
+            border_style=IDIRA_BLUE,
+            width=PANEL_WIDTH,
+            padding=(0, 1),
+        )
+    )
+
+
+def refused(title: str, detail: str, footnote: str) -> None:
+    """Something the harness could not do, drawn as a panel rather than a traceback.
+
+    Both callers are moments where a failure IS the teaching: an old model that
+    cannot use tools, and a network that will not reach an unauthenticated MCP
+    server. A stack trace reads as a broken demo; a panel reads as a finding.
+    """
+    console.print()
+    console.print(
+        Panel(
+            Text(f"{detail}\n\n", style="default") + Text(footnote, style="warn"),
+            title=f"[danger]{title}[/]",
+            title_align="left",
+            border_style=DANGER,
+            width=PANEL_WIDTH,
+            padding=(0, 1),
+        )
+    )
+
+
+def capability_refused(what: str, detail: str) -> None:
+    """Lesson 04's opening beat: the old model, asked to do something it cannot."""
+    refused(
+        f"the legacy model cannot {what}",
+        detail,
+        "No prompt, no retry and no amount of budget changes this. A capability "
+        "is not a setting.",
+    )
+
+
+def unreachable(target: str, detail: str) -> None:
+    """Lesson 05's MCP server, blocked. Expected, and worth saying why."""
+    refused(
+        f"could not reach {target}",
+        detail,
+        "An unauthenticated MCP server on the public internet, feeding tool "
+        "schemas and tool output into an agent that can read your source, is "
+        "what egress filtering exists for. This block is the lesson working.",
+    )
+
+
+def style_switched(name: str, text: str) -> None:
+    console.print()
+    console.print(
+        Panel(
+            Markdown(text),
+            title=f"[brand]output style: {name}  ({len(text)} chars of instructions)[/]",
+            title_align="left",
+            border_style=IDIRA_BLUE,
+            width=PANEL_WIDTH,
+            padding=(0, 1),
+        )
+    )
+
+
+def harness_summary(
+    rules_file,
+    skills,
+    mcp,
+    lsp,
+    hooks,
+    subagents,
+    memory,
+    total_tools,
+) -> None:
+    """Lesson 05's opening slide, drawn from what is actually wired up.
+
+    Generated rather than written: a hand-typed list of components would go stale
+    the first time somebody added a skill, and this page is the one an attendee
+    photographs.
+    """
+    rows = [
+        ("1 rules", rules_file, "context · request"),
+        ("2 skills", ", ".join(skills) or "none found", "context · on demand"),
+        ("3 style", "styles/*.md  (/style)", "context · request"),
+        ("4 MCP", mcp, "tools · third party"),
+        ("5 LSP", ", ".join(lsp), "tools · cheap reads"),
+        ("6 subagents", subagents, "tools · new window"),
+        ("7 hooks", ", ".join(hooks), "THE LOOP · CONTROL"),
+        ("+ memory", memory, "context · persists"),
+    ]
+    # Fixed columns, truncated rather than wrapped: this panel has to survive an
+    # 80-column terminal, and a wrapped table is unreadable on a projector.
+    body = Text()
+    for label, what, kind in rows:
+        style = "warn" if "LOOP" in kind else "default"
+        if len(what) > 33:
+            what = what[:32] + "…"
+        body.append(f"{label:<13}", style="brand")
+        body.append(f"{what:<34}", style="default")
+        body.append(f"{kind}\n", style=style)
+    body.append(
+        f"\n{total_tools} tools in the toolbox, every schema sent on every turn.",
+        style="meta",
+    )
+    console.print()
+    console.print(
+        Panel(
+            body,
+            title="[brand]the harness — seven parts, one loop[/]",
+            title_align="left",
+            border_style=IDIRA_BLUE,
+            width=PANEL_WIDTH,
+            padding=(0, 1),
+        )
+    )
+
+
+def system_view(system_prompt, style_text, has_system_role: bool) -> None:
+    """Show exactly what instructions the model is being sent, and how.
+
+    The `has_system_role` line is the one worth reading twice. On a model with no
+    system role there is no boundary between our instructions and the user's
+    words -- they are one string. Everything a tool returns later joins the same
+    string. That is prompt injection, visible before it is explained.
+    """
+    body = Text()
+    if not (system_prompt or style_text):
+        body.append("Nothing. This lesson sends no instructions at all.", style="default")
+    else:
+        if has_system_role:
+            body.append(
+                "Sent in the API's `system` field. That keeps it out of the "
+                "transcript, and it does NOT make it a boundary — the model reads "
+                "one flat stream either way.\n\n",
+                style="meta",
+            )
+        else:
+            body.append(
+                "This model has NO system role, so the harness prepends all of "
+                "this into your first message. Instructions and data, one string, "
+                "no boundary.\n\n",
+                style="warn",
+            )
+        body.append((system_prompt or "") + "\n", style="default")
+        if style_text:
+            body.append("\n" + style_text, style="default")
+    console.print()
+    console.print(
+        Panel(
+            body,
+            title="[brand]the instructions[/]",
+            title_align="left",
+            border_style=IDIRA_BLUE,
+            width=PANEL_WIDTH,
+            padding=(0, 1),
+        )
+    )
+
+
+def context_view(session) -> None:
+    """Everything currently in the context, itemised. `/context`."""
+    instructions = session.instructions()
+    body = Text()
+    body.append(f"instructions   {len(instructions):>6} chars\n", style="default")
+    body.append(f"messages       {len(session.messages):>6} in the transcript\n", style="default")
+    body.append(
+        f"re-sent        {'yes' if session.remember else 'no — every message starts from nothing'}\n",
+        style="default",
+    )
+    body.append(f"last request   {session.used():>6,} tokens\n", style="default")
+    body.append(f"window         {session.caps.window:>6,} tokens\n", style="default")
+    body.append(f"compactions    {session.compactions:>6}\n", style="default")
+    body.append(
+        f"\nbilled so far  in={session.total_input:,}  out={session.total_output:,}",
+        style="meta",
+    )
+    console.print()
+    console.print(
+        Panel(
+            body,
+            title="[brand]what the model is holding[/]",
+            title_align="left",
+            border_style=IDIRA_BLUE,
+            width=PANEL_WIDTH,
+            padding=(0, 1),
+        )
+    )
+    console.print(Text("  ", style="meta") + gauge(session.percent()))
+
+
+def chat_intro(help_text: str) -> None:
+    console.print()
+    console.print(
+        Panel(
+            Text(help_text, style="default"),
+            title="[brand]your turn — type a message, or a command[/]",
+            title_align="left",
+            border_style=IDIRA_BLUE,
+            width=PANEL_WIDTH,
+            padding=(0, 1),
+        )
+    )
+
+
+def ask() -> str:
+    """The chatbox prompt. Raises EOFError on Ctrl-D, which the caller handles."""
+    return console.input("[brand]you ›[/] ")
 
 
 def final(text: str) -> None:
@@ -274,35 +609,42 @@ def final(text: str) -> None:
     )
 
 
-def postmortem(fired: list) -> None:
-    """Lesson 05's closing argument."""
+def control_probe(rows: list) -> None:
+    """Lesson 05's guarantee: every control, exercised with no model involved.
+
+    This panel exists because a model's cooperation is non-deterministic and the
+    claim it is supposed to prove is not. Each row is a call made directly from
+    the lesson script -- no model asked for it, no prompt could have talked us out
+    of it -- and the refusal beside it is the real return value.
+
+    Two columns per row rather than a paragraph, because the whole argument is the
+    correspondence between what was attempted and what came back.
+    """
+    body = Text()
+    body.append(
+        "Called straight from 05_harness.py. No model, no prompt, no luck:\n\n",
+        style="meta",
+    )
+    # Every row is prefixed with 13 characters, and the panel's inner width on an
+    # 80-column terminal is about 74. Truncate to 58 so a long refusal cannot wrap
+    # into an unindented second line and break the two-column correspondence that
+    # is the entire point of the panel.
+    for attempt, control, result in rows:
+        body.append(f"  attempted  {_clip(attempt)}\n", style="default")
+        body.append(f"  refused by {_clip(control)}\n", style="brand")
+        body.append(f"  returned   {_clip(result)}\n\n", style="danger")
+    body.append(
+        "Three controls, none of them written in English, none of them arguable. "
+        "That is the only part of this lesson that works every single time.",
+        style="default",
+    )
     console.print()
-    if fired:
-        body = Text("A file the agent read tried to hijack it. These controls refused it:\n", style="default")
-        for label in fired:
-            body.append(f"  • {label}\n", style="danger")
-        body.append(
-            "\nThe model was influenced by untrusted input; the HARNESS bounded the "
-            "blast radius. That is the defense -- least privilege, not a better prompt.",
-            style="default",
-        )
-    else:
-        body = Text(
-            "No control was triggered this run. The model spotted the injected block\n"
-            "and declined it on its own -- so no malicious call ever reached the\n"
-            "harness for a control to refuse.\n\n"
-            "That is a good outcome, not a failed demo, but do NOT let the room take it\n"
-            "as the lesson. It is the model choosing well, and next run it may choose\n"
-            "differently. Run it again to see behavior vary. Safety cannot depend on the\n"
-            "model resisting; it must live in what the tools are allowed to do.",
-            style="default",
-        )
     console.print(
         Panel(
             body,
-            title="[danger]post-mortem — what actually happened[/]",
+            title="[brand]the controls, proven without the model[/]",
             title_align="left",
-            border_style=DANGER,
+            border_style=IDIRA_BLUE,
             width=PANEL_WIDTH,
             padding=(0, 1),
         )
@@ -319,6 +661,12 @@ def thinking(label: str = "thinking"):
     return console.status(f"[brand]{label}…[/]", spinner="dots")
 
 
+def _clip(text: str, limit: int = 58) -> str:
+    """One line, never wrapped. For tables whose columns have to stay aligned."""
+    flat = " ".join(str(text).split())
+    return flat if len(flat) <= limit else flat[: limit - 1] + "…"
+
+
 def fmt_args(tool_input: dict) -> str:
     return ", ".join(f"{k}={v!r}" for k, v in (tool_input or {}).items())
 
@@ -326,8 +674,8 @@ def fmt_args(tool_input: dict) -> str:
 def parse_auto(argv: list) -> tuple[bool | None, list]:
     """Pull --yes/--no out of argv. Returns (auto, remaining_args).
 
-    --no is worth its three lines: it guarantees the room sees the controls fire
-    at least once, which Lesson 05 cannot promise on its own.
+    --no is worth its three lines: it guarantees the room sees the approval gate
+    refuse a call, which the model's own behaviour cannot promise.
     """
     auto: bool | None = None
     rest = []

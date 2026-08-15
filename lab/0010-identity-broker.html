@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>10 · The Identity Broker · SKO27 TechSummit - AI Workshop for Idira DC</title>
+<title>10 · MCP: AI Agent Identity Broker · SKO27 TechSummit - AI Workshop for Idira DC</title>
+<link rel="icon" type="image/svg+xml" href="assets/idira-icon.svg">
 <link rel="stylesheet" href="assets/lab.css">
 </head>
 <body>
@@ -14,16 +15,17 @@
 <nav id="page-nav"></nav>
 
 <header class="lesson">
-  <p class="kicker">Part 2 · Lesson 10</p>
-  <h1>The Identity Broker 🛡️</h1>
+  <p class="kicker">Part 2 · Practical Guide to AI Harness</p>
+  <h1>MCP: AI Agent Identity Broker 🛡️</h1>
   <p class="standfirst">
-    In Lesson 08 you gave your agent a short-lived key to AWS. Now do something better: give it
-    access to a tool while it holds <strong>no key at all</strong> — and be able to prove,
-    afterwards, exactly what it did and who asked.
+    By the end of this lesson you will know how to govern AI agents with the <strong>Idira AI Agent
+    Identity Broker</strong>. It shows you which agents are reaching corporate data, and it acts as a
+    kill switch to stop a specific agent reaching a specific resource. You will have done both
+    yourself: one tool call you held no credential for, and one audit record with your name on it.
   </p>
   <ul class="meta">
     <li class="tag-must">Everyone</li>
-    <li>⏱️ ~12 minutes</li>
+    <li>The lesson you will demo</li>
     <li id="step-counter">&nbsp;</li>
   </ul>
 </header>
@@ -33,16 +35,15 @@
 <div class="note">
   <p><span class="callout-label">🎯 This is the lesson you will demo.</span> You are a Domain
   Consultant. Everything else today was you learning to use an agent. <em>This</em> is the part a
-  client will ask you to show them on a screen share — so we go slower, name every button, and
-  finish with a five-minute demo script you can reuse.</p>
+  client will ask you to show them on a screen share. So you do it twice, once as the user and once as
+  the administrator, and finish with a five-minute demo script you can reuse.</p>
 </div>
 
-<h2>The problem it solves</h2>
-
-<p>Today your agent needed one thing: AWS. Real agents need ten — a ticketing system, a directory,
-a code host, a database, a wiki. The naive answer is to give the agent a credential for each one.
-Now re-read Lesson 07 and notice you have just rebuilt <code>integrations.json</code>, except this
-time the thing holding all the keys is a program that acts on its own. 😬</p>
+<p><strong>The problem it solves.</strong> Today your agent in this workshop needed one thing only: AWS.
+Real agents need ten: a ticketing system, a directory, a code host, a database, a wiki. The obvious
+answer is to give the agent a credential for each one. That rebuilds
+<code>integrations.json</code> from Lesson 08, except now a program that acts on its own is holding all
+the keys.</p>
 
 <figure>
 <svg viewBox="0 0 760 210" role="img" aria-label="Without a broker, the agent holds credentials for every tool. With a broker, only the broker holds them.">
@@ -52,7 +53,7 @@ time the thing holding all the keys is a program that acts on its own. 😬</p>
     </marker>
   </defs>
 
-  <text x="16" y="20" class="svg-label" fill="var(--danger)">Without a broker 🔑🔑🔑</text>
+  <text x="16" y="20" class="svg-label" fill="var(--danger)">Without a broker</text>
   <rect x="16" y="34" width="110" height="52" rx="8" fill="var(--danger-soft)" stroke="var(--danger)"/>
   <text x="71" y="65" text-anchor="middle" class="svg-label" fill="var(--ink)">🤖 agent</text>
   <rect x="236" y="30" width="96" height="26" rx="6" fill="var(--panel)" stroke="var(--line)"/>
@@ -69,7 +70,7 @@ time the thing holding all the keys is a program that acts on its own. 😬</p>
 
   <line x1="368" y1="20" x2="368" y2="190" stroke="var(--line)" stroke-width="1"/>
 
-  <text x="400" y="20" class="svg-label" fill="var(--win)">With the Broker 🎫</text>
+  <text x="400" y="20" class="svg-label" fill="var(--win)">With the Broker</text>
   <rect x="400" y="34" width="86" height="52" rx="8" fill="var(--win-soft)" stroke="var(--win)"/>
   <text x="443" y="65" text-anchor="middle" class="svg-label" fill="var(--ink)">🤖 agent</text>
   <rect x="516" y="34" width="86" height="52" rx="8" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>
@@ -86,60 +87,86 @@ time the thing holding all the keys is a program that acts on its own. 😬</p>
   <line x1="605" y1="62" x2="643" y2="74" stroke="var(--ink-faint)" stroke-width="1.4" marker-end="url(#a5)"/>
   <line x1="605" y1="70" x2="643" y2="105" stroke="var(--ink-faint)" stroke-width="1.4" marker-end="url(#a5)"/>
   <text x="559" y="140" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">0 secrets in the agent</text>
-  <text x="559" y="158" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">every call logged 📋</text>
-  <text x="559" y="176" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">one switch to stop it 🔴</text>
+  <text x="559" y="158" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">every call logged</text>
+  <text x="559" y="176" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">one switch to stop it</text>
 </svg>
-<figcaption>Same three tools. The difference is where the credentials live — and whether anyone can tell you what the agent did.</figcaption>
+<figcaption>Same three tools. The difference is where the credentials live, and whether anyone can tell you what the agent did.</figcaption>
 </figure>
 
-<p>The <strong>Idira Identity Broker</strong> sits in the middle of every call. It authenticates the
-agent, checks a policy, forwards the call, and writes down what happened. Three consequences, and
-these are the three sentences to say to a client:</p>
+<p>The <strong>Idira AI Agent Identity Broker</strong> sits in the middle of every call. It
+authenticates the agent, checks a policy, forwards the call, and writes down what happened. Three
+consequences. These are the three sentences to say to a client:</p>
 
 <ul>
-  <li>🔐 <strong>The agent never holds the credential.</strong> It holds a connection.</li>
-  <li>📋 <strong>Every tool call is audited</strong> — including the ones that were refused.</li>
-  <li>🔴 <strong>There is one switch.</strong> Flip a server to <em>Disabled</em> and every connected
+  <li><strong>The agent never holds the credential.</strong> It holds a connection.</li>
+  <li><strong>Every tool call is audited</strong>, including the ones that were refused.</li>
+  <li><strong>There is one switch.</strong> Flip a server to <em>Disabled</em> and every connected
   agent loses it immediately.</li>
 </ul>
 
-<h2>Steps</h2>
+<h2>Your Tasks</h2>
+
+<p class="section-intro">Eight steps, in two halves. In the first half you are a person using an AI
+agent. In the second half you are the administrator who has to answer for that agent. Tick each one
+off as you go.</p>
+
+<div class="note">
+  <p><span class="callout-label">🔑 What you need before you start.</span> This lesson uses the
+  <strong>apj-secrets</strong> tenant. That is a different tenant from Lesson 09. Sign in with your
+  own account, the one you checked in prework step 9. The <strong>Client Secret</strong> for step 2 is
+  in the Slack channel <code>#cybr-japac-ts-all</code>. Do not paste it into any other window.</p>
+</div>
+
+<h3>You are the user</h3>
 
 <div class="step">
-  <div class="step-head"><div class="step-num">1</div><p class="step-title">Point your agent at the Broker</p></div>
+  <div class="step-head"><div class="step-num">1</div><p class="step-title">See what your agent can reach now</p></div>
   <div class="step-body">
-    <p>Your trainer has registered an MCP server in the tenant for you. It has a <strong>Gateway
-    URL</strong>, which looks like this:</p>
-    <div class="code"><pre><code>https://&lt;region&gt;.data.aigw.cyberark.cloud/mcp/&lt;server-name&gt;</code></pre></div>
-    <p>That host is the Broker, not the tool. Nothing about the tool's own address appears anywhere
-    on your laptop. 👀</p>
-    <p>Take the URL, Client ID and Client Secret from the screen (or your card) and run this
-    <em>outside</em> the agent — one line, all on one line:</p>
-    <div class="code"><pre><code>claude mcp add --transport http --scope user idira-broker &lt;GATEWAY-URL&gt; --client-id &lt;CLIENT-ID&gt; --client-secret</code></pre></div>
-    <p><code>--client-secret</code> takes no value on the line — it prompts you, so the secret never
-    lands in your shell history. Paste it when asked. 🤫</p>
-    <div class="note">
-      <p><span class="callout-label">🪪 Where those come from.</span> When an administrator
-      <strong>registers an AI agent</strong> in Idira, that is what issues the Client ID and Secret.
-      They are the agent's <em>identity</em>, not a key to any tool — which is why it is safe for
-      sixty people to be handed one and why it is the thing that makes the audit trail say a name
-      instead of “something connected”.</p>
-    </div>
-    <p><code>--scope user</code> means the connection follows you into any folder, so the optional
-    lessons still have it.</p>
+    <p>Start the agent:</p>
+    <div class="code"><pre><code>claude</code></pre></div>
+    <p>Ask it which MCP servers it has:</p>
+    <div class="code"><pre><code>/mcp</code></pre></div>
+    <p>There is no Broker in the list. Remember that, because you run this again in step 3. Now leave
+    the agent:</p>
+    <div class="code"><pre><code>/exit</code></pre></div>
+    <p>The next command runs in your terminal, not in the agent.</p>
   </div>
 </div>
 
 <div class="step">
-  <div class="step-head"><div class="step-num">2</div><p class="step-title">Authenticate as yourself 🙋</p></div>
+  <div class="step-head"><div class="step-num">2</div><p class="step-title">Connect your agent to the Broker</p></div>
   <div class="step-body">
-    <p>Start the agent and open the MCP panel:</p>
+    <p>An administrator has already registered an MCP server for you. Its <strong>Gateway URL</strong>
+    is the address an agent uses to reach that server <em>through</em> the Broker:</p>
+    <div class="code"><pre><code>https://apj-secrets.data.aigw.cyberark.cloud/mcp/entrasonar-mcp</code></pre></div>
+    <p>That host is the Broker, not the tool. The tool's own address never appears on your laptop.</p>
+    <p>Run this in your terminal. It is one line:</p>
+    <div class="code"><pre><code>claude mcp add --transport http --scope user idira-broker https://apj-secrets.data.aigw.cyberark.cloud/mcp/entrasonar-mcp --client-id e5ba972d-ad32-4c7b-9fcb-c9a24a9cf370 --client-secret</code></pre></div>
+    <p><code>--client-secret</code> takes no value on the line. It prompts you instead, so the secret
+    never reaches your shell history. Paste it from Slack when asked.</p>
+    <p>It confirms <code>idira-broker</code> was added and names the file it changed. Nothing is
+    authenticated yet. <code>--scope user</code> means the connection follows you into any folder.</p>
+    <div class="note">
+      <p><span class="callout-label">🪪 Where the Client ID and Secret come from.</span> An
+      administrator <strong>registered an AI agent</strong> in Idira. That is what issues them. They
+      are the agent's <em>identity</em>, not a key to any tool. That is why it is safe to hand one to
+      sixty people, and why the audit trail can name the agent.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">3</div><p class="step-title">Authenticate as yourself</p></div>
+  <div class="step-body">
+    <p>Start the agent and open the MCP panel again:</p>
     <div class="code"><pre><code>claude</code></pre></div>
+    <p>Press <code>Shift+Tab</code> a few times until the bottom line says <strong>auto</strong>. Then:</p>
     <div class="code"><pre><code>/mcp</code></pre></div>
-    <p>You will see <code>idira-broker</code> listed as needing authentication. Choose it. Your
-    browser opens; sign in <strong>as your own numbered workshop user</strong> and approve.</p>
-    <p>Back in the terminal the tools appear by themselves. Type <code>/mcp</code> again to list
-    them. 🎉</p>
+    <p>This time <code>idira-broker</code> is in the list, marked as needing authentication. Select it
+    and confirm. Your browser opens. Sign in <strong>as your own account</strong> and approve.</p>
+    <p>The browser page says the authentication was successful, and you can close that tab. The
+    terminal says it is connected to <code>idira-broker</code>. Type <code>/mcp</code> once more to
+    list the tools.</p>
     <div class="win">
       <p><span class="callout-label">💡 Stop and notice what just happened.</span> You did not type
       a password for the tool. You proved <em>who you are</em> to Idira, and Idira decided what the
@@ -147,73 +174,169 @@ these are the three sentences to say to a client:</p>
       of the product.</p>
     </div>
     <div class="warn">
-      <p><span class="callout-label">🧭 If the browser page fails to load</span> after you approve,
-      look at the address bar. A URL starting <code>http://localhost:</code> with
-      <code>?code=…</code> in it means the handshake worked; the agent picks it up. If it truly
-      hangs, <code>/exit</code>, run <code>claude</code> again, and retry <code>/mcp</code>.</p>
+      <p><span class="callout-label">🧭 If the browser step goes wrong.</span> Wrong browser, or wrong
+      profile in it: copy the URL from the terminal into the right one. The error will not tell you
+      that. Page will not load after you approve: a URL starting <code>http://localhost:</code> with
+      <code>?code=…</code> means the handshake worked and the agent picks it up. If it hangs,
+      <code>/exit</code>, run <code>claude</code> again, and retry <code>/mcp</code>.</p>
     </div>
   </div>
 </div>
 
 <div class="step">
-  <div class="step-head"><div class="step-num">3</div><p class="step-title">Use a tool through the Broker</p></div>
+  <div class="step-head"><div class="step-num">4</div><p class="step-title">Use a tool through the Broker</p></div>
   <div class="step-body">
-    <p>Ask the agent, in plain English, to do something with the server you just connected — for
-    example:</p>
-    <div class="code"><pre><code>List the tools you can reach on the idira-broker MCP server, then use one
-of them to answer a simple question. Tell me which tool you chose and why.</code></pre></div>
-    <p>Approve the tool call when it asks. ✅</p>
+    <p>Ask the agent what it can now do:</p>
+    <div class="code"><pre><code>What MCP tools are available?</code></pre></div>
+    <p>One tool comes back. Its name starts with <code>mcp__idira-broker__</code>, because the name
+    carries the server it came from. The tool itself is <code>analyze_domain</code>.</p>
+    <p>Now use it:</p>
+    <div class="code"><pre><code>Use the analyze_domain tool on the idira-broker server to analyze the domain paloaltonetworks.com.</code></pre></div>
+    <p>Approve the tool call. The tool gathers public information about that domain, including its
+    Microsoft 365 details, and the agent summarises what came back.</p>
+    <div class="win">
+      <p><span class="callout-label">💡 Count your credentials.</span> You hold no account on that
+      service and no API key for it. You proved who you were once, in a browser, and the Broker did
+      the rest.</p>
+    </div>
     <div class="note">
       <p><span class="callout-label">🔍 The detail that matters for your demo.</span> Idira
-      <strong>discovers the tools</strong> on a server the first time an agent connects to it. Until
-      then the console shows <em>Not discovered yet</em> for that server's tool count. So “connect
-      once, then write the policy” is the right order — and if a client says their tool list is
-      empty, this is why.</p>
+      <strong>discovers the tools</strong> on a server the first time an agent connects. Until then the
+      console shows <em>Not discovered yet</em> for that server. So connect once, then write the
+      policy. If a client says their tool list is empty, this is why.</p>
+    </div>
+    <div class="warn">
+      <p><span class="callout-label">🧭 If the agent says the server needs re-authorization</span>,
+      your token has expired. Run <code>/mcp</code> and sign in again. Your agent holds a
+      <strong>short-lived token</strong>, and it stops working on its own. A credential in a config
+      file does not.</p>
     </div>
   </div>
 </div>
 
+<h3>You are the administrator</h3>
+
+<p>Change hats. What you just did left records an administrator can read. Open the console at
+<a href="https://apj-secrets.cyberark.cloud/"><code>apj-secrets.cyberark.cloud</code></a> and sign in
+with the same account. You have <strong>read</strong> access. You are looking, not changing.</p>
+
 <div class="step">
-  <div class="step-head"><div class="step-num">4</div><p class="step-title">Find yourself in the audit log 📋</p></div>
+  <div class="step-head"><div class="step-num">5</div><p class="step-title">Find the agent in the inventory</p></div>
   <div class="step-body">
-    <p>Your trainer will put the audit view on the big screen. Find your own call — you are looking
+    <p>Go to <strong>Manage &gt; Inventory &gt; AI &gt; Managed AI Agents</strong>
+    (<a href="https://apj-secrets.cyberark.cloud/managespace/identities/machines/ai-agents/aigw/inventory">direct
+    link</a>). Click <code>japac-sko27</code> to open it.</p>
+    <p>This is the agent whose Client ID you pasted in step 2. Open the <strong>Connected MCP
+    servers</strong> tab. The server you just used is listed there.</p>
+    <p>Everyone in the room connected as this one registered agent.</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">6</div><p class="step-title">Find the MCP server</p></div>
+  <div class="step-body">
+    <p>Go to <strong>Manage &gt; Inventory &gt; AI &gt; MCP Servers</strong>
+    (<a href="https://apj-secrets.cyberark.cloud/managespace/identities/machines/ai-agents/aigw/mcp/inventory">direct
+    link</a>). Open the server you found in step 5.</p>
+    <p>Read three tabs, in this order:</p>
+    <table>
+      <tr><th>Tab</th><th>What to look for</th></tr>
+      <tr><td><strong>Details</strong></td><td>The Gateway URL you pasted, and whether the server is Enabled.</td></tr>
+      <tr><td><strong>Tools</strong></td><td><code>analyze_domain</code>, listed because an agent connected and Idira discovered it.</td></tr>
+      <tr><td><strong>Connected AI agents</strong></td><td><code>japac-sko27</code>. The same relationship as step 5, read from the resource instead of the principal.</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">7</div><p class="step-title">Read the access policy</p></div>
+  <div class="step-body">
+    <p>Go to <strong>Manage &gt; Policies &gt; AI agents access</strong>
+    (<a href="https://apj-secrets.cyberark.cloud/managespace/policies/aigw/access-policy/inventory">direct
+    link</a>). The page is titled <strong>AI agents access policies</strong>.</p>
+    <p>The list shows each policy's name, the MCP server and AI agents it covers, its owners, when it
+    last changed, and its tags. You can see the blast radius of every policy without opening one.</p>
+    <p>Open the policy that covers this workshop. This is what decided your tool call was allowed. It
+    has four parts. Read each row below against the screen in front of you:</p>
+    <table>
+      <tr><th>Part</th><th>What it sets</th><th>The choice worth explaining</th></tr>
+      <tr>
+        <td><strong>1 · General details</strong></td>
+        <td>Policy name, description, owners, tags.</td>
+        <td>Owners and tags are how this stays manageable at a hundred policies.</td>
+      </tr>
+      <tr>
+        <td><strong>2 · MCP servers and tools</strong></td>
+        <td>The servers, then the tools on them.</td>
+        <td><em>Select specific tools</em> denies anything discovered later.
+        <em>Allow all current and future tools</em> keeps working when the server adds a tool. That is
+        convenient, and it is a standing grant nobody reviews.</td>
+      </tr>
+      <tr>
+        <td><strong>3 · AI agents</strong></td>
+        <td>The agents users may work through.</td>
+        <td>Same trade-off again: <em>Allow all current and future AI agents</em> means tomorrow's
+        newly registered agent inherits this access with nobody approving it.</td>
+      </tr>
+      <tr>
+        <td><strong>4 · Users and roles</strong></td>
+        <td>Who may work through those agents.</td>
+        <td>Sources include Idira Cloud Directory, Okta and Entra ID. The <strong>Everyone</strong>
+        role covers all users in one entry. Handy for a lab, rarely right in production.</td>
+      </tr>
+    </table>
+    <div class="stop">
+      <p><span class="callout-label">🚨 This screen is a kill switch.</span> Remove the tool, the agent
+      or your role from this policy and the calls stop. Every connected agent, at once, from one screen.
+      No credential rotation, no code change, and no need to know where those agents are running.
+      Disabling the MCP server does the same thing. Ask a client how long that takes them today.</p>
+    </div>
+    <p>You can read this policy. You cannot write one: authoring needs the <strong>Secure AI
+    Admin</strong> role. If a client says this menu is missing for them, that is the answer, not a
+    bug.</p>
+    <p><a href="https://docs.cyberark.com/manage/latest/en/content/secureai/access-policies.htm" target="_blank">Access
+    policies, in the product documentation →</a></p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">8</div><p class="step-title">Find yourself in the audit log</p></div>
+  <div class="step-body">
+    <p>Go to the <strong>Audit and Reports</strong> space. Set the filter bar to three things:</p>
+    <table>
+      <tr><th>Filter</th><th>Set it to</th></tr>
+      <tr><td>Time range</td><td>Last 24 hours</td></tr>
+      <tr><td>Service name</td><td>Secure AI Agents</td></tr>
+      <tr><td>Filter by</td><td>Username, then your own username</td></tr>
+    </table>
+    <p>Your <code>analyze_domain</code> call from step 4 is in the results. Open it. You are looking
     for four things in one record:</p>
     <table>
       <tr><th>The record names</th><th>Why a client cares</th></tr>
-      <tr><td>👤 The <strong>human</strong> who initiated it</td><td>“An agent did it” is not an answer an auditor accepts</td></tr>
-      <tr><td>🤖 The <strong>registered agent</strong></td><td>Tells you which of your agents to suspend</td></tr>
-      <tr><td>🧰 The <strong>tool</strong> and server</td><td>Scopes the blast radius precisely</td></tr>
-      <tr><td>✅❌ <strong>Success or failure</strong></td><td>Refused attempts are the interesting ones</td></tr>
+      <tr><td>The <strong>human</strong> who initiated it</td><td>“An agent did it” is not an answer an auditor accepts</td></tr>
+      <tr><td>The <strong>registered agent</strong></td><td>Tells you which of your agents to suspend</td></tr>
+      <tr><td>The <strong>tool</strong> and server</td><td>Says exactly how far the reach went</td></tr>
+      <tr><td><strong>Success or failure</strong></td><td>Refused attempts are the interesting ones</td></tr>
     </table>
-    <p>Every time an agent runs a tool, the attempt is recorded — <strong>including whether it
-    succeeded or failed</strong>. Denied attempts are how you spot an agent probing beyond its
-    remit. 🚩</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-head"><div class="step-num">5</div><p class="step-title">Watch the kill switch 🔴</p></div>
-  <div class="step-body">
-    <p>Now the part the whole room does together. Your trainer will set the MCP server to
-    <strong>Disabled</strong> in the console. When they say go, ask your agent to use the tool
-    again.</p>
-    <div class="code"><pre><code>Try that same tool again.</code></pre></div>
-    <p>It fails. For everyone. At once. 🛑 Then the trainer re-enables it and it works again.</p>
-    <div class="stop">
-      <p><span class="callout-label">🔥 Say this out loud, because it is the sales point.</span>
-      Sixty agents on sixty laptops lost access to that tool in one click, from one screen, with no
-      credential rotation, no code change, and no need to know where any of those agents were
-      running. Ask a client how long that takes them today. ⏱️</p>
+    <p>Every attempt is recorded, <strong>including the refused ones</strong>. Denials are how you spot
+    an agent probing beyond its remit. Nothing you did today was refused, so your records all say
+    success.</p>
+    <div class="win">
+      <p><span class="callout-label">✅ Filtering by your own username is the whole point.</span>
+      Sixty people shared one registered agent. The log still separates them, because you signed in as
+      yourself in step 3.</p>
     </div>
   </div>
 </div>
 
-<h2>How access is actually decided 🧩</h2>
+<h2>How access is decided</h2>
 
-<p>Connecting is not the same as being allowed. Idira is <strong>deny-by-default</strong>: a request
-is permitted only if some policy you wrote allows it. And a policy only matches when
-<em>both</em> halves line up — the <strong>principal</strong> making the request and the
-<strong>resource</strong> being touched.</p>
+<p class="section-intro">The part a client will push on. Three things line up, or nothing happens.</p>
+
+<p>Connecting is not the same as being allowed. Idira is <strong>deny-by-default</strong>. A policy
+matches only when <em>both</em> halves line up: the <strong>principal</strong> making the request and
+the <strong>resource</strong> being touched. Both the agent and the server must also be
+<strong>enabled</strong>, or no policy applies at all.</p>
 
 <figure>
 <svg viewBox="0 0 760 200" role="img" aria-label="A policy matches only when the user, the agent and the tool all line up.">
@@ -223,18 +346,18 @@ is permitted only if some policy you wrote allows it. And a policy only matches 
     </marker>
   </defs>
 
-  <text x="16" y="20" class="svg-label" fill="var(--ink-soft)">PRINCIPAL — who is asking</text>
+  <text x="16" y="20" class="svg-label" fill="var(--ink-soft)">PRINCIPAL · who is asking</text>
   <rect x="16" y="32" width="150" height="44" rx="8" fill="var(--panel)" stroke="var(--line)"/>
   <text x="91" y="52" text-anchor="middle" class="svg-label" fill="var(--ink)">👤 user or role</text>
-  <text x="91" y="68" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">Step 4</text>
+  <text x="91" y="68" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">policy part 4</text>
   <rect x="16" y="86" width="150" height="44" rx="8" fill="var(--panel)" stroke="var(--line)"/>
   <text x="91" y="106" text-anchor="middle" class="svg-label" fill="var(--ink)">🤖 AI agent</text>
-  <text x="91" y="122" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">Step 3</text>
+  <text x="91" y="122" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">policy part 3</text>
 
-  <text x="596" y="20" text-anchor="middle" class="svg-label" fill="var(--ink-soft)">RESOURCE — what is touched</text>
+  <text x="596" y="20" text-anchor="middle" class="svg-label" fill="var(--ink-soft)">RESOURCE · what is touched</text>
   <rect x="521" y="59" width="150" height="44" rx="8" fill="var(--panel)" stroke="var(--line)"/>
   <text x="596" y="79" text-anchor="middle" class="svg-label" fill="var(--ink)">🧰 tool on a server</text>
-  <text x="596" y="95" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">Step 2</text>
+  <text x="596" y="95" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">policy part 2</text>
 
   <rect x="266" y="55" width="180" height="52" rx="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>
   <text x="356" y="78" text-anchor="middle" class="svg-label" fill="var(--ink)">📜 access policy</text>
@@ -245,97 +368,37 @@ is permitted only if some policy you wrote allows it. And a policy only matches 
   <line x1="449" y1="81" x2="516" y2="81" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#ab)"/>
 
   <rect x="16" y="152" width="728" height="34" rx="8" fill="var(--danger-soft)" stroke="var(--danger)"/>
-  <text x="380" y="174" text-anchor="middle" class="svg-label" fill="var(--ink)">no matching policy → denied 🚫 · and the denial is written to the audit log</text>
+  <text x="380" y="174" text-anchor="middle" class="svg-label" fill="var(--ink)">no matching policy → denied · and the denial is written to the audit log</text>
 </svg>
 <figcaption>Deny-by-default. Three things line up, or nothing happens.</figcaption>
 </figure>
 
-<h3>The four steps, for when you are the one clicking</h3>
+<h2>Registered vs pass-through</h2>
 
-<p>You do not have the admin role today, so read this as your demo script. In the console, go to
-<strong>Manage &gt; Policies &gt; AI agents access</strong> and click <strong>Create
-policy</strong>:</p>
-
-<table>
-  <tr><th>Step</th><th>What you set</th><th>The choice worth explaining</th></tr>
-  <tr>
-    <td><strong>1 · General details</strong></td>
-    <td>Policy name, description, owners, tags.</td>
-    <td>Owners and tags are how this stays manageable at a hundred policies. Set them.</td>
-  </tr>
-  <tr>
-    <td><strong>2 · MCP servers and tools</strong></td>
-    <td><strong>+ Add MCP servers</strong>, then pick the tools.</td>
-    <td><em>Select specific tools</em> (the default) denies anything discovered later.
-    <em>Allow all current and future tools</em> keeps working when the server adds a tool —
-    convenient, and a standing grant nobody reviews.</td>
-  </tr>
-  <tr>
-    <td><strong>3 · AI agents</strong></td>
-    <td><strong>+ Add AI agents</strong> — the agents users may work through.</td>
-    <td>Same trade-off again: <em>Allow all current and future AI agents</em> means tomorrow's
-    newly registered agent inherits this access with nobody approving it.</td>
-  </tr>
-  <tr>
-    <td><strong>4 · Users and roles</strong></td>
-    <td><strong>+ Add users and roles</strong>, filtered by Type and Source.</td>
-    <td>Sources include Idira Cloud Directory, Okta and Entra ID. The <strong>Everyone</strong>
-    role covers all users in one entry — handy for a lab, rarely right in production.</td>
-  </tr>
-</table>
-
-<p>Then <strong>Done</strong>. Two enforcement facts to keep in your pocket, because they are the
-top two support questions:</p>
-
-<ul>
-  <li>A server or an agent can be added to a policy while still disabled — but <strong>both must be
-  enabled</strong> before anything actually works. 🔌</li>
-  <li>Tools must be <strong>discovered</strong> before you can allow them individually. Before the
-  first connection there is no tool list to pick from, so your only option is <em>Allow all current
-  and future tools</em>. Connect once, then come back and narrow it down. 🔁</li>
-</ul>
-
-<div class="warn">
-  <p><span class="callout-label">🔑 Who can do this.</span> Creating and managing AI agent access
-  policies needs the <strong>Secure AI Admin</strong> role. If a client tells you the menu is
-  missing, that is the answer — not a bug.</p>
-</div>
-
-<h2>Registered vs pass-through 🕵️</h2>
+<p class="section-intro">Registering an agent is optional. The cost of skipping it only shows up on the
+worst day.</p>
 
 <p>An agent that was never registered can still reach a server. Idira calls that traffic
-<strong>pass-through</strong>, and the difference shows up exactly where it hurts:</p>
+<strong>pass-through</strong>. Two differences:</p>
 
-<table>
-  <tr><th></th><th>🕵️ Pass-through (unregistered)</th><th>🪪 Registered agent</th></tr>
-  <tr>
-    <td><strong>Visible?</strong></td>
-    <td>Yes — the Broker still sees the traffic.</td>
-    <td>Yes.</td>
-  </tr>
-  <tr>
-    <td><strong>Audit says</strong></td>
-    <td>“This server was accessed, these tools were used.”</td>
-    <td>The human, the agent, the server, the tools.</td>
-  </tr>
-  <tr>
-    <td><strong>During an incident</strong></td>
-    <td>You know something happened. You cannot say who or what.</td>
-    <td>You can suspend one agent and one user, and prove the scope.</td>
-  </tr>
-</table>
+<ul>
+  <li><strong>Pass-through</strong> tells you a server was accessed and which tools ran. It cannot tell
+  you who or what did it.</li>
+  <li>A <strong>registered agent</strong> names the human, the agent, the server and the tool. In an
+  incident you can suspend one agent and one user, and prove the scope.</li>
+</ul>
 
-<h2>On-behalf-of: the question every client asks 🙋</h2>
+<h2>On-behalf-of: the question every client asks</h2>
 
-<p>Eventually someone in the room says: <em>“if the agent can read any ticket, hasn't every user
-just become an admin?”</em> That is the right question, and it has a name.</p>
+<p class="section-intro">If the agent can read anything, has every user just become an admin? Two modes,
+and you used the safe one in step 3.</p>
 
 <table>
   <tr><th>Mode</th><th>Who the tool thinks is calling</th><th>Consequence</th></tr>
   <tr>
     <td><strong>Service identity</strong></td>
     <td>The Broker itself</td>
-    <td>Simple, but every user gets the same permissions — the union of everyone's.</td>
+    <td>Simple, but every user gets the same permissions: the union of everyone's.</td>
   </tr>
   <tr>
     <td><strong>On-behalf-of (OBO)</strong></td>
@@ -344,79 +407,119 @@ just become an admin?”</em> That is the right question, and it has a name.</p>
   </tr>
 </table>
 
-<p>You already did the OBO half in step 2 — that browser sign-in is you injecting <em>your</em>
-identity into the chain. The agent inherits your access, not the platform's, so your existing
-access model keeps working unchanged. 🎯</p>
+<p>Your browser sign-in in step 3 put <em>your</em> identity into the chain. The agent inherits your
+access, not the platform's, so your existing access model keeps working unchanged.</p>
+
+<h2>Your five-minute demo</h2>
+
+<p class="section-intro">You just lived through it, so you can run it. Six beats, in this order. The
+fourth one is the one that lands.</p>
+
+<ol>
+  <li><strong>Ask how many AI agents</strong> are reaching their corporate data and resources today.
+  Most clients do not know. That is the same wall you hit in Lesson 06.</li>
+  <li><strong>Connect an agent to a tool</strong> and point out loudly that you typed no credential.
+  You only proved who you were.</li>
+  <li><strong>Run one tool call</strong>, then show that call in the audit log with the user's name
+  on it.</li>
+  <li><strong>Disable the server</strong> in your own tenant while they watch, re-run the call, and
+  let it fail. This is the moment that lands. You did not see it today, because nothing in the
+  workshop tenant is changed during the session. Rehearse it before you show it.</li>
+  <li><strong>Open the policy</strong> and show the three lists. “Deny-by-default. Nothing works
+  unless something here says so.”</li>
+  <li><strong>Close with the one question:</strong> “Today, how would you answer an auditor asking
+  which of your agents touched this system last Tuesday?”</li>
+</ol>
+
+<h2>Knowledge Check</h2>
+
+<p class="section-intro">Three questions on custody, policy and on-behalf-of. Pick an answer to see why
+it is right or wrong. A wrong one is worth reading.</p>
 
 <div class="check" data-answer="b">
-  <p class="check-q">🛡️ What is the Broker's main contribution in that first diagram?</p>
+  <p class="check-q">What is the Broker's main contribution in that first diagram?</p>
   <ul class="opts">
     <li><button data-opt="a">It makes each of the agent's calls to the tools run much faster</button></li>
     <li><button data-opt="b">It holds the credentials, so the agent never sees any of them</button></li>
     <li><button data-opt="c">It lets the agent reach tools it was never registered to use</button></li>
   </ul>
   <p class="why" data-for="a">Adding a hop does not make anything faster. The benefit is custody and visibility, not speed. Try again.</p>
-  <p class="why" data-for="b">✅ Right. The agent gets a connection, not a key. The audit trail, the kill switch and on-behalf-of all follow from the Broker being the one holding the credentials.</p>
-  <p class="why" data-for="c">The opposite — the Broker is the thing that prevents that. Only registered, enabled, policy-covered servers are reachable. Try again.</p>
+  <p class="why" data-for="b">✅ Correct. The agent gets a connection, not a key. The audit trail, the kill switch and on-behalf-of all follow from the Broker holding the credentials.</p>
+  <p class="why" data-for="c">The opposite is true. The Broker is what prevents that. Only registered, enabled, policy-covered servers are reachable. Try again.</p>
 </div>
 
 <div class="check" data-answer="a">
-  <p class="check-q">📜 A policy allows your role and the tool, but not your agent. What happens?</p>
+  <p class="check-q">A policy allows your role and the tool, but not your agent. What happens?</p>
   <ul class="opts">
-    <li><button data-opt="a">Denied — a policy has to match the principal and the resource</button></li>
-    <li><button data-opt="b">Allowed — matching two out of the three parts is sufficient</button></li>
-    <li><button data-opt="c">Allowed — but the platform raises an alert for an admin later</button></li>
+    <li><button data-opt="a">Denied, because a policy has to match the principal and the resource</button></li>
+    <li><button data-opt="b">Allowed, because matching two out of the three parts is enough</button></li>
+    <li><button data-opt="c">Allowed, but the platform raises an alert for an admin later</button></li>
   </ul>
-  <p class="why" data-for="a">✅ Correct. Deny-by-default means partial matches are simply denials. The agent is part of the principal, so leaving it out leaves you with no policy that matches — and the denial is logged.</p>
+  <p class="why" data-for="a">✅ Correct. Deny-by-default means a partial match is a denial. The agent is part of the principal, so leaving it out leaves you with no policy that matches. The denial is logged.</p>
   <p class="why" data-for="b">Two out of three is a denial. There is no “mostly allowed”, and that strictness is the feature. Try again.</p>
-  <p class="why" data-for="c">Nothing is let through and flagged afterwards. The request is refused at the time — then recorded. Try again.</p>
+  <p class="why" data-for="c">Nothing is let through and flagged afterwards. The request is refused at the time, then recorded. Try again.</p>
 </div>
 
 <div class="check" data-answer="c">
-  <p class="check-q">🙋 With on-behalf-of, an agent asks a tool for data you cannot see. Result?</p>
+  <p class="check-q">With on-behalf-of, an agent asks a tool for data you cannot see. Result?</p>
   <ul class="opts">
     <li><button data-opt="a">It succeeds, because the agent runs with the Broker's own permissions</button></li>
     <li><button data-opt="b">It succeeds, but the access is flagged for review by an administrator</button></li>
     <li><button data-opt="c">It is refused, because the tool applies your permissions, not the agent's</button></li>
   </ul>
-  <p class="why" data-for="a">That is what happens <em>without</em> OBO — and it is exactly the privilege-escalation problem OBO exists to close. Try again.</p>
+  <p class="why" data-for="a">That is what happens <em>without</em> OBO. It is the privilege-escalation problem OBO exists to close. Try again.</p>
   <p class="why" data-for="b">Flagging after the fact is not the same as preventing. OBO does something stronger than logging. Try again.</p>
   <p class="why" data-for="c">✅ Correct. The agent is acting as you, so it can do exactly what you can do and no more. Your existing access model keeps working, unchanged.</p>
 </div>
 
-<h2>Your five-minute client demo 🎬</h2>
-
-<p>You just lived through it, so you can run it. In this order:</p>
-
-<ol>
-  <li><strong>Show the pain first.</strong> Open <code>config/integrations.json</code> from Lesson 07.
-  “This is one small app. Three systems. Now imagine an agent that needs ten.” 😬</li>
-  <li><strong>Connect an agent to a tool</strong> and point out loudly that you typed no
-  credential — only proved who you were.</li>
-  <li><strong>Run one tool call</strong>, then show that call in the audit log with the user's name
-  on it.</li>
-  <li><strong>Disable the server</strong> while they watch, re-run, and let it fail. This is the
-  moment that lands. 🔴</li>
-  <li><strong>Open the policy</strong> and show the three lists. “Deny-by-default. Nothing works
-  unless something here says so.”</li>
-  <li><strong>Close with the one question:</strong> “Today, how would you answer an auditor asking
-  which of your agents touched this system last Tuesday?” 🧭</li>
-</ol>
-
-<div class="note">
-  <p><span class="callout-label">🪶 Have the setup answer ready, because it always comes.</span>
-  Somebody will ask what had to be built first. For the AWS half of today, the answer is in
-  <a href="0008-zsp-access.html">Lesson 08</a>: no OIDC provider, no IAM trust policy, no role per
-  person, no stack deployed into the account. For this half, the tenant side is one MCP server
-  registered, one agent registered and one policy written, and then sixty people connected to it
-  with a single command each. Say the numbers. "One policy, sixty people, no credentials handed
-  out" is a more persuasive sentence than any architecture diagram.</p>
-</div>
-
 <div class="ask">
-  🗣️ <strong>Ask your agent:</strong> “Compare how you reached AWS in Lesson 08 with how you reached
+  🗣️ <strong>Ask your agent:</strong> “Compare how you reached AWS in Lesson 09 with how you reached
   the tool in Lesson 10. In both cases, what did you actually hold on my laptop, and for how long?”
   Its answer is a better summary of today than anything on this page.
+</div>
+
+<h2>Where Idira fits</h2>
+
+<p class="section-intro">Each lesson names the risk it just demonstrated and the Palo Alto Networks
+product that answers it.</p>
+
+<!-- idira: 10 -->
+<!-- BEGIN GENERATED: idira 10 — build-lab-code.py owns this block -->
+<div class="idira">
+  <p class="idira-risk"><span class="callout-label">🧨 The risk you just saw.</span> An agent reached a system you hold no credential for. The credential lives somewhere the agent cannot read or print.</p>
+  <p class="idira-kicker">What answers it</p>
+  <dl>
+    <dt>Securing AI Agents</dt>
+    <dd>The <strong>Idira AI Agent Identity Broker</strong> registers the MCP servers and authorises each agent per tool. It brokers the credential and keeps one audit trail.</dd>
+    <dt>Identity Security Platform</dt>
+    <dd>Issues the agent its own identity and token, so you can name who it acted as and kill the token.</dd>
+  </dl>
+  <p class="idira-say">🗣️ “Ask who authorised the tool, whose token was on the call, and where you switch it off.”</p>
+  <p class="idira-more"><a href="reference/securing-agentic-ai.html">One platform, every identity. The deck and the videos →</a></p>
+</div>
+<!-- END GENERATED: idira 10 -->
+
+<h2>Key takeaways</h2>
+
+<ul>
+  <li><strong>The agent held a connection, not a credential.</strong> You proved who you were; Idira
+    decided what the agent could do. Everything else on this page follows from that.</li>
+  <li><strong>Deny-by-default means three things line up or nothing happens:</strong> the user, the
+    agent and the tool. A partial match is a denial, and the denial is logged.</li>
+  <li><strong>Access is removed from one screen.</strong> Take the tool, the agent or the role out of
+    the policy, or disable the server, and every connected agent stops. No rotation, no code change,
+    no knowing where sixty agents were running. That is the sentence a client remembers.</li>
+  <li><strong>Registering the agent is what makes the audit answer a question.</strong> Pass-through
+    tells you something happened. A registered agent tells you who, what and how far.</li>
+</ul>
+
+<div class="win">
+  <p><span class="callout-label">✅ That is the workshop.</span> Everything from here is optional and
+  worth your time: <a href="0011-build-from-nothing.html">Lesson 11</a> builds an app from one prompt,
+  <a href="0012-write-a-skill.html">Lesson 12</a> has you write a skill of your own, and
+  <a href="0013-afk-harness.html">Lesson 13</a> sets a harness working while you are away from the
+  keyboard, and <a href="0014-fix-the-app.html">Lesson 14</a> deletes the key the sandbox app no longer
+  needs.</p>
 </div>
 
 <div id="page-pager"></div>

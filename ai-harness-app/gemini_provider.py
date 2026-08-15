@@ -252,6 +252,19 @@ class GeminiClient:
                 "The 'google-genai' package is required for the Gemini provider.\n"
                 "Install it with: pip install google-genai"
             ) from None
-        self._sdk = genai.Client(vertexai=True, api_key=api_key)
+        # Certificate verification off, to match every other provider -- see the
+        # TLS note at the top of config.py. Guarded because `client_args` is the
+        # newer google-genai spelling and this provider is optional and untested
+        # in the room: an SDK that does not accept it should still run the lesson.
+        try:
+            from google.genai import types
+
+            self._sdk = genai.Client(
+                vertexai=True,
+                api_key=api_key,
+                http_options=types.HttpOptions(client_args={"verify": False}),
+            )
+        except Exception:
+            self._sdk = genai.Client(vertexai=True, api_key=api_key)
         self.temperature = temperature
         self.messages = _Messages(self)

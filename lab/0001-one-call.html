@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>01 · One call to a model · SKO27 TechSummit - AI Workshop for Idira DC</title>
+<link rel="icon" type="image/svg+xml" href="assets/idira-icon.svg">
 <link rel="stylesheet" href="assets/lab.css">
 </head>
 <body>
@@ -14,285 +15,300 @@
 <nav id="page-nav"></nav>
 
 <header class="lesson">
-  <p class="kicker">Part 1 · Lesson 01</p>
+  <p class="kicker">Part 1 · Build your own AI harness</p>
   <h1>One call to a model ⚛️</h1>
   <p class="standfirst">
-    Before you use an AI agent, spend twenty minutes finding out what one actually is. It starts
-    here, with about fifteen lines of Python and a model that cannot do anything at all.
+    You will run one call to a model, with no harness around it. You will see the two things it cannot
+    do: remember you, and act. You will also read the numbers it prints: context window, tokens sent
+    and received, and stop reason.
   </p>
   <ul class="meta">
     <li class="tag-must">Everyone</li>
-    <li>⏱️ ~8 minutes</li>
     <li>📄 <code>ai-harness-app/01_bare_call.py</code></li>
     <li id="step-counter">&nbsp;</li>
   </ul>
 </header>
 
-<p>Pick your machine once — the whole lab will follow your choice. 👇</p>
 <div class="os-switch" data-os-switch></div>
 
-<div class="note">
-  <p><span class="callout-label">🎯 What Part 1 is for.</span> In Part 2 you will point Claude Code
-  at a vulnerable app and watch it work. That is much less unnerving — and much easier to explain to
-  a customer — once you have seen the whole thing built out of parts you recognise. Five short
-  lessons, five small Python files, no framework, nothing hidden.</p>
-</div>
+<h2>Your Tasks</h2>
 
-<h2>Where we are going</h2>
-
-<figure>
-<svg viewBox="0 0 760 300" role="img" aria-label="The evolution from a single model call, through prompt engineering and context engineering, to a full AI harness.">
-  <defs>
-    <marker id="ev" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink-faint)"/>
-    </marker>
-  </defs>
-
-  <g>
-    <rect x="10" y="28" width="168" height="112" rx="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>
-    <text x="94" y="60" text-anchor="middle" font-size="21">💬</text>
-    <text x="94" y="86" text-anchor="middle" class="svg-label" fill="var(--ink)">A model call</text>
-    <text x="94" y="106" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">text in, text out</text>
-    <text x="94" y="122" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">no memory, no hands</text>
-    <text x="94" y="162" text-anchor="middle" class="svg-sub" fill="var(--accent)">Lesson 01 · you are here</text>
-  </g>
-
-  <g>
-    <rect x="206" y="28" width="168" height="112" rx="10" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
-    <text x="290" y="60" text-anchor="middle" font-size="21">✍️</text>
-    <text x="290" y="86" text-anchor="middle" class="svg-label" fill="var(--ink)">Prompt engineering</text>
-    <text x="290" y="106" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">a role, rules,</text>
-    <text x="290" y="122" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">a shape for the answer</text>
-    <text x="290" y="162" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">Lessons 01 and 03</text>
-  </g>
-
-  <g>
-    <rect x="402" y="28" width="168" height="112" rx="10" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
-    <text x="486" y="60" text-anchor="middle" font-size="21">🧠</text>
-    <text x="486" y="86" text-anchor="middle" class="svg-label" fill="var(--ink)">Context engineering</text>
-    <text x="486" y="106" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">deciding what it sees</text>
-    <text x="486" y="122" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">at the moment it works</text>
-    <text x="486" y="162" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">Lesson 04</text>
-  </g>
-
-  <g>
-    <rect x="598" y="28" width="152" height="112" rx="10" fill="var(--panel)" stroke="var(--ink-soft)" stroke-width="1.5"/>
-    <text x="674" y="60" text-anchor="middle" font-size="21">🏗️</text>
-    <text x="674" y="86" text-anchor="middle" class="svg-label" fill="var(--ink)">An AI harness</text>
-    <text x="674" y="106" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">loop + tools + limits</text>
-    <text x="674" y="122" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">= Claude Code</text>
-    <text x="674" y="162" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">Lessons 02 and 05</text>
-  </g>
-
-  <line x1="181" y1="84" x2="201" y2="84" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#ev)"/>
-  <line x1="377" y1="84" x2="397" y2="84" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#ev)"/>
-  <line x1="573" y1="84" x2="593" y2="84" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#ev)"/>
-
-  <line x1="20" y1="196" x2="740" y2="196" stroke="var(--line)" stroke-width="1"/>
-  <text x="20" y="222" class="svg-label" fill="var(--ink-soft)">Each step adds a few lines of code — and one new way to get it wrong.</text>
-  <text x="20" y="248" class="svg-sub" fill="var(--ink-faint)">Nothing in this diagram is a product. It is all plumbing you can read in an afternoon.</text>
-  <text x="20" y="272" class="svg-sub" fill="var(--ink-faint)">Which is exactly why a security team can reason about it — and why they must.</text>
-</svg>
-<figcaption>The four ideas people mean when they say “AI”, in the order they were invented.</figcaption>
-</figure>
-
-<h2>Get set up ⚙️</h2>
-
-<p>Three things, in one terminal window. If you already did Part 2's Lesson 06 in this window, you
-can skip straight to the steps.</p>
+<p class="section-intro">Five steps. The first two set up your terminal. The next two are the lesson.
+The last one closes the script. Tick each one off as you go.</p>
 
 <div class="step">
-  <div class="step-head"><div class="step-num">1</div><p class="step-title">Borrow some AWS access</p></div>
+  <div class="step-head"><div class="step-num">1</div><p class="step-title">Access AWS</p></div>
   <div class="step-body">
-    <ol>
-      <li>Open <code>https://ngid.cyberark.cloud/</code> and sign in with the login on your card 🎟️</li>
-      <li>Open <strong>CYBR User Portal</strong>, click the <strong>AWS</strong> tile</li>
-      <li>Next to your account click <strong>Access keys</strong>, choose the
-        <span class="os os-inline os-mac"><strong>macOS and Linux</strong></span><span class="os os-inline os-win"><strong>PowerShell</strong></span>
-        tab, and copy <strong>Option 1</strong> 📋</li>
-      <li>Paste it into your terminal. Three lines, nothing printed, that is success 🤫</li>
-    </ol>
-    <div class="note">
-      <p><span class="callout-label">💡 Notice.</span> Nobody handed you a permanent key. You asked,
-      the platform checked who you are, and gave you credentials that expire. Everything in Part 1
-      runs on those — which is why there is no API key anywhere in this folder. 🔑🚫</p>
-    </div>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-head"><div class="step-num">2</div><p class="step-title">Switch on the virtual environment 🐍</p></div>
-  <div class="step-body">
+    <p>Ask Idira for AWS credentials. Two commands, the same ones you ran in prework step 7. First
+    log in:</p>
+    <div class="code"><pre><code>idsec login</code></pre></div>
+    <p>Sign in with your own CYBRWorld account. Then ask for the credentials. Use the
+    <strong>Copy</strong> button:</p>
     <div class="os os-mac">
-      <div class="code"><pre><code>cd ~/Downloads/vibe-coding-workshop
-source .venv/bin/activate
-export AWS_REGION=us-east-1</code></pre></div>
+      <div class="code"><pre><code>eval "$(idsec exec sca cloud-access elevate --csp aws --workspace-id 409556437035 --roleIds arn:aws:iam::409556437035:role/CW-SCA-AdminAccess --raw | jq -r '.response.results[0].accessCredentials | fromjson | "export AWS_ACCESS_KEY_ID=\(.aws_access_key)\nexport AWS_SECRET_ACCESS_KEY=\(.aws_secret_access_key)\nexport AWS_SESSION_TOKEN=\(.aws_session_token)"')"</code></pre></div>
     </div>
     <div class="os os-win">
-      <div class="code"><pre><code>cd $HOME\Downloads\vibe-coding-workshop
-.\.venv\Scripts\Activate.ps1
-$env:AWS_REGION="us-east-1"</code></pre></div>
+      <div class="code"><pre><code>idsec exec sca cloud-access elevate --csp aws --workspace-id 409556437035 --roleIds arn:aws:iam::409556437035:role/CW-SCA-AdminAccess --raw | jq -r '.response.results[0].accessCredentials | fromjson | "$env:AWS_ACCESS_KEY_ID=\"\(.aws_access_key)\"\n$env:AWS_SECRET_ACCESS_KEY=\"\(.aws_secret_access_key)\"\n$env:AWS_SESSION_TOKEN=\"\(.aws_session_token)\""' | Invoke-Expression</code></pre></div>
     </div>
-    <p>Your prompt should now start with <code>(.venv)</code>. 👀 Then move into the folder these
-    five lessons live in:</p>
-    <div class="code"><pre><code>cd ai-harness-app</code></pre></div>
-    <div class="warn">
-      <p><span class="callout-label"><code>No module named anthropic</code>? Try this first.</span>
-      Your virtual environment is off, or the library never installed. Either
-      <code>python -m pip install -r requirements.txt</code> from this folder, or run the prework
-      script from the workshop folder, which checks the lot and installs what is missing:
-      <code>bash check-prereqs.sh</code> on macOS, <code>.\check-prereqs.ps1</code> on Windows.
-      🙋 Raise your card only if the script cannot fix it.</p>
-    </div>
+    <p>Nothing prints. That is success. The credentials are in this terminal window only, and they
+    expire. Stuck? <a href="0000-prework.html">Prework step 7</a> covers every error this can give you.</p>
   </div>
 </div>
 
-<h2>Run it</h2>
+<div class="step">
+  <div class="step-head"><div class="step-num">2</div><p class="step-title">Switch on the virtual environment</p></div>
+  <div class="step-body">
+    <div class="os os-mac">
+      <div class="code"><pre><code>cd ~/Downloads/sko27-japac-idira-ai-workshop
+source .venv/bin/activate
+export AWS_REGION=us-east-1
+cd ai-harness-app</code></pre></div>
+    </div>
+    <div class="os os-win">
+      <div class="code"><pre><code>cd $HOME\Downloads\sko27-japac-idira-ai-workshop
+.\.venv\Scripts\Activate.ps1
+$env:AWS_REGION="us-east-1"
+cd ai-harness-app</code></pre></div>
+    </div>
+    <p>Your prompt should now start with <code>(.venv)</code>. You are in the folder these six lessons
+    live in.</p>
+    <div class="warn">
+      <p><span class="callout-label"><code>No module named anthropic</code>? Try this first.</span>
+      Run the prework script from the workshop folder. It checks everything and installs what is
+      missing: <code>bash check-prereqs.sh</code> on macOS, <code>.\check-prereqs.ps1</code> on
+      Windows. Raise your card only if the script cannot fix it.</p>
+    </div>
+  </div>
+</div>
 
 <div class="step">
   <div class="step-head"><div class="step-num">3</div><p class="step-title">Make one call to a model</p></div>
   <div class="step-body">
     <div class="code"><pre><code>python 01_bare_call.py</code></pre></div>
-    <p>You get a line telling you which provider and model you reached, two sentences of answer,
-    and three numbers. 🎉 That is the entire surface of “AI”, and everything else in this workshop
-    is built on top of it.</p>
-    <div class="code"><pre><code>[config] provider=bedrock  model=us.anthropic.claude-sonnet-4-5-...
+    <p>You get a banner, an answer in a panel, and a four-line footer. Learn to read that footer. It
+    appears after every call in Part 1.</p>
+    <!-- terminal: 01 -->
+<!-- BEGIN GENERATED: terminal 01 — build-lab-code.py owns this block -->
+<div class="code code-term"><pre><code><span style="color: #265bff; text-decoration-color: #265bff">⠀⠀⠀⠀⠀⣀⣤⣴⣾⣷⣶⣤⣀⠀⠀⠀⠀⠀</span>
+<span style="color: #265bff; text-decoration-color: #265bff">⢀⣠⣤⣶⣿⣿⣿⣿⠿⠿⣿⣿⣿⣿⣶⣦⣄⡀</span>  <span style="color: #265bff; text-decoration-color: #265bff; font-weight: bold">IDIRA</span><span style="color: #6c6c6c; text-decoration-color: #6c6c6c"> ®</span><span style="color: #9e9e9e; text-decoration-color: #9e9e9e">  by Palo Alto Networks</span>
+<span style="color: #265bff; text-decoration-color: #265bff">⣿⣿⣿⡿⠟⠋⠉⠀⠀⠀⠀⠉⠙⠻⠿⠛⠋⠁</span>  <span style="color: #9e9e9e; text-decoration-color: #9e9e9e">SKO27 TechSummit — Idira AI Workshops</span>
+<span style="color: #265bff; text-decoration-color: #265bff">⣿⣿⣿⡇⠀⠀⠀⠀⠀⢀⣠⣴⣶⣿⡇⠀⠀⠀</span>  <span style="color: #265bff; text-decoration-color: #265bff; font-weight: bold">Lesson 01 — one call to a model</span>
+<span style="color: #265bff; text-decoration-color: #265bff">⣿⣿⣿⡇⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⡇⠀⠀⠀</span>  <span style="color: #6c6c6c; text-decoration-color: #6c6c6c">bedrock  ·  meta.llama3-8b-instruct-v1:0</span>
+<span style="color: #265bff; text-decoration-color: #265bff">⣿⣿⣿⣷⣦⣄⣀⠀⠀⣿⣿⡿⠟⠋⠁⠀⠀⠀</span>  <span style="color: #6c6c6c; text-decoration-color: #6c6c6c">tier=legacy  tools=no  system role=yes  window=8,192  tls=unverified</span>
+<span style="color: #265bff; text-decoration-color: #265bff">⠈⠙⠛⠿⣿⣿⣿⣿⣶⠉⠀⠀⠀⠀⠀⠀⠀⠀</span>
+<span style="color: #265bff; text-decoration-color: #265bff">⠀⠀⠀⠀⠀⠉⠛⠻⢿⠀⠀⠀⠀⠀⠀⠀⠀⠀</span>
 
-An agentic harness is the code around a language model that ...
+<span class="term-prompt" data-copy="In two sentences, what is an &#x27;agentic harness&#x27;?"><span style="color: #265bff; text-decoration-color: #265bff; font-weight: bold">› </span><span style="color: #d4d4d4; text-decoration-color: #d4d4d4; font-weight: bold">In two sentences, what is an &#x27;agentic harness&#x27;?</span></span>
 
----
-stop_reason : end_turn
-input_tokens : 21
-output_tokens: 78</code></pre></div>
-    <p>Look at <code>stop_reason</code>. It says <code>end_turn</code> — “I finished talking.”
-    Remember that word; in Lesson 02 it changes, and that change <em>is</em> the agent.</p>
-  </div>
-</div>
+<span style="color: #265bff; text-decoration-color: #265bff">╭─ </span><span style="color: #265bff; text-decoration-color: #265bff; font-weight: bold">llama3-8b-instruct</span><span style="color: #265bff; text-decoration-color: #265bff"> ─────────────────────────────────────────────────────────────────╮</span>
+<span style="color: #265bff; text-decoration-color: #265bff">│</span> An agentic harness is the code around a language model that gives it a loop, a set   <span style="color: #265bff; text-decoration-color: #265bff">│</span>
+<span style="color: #265bff; text-decoration-color: #265bff">│</span> of tools it may call, and limits on what those tools can reach. The model supplies   <span style="color: #265bff; text-decoration-color: #265bff">│</span>
+<span style="color: #265bff; text-decoration-color: #265bff">│</span> the text; the harness supplies the memory, the actions and the rules.                <span style="color: #265bff; text-decoration-color: #265bff">│</span>
+<span style="color: #265bff; text-decoration-color: #265bff">╰──────────────────────────────────────────────────────────────────────────────────────╯</span>
 
-<h2>What the script actually does 🔍</h2>
-
-<p>Fifteen lines, four ideas. Open each one — they are short, and they are the vocabulary for the
-rest of the day.</p>
-
-<details>
-  <summary>1 · One line decides which AI you are talking to</summary>
-  <div class="code"><pre><code>from config import MODEL, client</code></pre></div>
-  <p class="track-why">Every one of the five lessons starts with this line and never mentions a
-  vendor again. <code>config.py</code> is the only file that knows you are on <strong>Amazon
-  Bedrock</strong> — swap it for Vertex, Gemini, or a model running on your own laptop and not one
-  line of the harness changes.</p>
-  <p class="track-why">🎤 <strong>Worth saying to a customer.</strong> “The model is a replaceable
-  part.” It follows that your controls cannot live inside the model — they have to live in the code
-  around it. That is the thread running through all five lessons.</p>
-</details>
-
-<details>
-  <summary>2 · The call itself</summary>
-  <div class="code"><pre><code>response = client.messages.create(
-    model=MODEL,
-    max_tokens=1024,
-    messages=[
-        {"role": "user", "content": "In two sentences, what is an 'agentic harness'?"},
-    ],
-)</code></pre></div>
-  <p class="track-why">That is the whole API. You hand over a <strong>list of messages</strong> and
-  get one reply. Note what is <em>not</em> there: no session, no user account, no memory. The model
-  is a function — same input, similar output, and it forgets you instantly.</p>
-  <p class="track-why">Which means every “conversation” you have ever had with a chatbot was the
-  entire transcript being re-sent, every single turn. Hold on to that; it is why Lesson 04 exists. 🧠</p>
-</details>
-
-<details>
-  <summary>3 · Reading the answer — it is a list, not a string</summary>
-  <div class="code"><pre><code>for block in response.content:
-    if block.type == "text":
-        print(block.text)</code></pre></div>
-  <p class="track-why">The reply arrives as <strong>content blocks</strong>. Today they are all
-  <code>text</code>. From Lesson 02 onward some of them are <code>tool_use</code> — the model asking
-  for something to be run. Code that assumes <code>content[0].text</code> works right up until the
-  model tries to use a tool, and then breaks.</p>
-</details>
-
-<details>
-  <summary>4 · The three numbers at the bottom</summary>
-  <div class="code"><pre><code>print(f"stop_reason : {response.stop_reason}")
-print(f"input_tokens : {response.usage.input_tokens}")
-print(f"output_tokens: {response.usage.output_tokens}")</code></pre></div>
-  <p class="track-why"><strong>stop_reason</strong> is why the model stopped talking.
-  <strong>input_tokens</strong> is how much you sent it. That second number is the one that
-  eventually kills a naive agent, because a growing conversation is re-sent in full every turn —
-  Lesson 04 watches it climb. 📈</p>
-</details>
-
-<h2>Try it yourself 🧪</h2>
-
-<div class="step">
-  <div class="step-head"><div class="step-num">4</div><p class="step-title">Prompt engineering, in one edit</p></div>
-  <div class="step-body">
-    <p>Right now the prompt is a bare question. Open <code>01_bare_call.py</code> in any text editor
-    — or just ask Claude Code to do it for you — and replace the question with this:</p>
-    <div class="code"><pre><code>You are briefing a security executive who has ten seconds.
-What is an 'agentic harness'? Answer in exactly one sentence,
-then name the single biggest risk it introduces.</code></pre></div>
-    <p>Run it again. Same model, same code, same cost — a completely different answer. 🎯</p>
-    <p>That is <strong>prompt engineering</strong>: the only lever you have when a model call is all
-    you have. A role, a constraint, a shape for the answer. It is genuinely powerful, and it is also
-    where a lot of people stop — which is the problem, because…</p>
+<span style="color: #6c6c6c; text-decoration-color: #6c6c6c">  legacy  ·  meta.llama3-8b-instruct-v1:0</span>
+<span style="color: #6c6c6c; text-decoration-color: #6c6c6c">  stop_reason=end_turn  in=26  out=74  turn=1</span>
+<span style="color: #6c6c6c; text-decoration-color: #6c6c6c">  ░░░░░░░░░░░░░░░░░░░░░░░░</span><span style="color: #265bff; text-decoration-color: #265bff; font-weight: bold">    0.3% of the window</span>
+<span style="color: #6c6c6c; text-decoration-color: #6c6c6c">  history: dropped</span></code></pre></div>
+<!-- END GENERATED: terminal 01 -->
+    <p>The panel title shows the name of the LLM model: <code>llama3-8b-instruct</code>, not Claude.
+    The line above the panel is the <strong>capability record</strong>, a list of what this model can
+    do. Two entries matter:</p>
+    <ul>
+      <li><strong><code>tools=no</code></strong>: this model cannot call anything. Lesson 04 switches
+        to a model that can.</li>
+      <li><strong><code>window=8,192</code></strong>: the <strong>context window</strong>, the token
+        budget for one request. Lesson 03 fills it.</li>
+    </ul>
+    <p>Now the footer:</p>
+    <ul>
+      <li><strong><code>stop_reason=end_turn</code></strong>: the model finished talking. In Lesson 04
+        this value changes, and that change is the agent.</li>
+      <li><strong><code>in=</code> and <code>out=</code></strong>: tokens sent and received. Watch
+        <code>in=</code>. It grows with the conversation, and you pay for it.</li>
+      <li><strong>The gauge</strong>: how much of the window this request used. Under one percent, for
+        one question.</li>
+    </ul>
   </div>
 </div>
 
 <div class="step">
-  <div class="step-head"><div class="step-num">5</div><p class="step-title">Find the wall</p></div>
+  <div class="step-head"><div class="step-num">4</div><p class="step-title">Ask a follow-up</p></div>
   <div class="step-body">
-    <p>Now try to get it to do something useful. Change the prompt to:</p>
-    <div class="code"><pre><code>Read the file sandbox/config.py and tell me whether it contains
-any hardcoded secrets.</code></pre></div>
-    <p>Run it. 💥 It cannot. You will get a polite refusal, or — worse and much more instructive —
-    a <strong>confident, entirely invented</strong> answer about a file it has never seen.</p>
+    <p>The script drops you into a chatbox. Type exactly this:</p>
+    <div class="code"><pre><code>Now say that again, but shorter.</code></pre></div>
+    <p>The model has never seen your first question. It does not know what “that” means, because the
+    first exchange was not sent with the second one.</p>
+    <p>Check the last line of the footer: <code>history: dropped</code>. Check <code>in=</code> too. It
+    stays small however long you type, because nothing is kept.</p>
+    <div class="code"><pre><code>/context</code></pre></div>
+    <p>That shows everything the model is about to be sent: your last message, and nothing else. Type
+    <code>/help</code> for the other commands. They use Claude Code's names, so you will reuse them in
+    Part 2.</p>
     <div class="stop">
-      <p><span class="callout-label">🧱 This is the wall.</span> The model has no hands. It cannot
-      read a file, run a command, or call an API. It can only produce text. Everything people find
-      impressive <em>or</em> alarming about AI agents comes from the code we are about to write to
-      get past this wall — not from the model.</p>
+      <p><span class="callout-label">🧱 This is the wall, and there are two of them.</span> This model
+      cannot remember, and it cannot act. Ask it to read a file and it will invent an answer with full
+      confidence. What is impressive about AI agents comes from the code around the model.</p>
     </div>
   </div>
 </div>
 
-<div class="check" data-answer="b">
-  <p class="check-q">🤖 The model gave a detailed answer about a file it could not read. Why?</p>
-  <ul class="opts">
-    <li><button data-opt="a">It cached the file earlier from a different run of the script</button></li>
-    <li><button data-opt="b">It only predicts plausible text, and a plausible answer exists</button></li>
-    <li><button data-opt="c">It read the file but is not permitted to say so out loud</button></li>
-  </ul>
-  <p class="why" data-for="a">There is no cache and no file access at all — the script sends one string and receives another. Try again.</p>
-  <p class="why" data-for="b">✅ Exactly. Asked about a config file, the most plausible text is a config file's worth of findings. Fluency is not evidence. This is the single most useful thing to know about these systems.</p>
-  <p class="why" data-for="c">Nothing was hidden — nothing was read. The script has no file tools in it whatsoever. Try again.</p>
+<div class="step">
+  <div class="step-head"><div class="step-num">5</div><p class="step-title">Quit the script</p></div>
+  <div class="step-body">
+    <div class="code"><pre><code>/exit</code></pre></div>
+    <p>You are back at your own terminal prompt, with <code>(.venv)</code> still on. Every script in
+    Part 1 quits the same way. Keep this window open for the next lesson.</p>
+  </div>
 </div>
 
+<h2>Knowledge Check</h2>
+
+<p class="section-intro">Three questions on what you just ran. Pick an answer to see why it is right or
+wrong.</p>
+
 <div class="check" data-answer="c">
-  <p class="check-q">🔁 Why does every turn of a chat resend the whole conversation?</p>
+  <p class="check-q">You typed <em>“Now say that again, but shorter.”</em> and the model had no idea what “that” meant. Why?</p>
   <ul class="opts">
-    <li><button data-opt="a">To let the provider bill you fairly for the whole session</button></li>
-    <li><button data-opt="b">To keep the answers consistent between one turn and the next</button></li>
-    <li><button data-opt="c">Because the model keeps nothing — messages are all it ever sees</button></li>
+    <li><button data-opt="a">The window filled up, so the first answer was pushed out to make room</button></li>
+    <li><button data-opt="b">The model is too old and too small to follow an instruction like that</button></li>
+    <li><button data-opt="c">The second request did not contain the first one, so nothing was sent for “that” to point at</button></li>
   </ul>
-  <p class="why" data-for="a">Billing follows from it, but it is not the reason. Look again at what the script sends and what it gets back. Try again.</p>
-  <p class="why" data-for="b">Consistency is a happy result, not the cause. The real reason is more basic than that. Try again.</p>
-  <p class="why" data-for="c">✅ Right. The model is stateless. “Memory” is a list that the code around it chooses to keep and resend — which makes memory a design decision, and a security one. Lesson 04 is about exactly that.</p>
+  <p class="why" data-for="a">Look at the gauge: a third of one percent. Nothing was pushed out, because nothing was in there. Try again.</p>
+  <p class="why" data-for="b">A frontier model with a 200,000-token window fails the same way. This is not about model quality. Try again.</p>
+  <p class="why" data-for="c">✅ Correct. The footer said so: <code>history: dropped</code>. Two separate requests, and the second did not include the first. Lesson 02 fixes that in code.</p>
+</div>
+
+<div class="check" data-answer="b">
+  <p class="check-q">The capability line says <code>window=8,192</code>. What is that number?</p>
+  <ul class="opts">
+    <li><button data-opt="a">How many messages it will keep before it starts forgetting the oldest ones</button></li>
+    <li><button data-opt="b">The total budget for one request: instructions, history <em>and</em> the reply</button></li>
+    <li><button data-opt="c">The longest reply it is able to write in one go</button></li>
+  </ul>
+  <p class="why" data-for="a">It counts <strong>tokens</strong>, not messages, and it drops nothing. A token is roughly ¾ of a word. Try again.</p>
+  <p class="why" data-for="b">✅ Correct. Your instructions, the conversation you resend, and the reply share the same 8,192 tokens. Go over it and you get an error.</p>
+  <p class="why" data-for="c">That is <code>max_tokens</code>, a separate limit you choose. This script sets it to 400. Try again.</p>
+</div>
+
+<div class="check" data-answer="b">
+  <p class="check-q">It answered “what is an agentic harness?” fluently and with total confidence. What does that tell you about whether the answer is correct?</p>
+  <ul class="opts">
+    <li><button data-opt="a">Quite a lot. A model that was unsure would hedge or refuse</button></li>
+    <li><button data-opt="b">Nothing at all. It predicts plausible text, and confident text is more plausible than hedging</button></li>
+    <li><button data-opt="c">Nothing, because this model is old. A frontier model's confidence is reliable</button></li>
+  </ul>
+  <p class="why" data-for="a">Hedging is a writing style it can copy, not a signal. Ask it about a product that does not exist. Try again.</p>
+  <p class="why" data-for="b">✅ Correct. <strong>Fluency is not evidence.</strong> Every answer is the most likely next text, and confident text is more likely than a hedge.</p>
+  <p class="why" data-for="c">Frontier models hedge more honestly and still do the same thing. Never treat confidence as verification. Try again.</p>
+</div>
+
+<h2>The Code (optional)</h2>
+
+<details>
+  <summary>Show the annotated code</summary>
+
+<p class="section-intro">Optional. Here is the whole file, fifteen lines. Click a highlighted block to
+read why it is there.</p>
+
+<!-- annotated-source: 01_bare_call.py -->
+<!-- BEGIN GENERATED: 01_bare_call.py — build-lab-code.py owns this block -->
+<div class="src src-whole" data-file="01_bare_call.py">
+  <div class="src-head"><span class="src-file">ai-harness-app/01_bare_call.py</span><span class="src-hint">4 annotated blocks — click one to read why</span></div>
+  <div class="code"><pre><code><span class="l"><span class="tok-str">&quot;&quot;&quot;LESSON 01 — One call to a model. It cannot remember, and it cannot act.</span></span><span class="l blank"></span><span class="l"><span class="tok-str">This is the atom. No loop, no tools, no memory. You send messages, you get one</span></span><span class="l"><span class="tok-str">response back. Everything else in Part 1 is scaffolding around THIS.</span></span><span class="l blank"></span><span class="l"><span class="tok-str">Two things are switched off on purpose, and both matter:</span></span><span class="l blank"></span><span class="l"><span class="tok-str">    remember=False   -&gt; we do not re-send the conversation, so every message you</span></span><span class="l"><span class="tok-str">                        type arrives at a model that has never heard of you</span></span><span class="l"><span class="tok-str">    tier=&quot;legacy&quot;    -&gt; Llama 3 8B: no tool support, and an 8,192-token window</span></span><span class="l blank"></span><span class="l"><span class="tok-str">Ask it something, then ask a follow-up that depends on your first message. Watch</span></span><span class="l"><span class="tok-str">it fail. Then look at the numbers at the bottom -- they are tiny, because almost</span></span><span class="l"><span class="tok-str">nothing is being sent. Hold on to that; by lesson 03 they will not be.</span></span><span class="l blank"></span><span class="l"><span class="tok-str">Read the panel titles. They say `llama3-8b-instruct`, not `Claude`, because that</span></span><span class="l"><span class="tok-str">is who is answering. Part 1 is about knowing exactly what is in your context and</span></span><span class="l"><span class="tok-str">exactly who is reading it, and that starts with not letting the UI flatter you.</span></span><span class="l blank"></span><span class="l"><span class="tok-str">Run it:</span></span><span class="l"><span class="tok-str">    python 01_bare_call.py</span></span><span class="l"><span class="tok-str">&quot;&quot;&quot;</span></span><span class="l blank"></span><span class="l"><span class="tok-kw">import</span> session</span><span class="l"><span class="tok-kw">import</span> ui</span><span class="l blank"></span><span class="l">QUESTION = <span class="tok-str">&quot;In two sentences, what is an &#x27;agentic harness&#x27;?&quot;</span></span><span class="l blank"></span><span class="l"><span class="tok-com"># What to type next, printed for the room so sixty people ask the same thing.</span></span><span class="l">FOLLOW_UP = <span class="tok-str">&quot;Now say that again, but shorter.&quot;</span></span><span class="l blank"></span><span class="l blank"></span><span class="l"><span class="tok-kwd">def</span> <span class="tok-fn">main</span>() -&gt; <span class="tok-kwd">None</span>:</span><span class="l ann ann-first" data-ann="1" role="button" tabindex="0" aria-expanded="false" aria-label="Three switches, and the lesson is the middle one">    <span class="tok-com"># A Session with everything turned off is just a model call with a footer.</span></span><span class="l ann ann-last" data-ann="1">    chat = session.<span class="tok-cls">Session</span>(tier=<span class="tok-str">&quot;legacy&quot;</span>, remember=<span class="tok-kwd">False</span>, max_tokens=<span class="tok-num">400</span>)</span><span class="src-note" data-ann="1"><span class="src-note-h"><span class="src-note-num">1</span>Three switches, and the lesson is the middle one</span><span class="src-note-p"><code>remember=False</code> is the entire subject of this lesson. The transcript is still recorded — it is simply never sent back. Lesson 02 changes this one word and nothing else.</span><span class="src-note-p"><code>tier=&quot;legacy&quot;</code> picks a genuinely old model rather than a good one with its hands tied: Llama 3 8B from April 2024, with no tool support and an 8,192-token window. You will run into both of those limits on purpose before Part 1 is over.</span><span class="src-note-p"><code>max_tokens=400</code> is a cap on the <strong>answer</strong>, not on the window. Keep the two apart; the knowledge check at the bottom of this page is about exactly that confusion.</span></span><span class="l blank"></span><span class="l">    ui.<span class="tok-fn">banner</span>(<span class="tok-str">&quot;Lesson 01 — one call to a model&quot;</span>, chat.model_id, chat.caps)</span><span class="l">    ui.<span class="tok-fn">task</span>(QUESTION)</span><span class="l blank"></span><span class="l ann ann-first" data-ann="2" role="button" tabindex="0" aria-expanded="false" aria-label="This block is the whole of &quot;calling an AI&quot;">    <span class="tok-com"># The one line that is the whole of &quot;AI&quot;: messages in, one response out.</span></span><span class="l ann" data-ann="2">    <span class="tok-com"># `send` prints the answer, then prints the footer. Nothing else happens.</span></span><span class="l ann ann-last" data-ann="2">    chat.<span class="tok-fn">send</span>(QUESTION)</span><span class="src-note" data-ann="2"><span class="src-note-h"><span class="src-note-num">2</span>This block is the whole of &quot;calling an AI&quot;</span><span class="src-note-p">Two comments and one method call. One HTTPS request: a list of messages goes up, one response comes back, and the connection closes. There is no session on the other end, nothing is stored, and the model has no way to recognise you next time.</span><span class="src-note-p">Everything else in this workshop — memory, tools, agents, the harness — is code on <strong>your</strong> side of that request. Which is exactly why it is code you can audit.</span></span><span class="l blank"></span><span class="l ann ann-first" data-ann="3" role="button" tabindex="0" aria-expanded="false" aria-label="Watch this fail before you are told why">    ui.<span class="tok-fn">note</span>(<span class="tok-str">f&#x27;Now try a follow-up. Type: &quot;</span>{FOLLOW_UP}<span class="tok-str">&quot;&#x27;</span>)</span><span class="l ann ann-last" data-ann="3">    ui.<span class="tok-fn">note</span>(<span class="tok-str">&quot;It has no idea what &#x27;that&#x27; refers to. There is nothing to refer to.&quot;</span>)</span><span class="src-note" data-ann="3"><span class="src-note-h"><span class="src-note-num">3</span>Watch this fail before you are told why</span><span class="src-note-p">The script prints the follow-up for the room to type, and then prints the answer in advance, because the failure is the lesson. What comes back will be some version of &quot;I&#x27;m sorry, you haven&#x27;t said anything yet&quot; — and the footer will show <code>history: dropped</code>.</span><span class="src-note-p">Nothing is broken. Two separate requests were made, and the second one did not include the first. Forgetting is the default behaviour of a language model; the remembering you are used to is a feature somebody wrote.</span></span><span class="l blank"></span><span class="l ann ann-first" data-ann="4" role="button" tabindex="0" aria-expanded="false" aria-label="The chatbox, so you can disprove it yourself">    <span class="tok-com"># The chatbox. Same call, over and over, each one starting from nothing.</span></span><span class="l ann ann-last" data-ann="4">    session.<span class="tok-fn">chat</span>(chat)</span><span class="src-note" data-ann="4"><span class="src-note-h"><span class="src-note-num">4</span>The chatbox, so you can disprove it yourself</span><span class="src-note-p">Every lesson ends in these two lines: a prompt where you type your own messages instead of the scripted ones. Try to get this model to recall something you told it. You cannot, and ten seconds of trying is worth more than a paragraph of explanation.</span><span class="src-note-p"><code>/context</code> shows exactly what is being sent. <code>/help</code> lists the rest.</span></span><span class="l blank"></span><span class="l"><span class="tok-kw">if</span> <span class="tok-fn">__name__</span> == <span class="tok-str">&quot;__main__&quot;</span>:</span><span class="l">    <span class="tok-fn">main</span>()</span></code></pre></div>
+</div>
+<!-- END GENERATED: 01_bare_call.py -->
+
+</details>
+
+<div class="step step-opt">
+  <div class="step-head"><div class="step-num">🧪</div><p class="step-title">Optional: prompt engineering</p></div>
+  <div class="step-body">
+    <p>The script asks a bare question. Paste this into the chatbox instead:</p>
+    <div class="code"><pre><code>You are briefing a security executive who has ten seconds. What is an 'agentic harness'? Answer in exactly one sentence, then name the single biggest risk it introduces.</code></pre></div>
+    <p>Same model, same cost, a very different answer. That is <strong>prompt engineering</strong>:
+    writing the request carefully. Modern harnesses interview you instead.
+    <a href="0013-afk-harness.html">Lesson 13</a> uses a skill that asks you questions before it
+    writes anything.</p>
+  </div>
 </div>
 
 <div class="ask">
   🗣️ <strong>Ask your agent:</strong> “Read <code>ai-harness-app/01_bare_call.py</code> and explain
-  what <code>max_tokens</code> does, and what happens if the answer needs more than that.” A good
-  question to have an answer to before a customer asks it. 🎬
+  what <code>max_tokens</code> does, and what happens if the answer needs more than that.”
 </div>
 
-<div class="win">
-  <p><span class="callout-label">✅ Lesson 01 done.</span> You have a model that can talk and cannot
-  act. Next: fifteen more lines that let it act — and the moment where the security conversation
-  really begins.</p>
+<h2>What you have built so far</h2>
+
+<p class="section-intro">This board reappears at the end of every Part 1 lesson. Today it is almost
+empty. You have a model, and nothing around it.</p>
+
+<!-- scorecard: 01 -->
+<!-- BEGIN GENERATED: scorecard 01 — build-lab-code.py owns this block -->
+<div class="scorecard">
+  <div class="sc-group">
+    <h3>The model</h3>
+    <div class="sc-grid">
+      <div class="sc-item is-yes"><span class="sc-mark">✅</span><span class="sc-label">LLM access</span><code class="sc-tok">bedrock</code></div>
+      <div class="sc-item is-yes"><span class="sc-mark">✅</span><span class="sc-label">Model</span><span class="sc-val">llama3-8b-instruct</span><code class="sc-tok">tier=legacy</code></div>
+      <div class="sc-item is-yes"><span class="sc-mark">✅</span><span class="sc-label">Context window</span><span class="sc-val">8,192 tokens</span><code class="sc-tok">window=8,192</code></div>
+      <div class="sc-item is-no"><span class="sc-mark">⬜</span><span class="sc-label">Tool support</span><code class="sc-tok">tools=no</code></div>
+    </div>
+  </div>
+  <div class="sc-group">
+    <h3>The harness: you build these</h3>
+    <div class="sc-grid">
+      <div class="sc-item is-no"><span class="sc-mark">⬜</span><span class="sc-label">Conversation history</span><code class="sc-tok">remember=</code></div>
+      <div class="sc-item is-no"><span class="sc-mark">⬜</span><span class="sc-label">Rules</span><code class="sc-tok">prompts/system.md</code></div>
+      <div class="sc-item is-no"><span class="sc-mark">⬜</span><span class="sc-label">Output style</span><code class="sc-tok">styles/*.md</code></div>
+      <div class="sc-item is-no"><span class="sc-mark">⬜</span><span class="sc-label">Tools and the loop</span><code class="sc-tok">agent.py</code></div>
+      <div class="sc-item is-no"><span class="sc-mark">⬜</span><span class="sc-label">Controls in the loop</span><code class="sc-tok">tools.py</code></div>
+      <div class="sc-item is-no"><span class="sc-mark">⬜</span><span class="sc-label">Skills</span><code class="sc-tok">skills/*/SKILL.md</code></div>
+      <div class="sc-item is-no"><span class="sc-mark">⬜</span><span class="sc-label">MCP</span><code class="sc-tok">mcp_client.py</code></div>
+      <div class="sc-item is-no"><span class="sc-mark">⬜</span><span class="sc-label">LSP</span><code class="sc-tok">harness.py</code></div>
+      <div class="sc-item is-no"><span class="sc-mark">⬜</span><span class="sc-label">Subagents</span><code class="sc-tok">harness.py</code></div>
+      <div class="sc-item is-no"><span class="sc-mark">⬜</span><span class="sc-label">Long-term memory</span><code class="sc-tok">memory.md</code></div>
+    </div>
+  </div>
 </div>
+<!-- END GENERATED: scorecard 01 -->
+
+<h2>Where Idira fits</h2>
+
+<p class="section-intro">Each lesson names the risk it just showed, and the Palo Alto Networks product
+that answers it.</p>
+
+<!-- idira: 01 -->
+<!-- BEGIN GENERATED: idira 01 — build-lab-code.py owns this block -->
+<div class="idira">
+  <p class="idira-risk"><span class="callout-label">🧨 The risk you just saw.</span> An agent inherits whatever identity the process it runs in has.</p>
+  <p class="idira-kicker">What answers it</p>
+  <dl>
+    <dt>Secure Cloud Access</dt>
+    <dd>Issues cloud access on request and expires it. Nothing you ran in this lesson needed a stored credential.</dd>
+    <dt>Secrets Manager SaaS</dt>
+    <dd>Holds and rotates the secrets an app needs at runtime, so no key has to sit in your code.</dd>
+    <dt>Secrets Hub</dt>
+    <dd>Brings secrets already in stores such as AWS Secrets Manager under the same policy and rotation. The app does not change.</dd>
+  </dl>
+  <p class="idira-say">🗣️ “Before you secure the agent, look at what it can already reach. Take the standing credential away first.”</p>
+  <p class="idira-more"><a href="reference/securing-agentic-ai.html">One platform, every identity. The deck and the videos →</a></p>
+</div>
+<!-- END GENERATED: idira 01 -->
+
+<h2>Key takeaways</h2>
+
+<ul>
+  <li><strong>A model call is one HTTPS request.</strong> Messages go up, one response comes back, the
+    connection closes. Nothing is stored on the other side.</li>
+  <li><strong>Forgetting is the default.</strong> The memory you are used to is code, written on your
+    side of the request. That is Lesson 02.</li>
+  <li><strong>An AI agent is an app.</strong> It runs as somebody, and reaches whatever that identity
+    can reach.</li>
+  <li><strong>So it is an identity problem.</strong> Nothing you ran needed a stored AWS key. Secure
+    Cloud Access issued one that expires. Idira secures every identity involved:
+    <strong>human</strong>, <strong>machine</strong> and now <strong>agentic AI</strong>.</li>
+</ul>
 
 <div id="page-pager"></div>
 

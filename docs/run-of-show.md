@@ -1,122 +1,264 @@
 # Run of show
 
-**Slot:** 90 minutes. **Planned:** 87 minutes. **Buffer:** 3 minutes.
+**Slots:** 60 minutes at 1:00–2:00pm, then 90 minutes at 3:00–4:30pm, with an hour between them.
+**Planned:** 70 minutes of Part 1 into a 60-minute slot 1, 60 minutes of Part 2 into a 90-minute
+slot 2. **Buffer:** **minus 10 minutes** in slot 1, about 30 in slot 2.
 
-⚠️ **Read that buffer number before you plan anything else.** The earlier version of this workshop
-planned 70 minutes and kept 20 in reserve, and that reserve was the thing that made a room of sixty
-non-developers survivable. Part 1 has since been added, and it is worth the time, but it has eaten
-almost all of the slack. Two consequences, both of which you have to accept up front:
+🚨 **Slot 1 is over budget by design of the schedule, not of the material.** Part 1 as written is 70
+minutes and you have 60. You are not deciding *whether* to cut, only *which* cuts — and the six
+listed under *If you are running late* total 18 minutes, so 10 is reachable without touching anything
+structural. Choose them before the day and write them down; do not improvise at minute forty.
 
-1. **You will need to cut something on the day.** Read *If you are running late* now, not at minute
-   sixty. The first cut is chosen for you.
-2. **Lessons 03 and 04 are self-paced and are not run live.** That is not a time-saving fudge, it is
-   how those two pages are written. Say so from the front or twenty people will quietly start
-   working through them while you talk about lesson 05.
+⚠️ **Read the buffer numbers before you plan anything else.** They are lopsided on purpose. Part 1 is
+six lessons run live and it is the half that overruns, because it is the half where sixty
+non-developers meet a terminal. Part 2 is the half where the agent does the work. Three consequences,
+all of which you have to accept up front:
 
-If your slot is genuinely 90 minutes and the room is new to terminals, consider making **lesson 05
-self-paced as well** before you start. That returns the buffer to about 13 minutes and costs you the
-prompt-injection beat, which is the most quotable part of Part 1. It is a real trade and it is yours
-to make, but make it in advance rather than at minute seventy.
+1. **Slot 1 does not fit.** Read *If you are running late* now, before the day, not at minute sixty.
+   The first cut is chosen for you, and you need roughly the first four of the six.
+2. **Every Part 1 lesson runs live.** There is no self-paced Part 1 material any more. If you cut, you
+   cut a *step* inside a lesson, not a lesson — the numbering and the callbacks assume all six
+   happened.
+3. **Slot 2 has genuine slack, and it is not spare time.** It absorbs slot 1's overrun, and whatever
+   is left goes into the optional deep dives with helpers floating. Plan that, do not improvise
+   it.
 
-**Audience:** Idira **Domain Consultants**. They are not just learning to use an agent; they
-will be asked to demo this to customers. That changes the emphasis in three places: Part 1 (they
-have to be able to *explain* an agent, not only drive one), Module 3 (name the Idira product for
-each fix) and Module 6 (the Identity Broker, which is the part clients ask to see).
+### Where the break goes
+
+The break is the full hour from 2:00 to 3:00pm, and the boundary is deliberately soft:
+
+- **Part 1 finished with 5+ minutes left in slot 1?** Run Module 2 (Lesson 07, the prework check,
+  5 min) *before* the break. It is the module that surfaces environment breakage, and an hour of break
+  is enough for helpers to fix every broken laptop in the room. This is the preferred shape, and the
+  long gap is what makes it worth protecting.
+- **Part 1 ran long?** Stop at 2:00pm, mid-Part-1 if you have to, and pick up at 3:00pm where you
+  stopped — slot 2's 34 minutes of slack is there for exactly this. Never skip lesson 05 to protect the
+  break; it is the lesson the whole of Part 2 is a callback to.
+
+Announce which shape you are in *before* the break, not after.
+
+**Audience:** Idira **Domain Consultants**. They are not just learning to use an agent; they will be
+asked to demo this to customers. That changes the emphasis in four places: Part 1 (they have to be able
+to *explain* an agent, not only drive one), Lesson 06 (the governance questions they will reuse in
+every customer conversation), Module 3 (name the Idira product for each fix) and Module 5 (the Identity
+Broker, which is the part clients ask to see).
+
+## Slot 1 · Build your own AI harness
 
 | # | Module | Min | Cumulative | Who leads |
 | --- | --- | --- | --- | --- |
 | 0 | Welcome and ground rules | 3 | 3 | Trainer A |
-| 1 | Part 1 live — Lessons 01, 02, 05 | 28 | 31 | Trainer A |
-| 2 | Prework check — Lesson 06 | 5 | 36 | Trainer B + all helpers |
-| 3 | Find the secrets — Lesson 07 | 13 | 49 | Trainer A |
-| 4 | Zero standing privileges — Lesson 08 | 10 | 59 | Trainer B |
-| 5 | Delete the key — Lesson 09 | 8 | 67 | Trainer A |
-| 6 | The Identity Broker — Lesson 10 | 12 | 79 | Trainer B |
-| 7 | Wrap and Q&A | 8 | 87 | Both |
+| 1a | One call to a model — Lesson 01 | 10 | 13 | Trainer A |
+| 1b | Conversation history — Lesson 02 | 8 | 21 | Trainer A |
+| 1c | Context engineering — Lesson 03 | 14 | 35 | Trainer B |
+| 1d | Tools and agents — Lesson 04 | 15 | 50 | Trainer A |
+| 1e | The harness — Lesson 05 | 15 | 65 | Trainer B |
+| 1f | Who runs the agents? — Lesson 06 | 5 | 70 | Trainer A |
 
-**There is no slide deck any more.** Part 1 replaced it. The old twelve-minute presentation
-explained what an agent is; attendees now build one instead, which lands harder and takes the same
-time. What survives is a three-minute opener, in
-[presentation-outline.md](presentation-outline.md).
+**— break —** (run Module 2 before it if you are ahead)
 
-Modules 1 to 6 are **mandatory**. **Lessons 03 and 04** are mandatory reading but self-paced.
-**Lessons 11, 12 and 13** are **optional advanced courses**, each a self-contained page, and exist
-to occupy fast finishers so they do not derail the room.
+## Slot 2 · Practical Guide to AI Harness
+
+| # | Module | Min | Cumulative | Who leads |
+| --- | --- | --- | --- | --- |
+| 2 | Prework check — Lesson 07 | 5 | 5 | Trainer B + all helpers |
+| 3 | Vibe coding: Find the secrets — Lesson 08 | 13 | 18 | Trainer A |
+| 4 | Skills: ZSP by Idsec CLI — Lesson 09 | 12 | 30 | Trainer B |
+| 5 | MCP: AI Agent Identity Broker — Lesson 10 | 20 | 50 | Trainer B |
+| 6 | Wrap and Q&A | 8 | 58 | Both |
+| 7 | Buffer, or release the room early | 2 | 60 | Both |
+| 8 | Optional deep dives, helpers floating — Lessons 11–14 | rest | — | All |
+
+**There is no slide deck any more.** Part 1 replaced it. The old twelve-minute presentation explained
+what an agent is; attendees now build one instead, which lands harder. What survives is a three-minute
+opener, in [presentation-outline.md](presentation-outline.md).
+
+Modules 0 to 6 are **mandatory**. **Lessons 11, 12, 13 and 14** are **Part 3, the optional deep dives**, each a
+self-contained page, and exist to occupy fast finishers so they do not derail the room. Delete the key
+moved into that set: zero standing privileges is the beat that has to land in the room, and deleting the
+key it replaced is the follow-up an attendee can do alone.
 
 ---
 
 ## Module 0 · Welcome and ground rules (3 min)
 
-See [presentation-outline.md](presentation-outline.md). Three minutes, hard stop. You are not
-teaching anything here, you are getting sixty people pointed at the same file.
+See [presentation-outline.md](presentation-outline.md). Three minutes, hard stop. You are not teaching
+anything here, you are getting sixty people pointed at the same file.
 
-Close with the one instruction that matters: **open `lab/index.html` by double-clicking it.**
-Put that on a slide and leave it up.
+Close with the one instruction that matters: **open `lab/index.html` by double-clicking it.** Put that
+on a slide and leave it up.
 
-Three things to say and then stop:
+Four things to say and then stop:
 
-- There is a **page selector at the top of every lab page**, the dropdown between Back and Next.
-  Nobody gets lost and nobody has to return to the index to move on.
-- **Thirteen lessons, numbered in the order you do them.** 01 to 05 build an agent, 06 to 10 use a
-  real one, 11 to 13 are optional advanced courses for people who finish early.
-- **Raise your numbered card** rather than waiting politely. Helpers are watching for cards, not
-  for confused faces.
+- **Arrange your screen now: lab guide on one half, terminal on the other.** The prework told them to
+  do this, so it is a ten-second reminder rather than an exercise — but do it, because the alternative
+  is sixty people alt-tabbing for three hours. The instruction is at the top of `lab/index.html` and it
+  follows the OS switch.
+- There is a **page selector at the top of every lab page**, the dropdown between Back and Next. Nobody
+  gets lost and nobody has to return to the index to move on.
+- **Fourteen lessons, numbered in the order you do them.** 01 to 05 build an agent, 06 is the break time
+  activity, 07 to 10 use a real one, 11 to 14 are optional deep dives for people who finish early.
+- **Raise your numbered card** rather than waiting politely. Helpers are watching for cards, not for
+  confused faces.
 
 ---
 
-## Module 1 · Part 1 live (28 min)
+## Module 1 · Part 1, live (74 min)
 
 **Goal:** every attendee can say what an AI agent actually is, out loud, without using the word
 "magic", because they built one and then broke it.
 
-This is the module that makes the room able to *explain* Claude Code to a customer rather than only
-demo it. Trainer A leads all three lessons from the front, with attendees running the same commands
-at their own machines.
+This is the half that makes the room able to *explain* Claude Code to a customer rather than only demo
+it. Trainers lead from the front, with attendees running the same commands at their own machines. Every
+lesson ends in a chatbox, so the room can experiment at each step — which is also the main way this
+half overruns. Watch the clock, not the enthusiasm.
 
-**Lesson 01 · One call to a model (~8 min).** [Page](../lab/0001-one-call.html) ·
-`python 01_bare_call.py`. Credentials and the virtual environment get set up here, which is why this
-lesson comes before the prework check rather than after it. Expect the environment problems to
-surface now. That is deliberate and it is why all helpers are on the floor.
+Say once, at the start, and then never again: **the numbers on your screen will not match mine.** Token
+counts and percentages differ per run. The *shape* is the lesson.
 
-The beat to land, in one sentence:
+### 1a · Lesson 01 · One call to a model (~10 min)
+
+[Page](../lab/0001-one-call.html) · `python 01_bare_call.py`
+
+Credentials and the virtual environment get set up here, which is why this lesson comes before the
+prework check rather than after it. Expect the environment problems to surface now. That is deliberate
+and it is why all helpers are on the floor.
+
+Two walls, in order: the model **forgets** (ask a follow-up and watch it fail), and the model **cannot
+act**. Then have them look at the footer: tiny input, tiny output, a stop reason, and a context gauge
+barely off zero.
 
 > That is a model. It talked, it could not act, and it forgot you the moment it answered. Everything
 > else today is code we wrap around it.
 
-**Lesson 02 · Give it a tool (~10 min).** [Page](../lab/0002-give-it-a-tool.html) ·
-`python 02_single_tool.py`. The best twelve minutes of the session for audience participation,
-because it opens with a **secret hunt**: attendees grep `ai-harness-app/sandbox/` by hand and count
-what they find, before any agent runs.
+Also worth ten seconds, because it defuses a question that otherwise recurs all day: the model here is
+**deliberately old** — April 2024, no tool support, an 8,192-token window. We are not being unfair to
+it; we need a window small enough that you can fill it in a lesson.
+
+### 1b · Lesson 02 · Conversation history (~8 min)
+
+[Page](../lab/0002-conversation-history.html) · `python 02_conversation.py`
+
+The same call, with the conversation attached. Ask the follow-up that failed in lesson 01 and watch it
+succeed. Then point at the footer twice: input tokens are up, and the gauge moved.
+
+> Nothing gained a memory. We are re-sending the whole conversation every turn, and paying for it every
+> turn. "The model remembers" is a user-interface illusion, and it is the first cost line in every
+> agent bill.
+
+The security beat, in one sentence, because this room will use it: everything in that transcript is
+re-sent to a model provider on every turn — which is what **Prism AIRS** inspects.
+
+### 1c · Lesson 03 · Context engineering (~14 min)
+
+[Page](../lab/0003-context-engineering.html) · `python 03_context.py`
+
+The longest Part 1 lesson and the one with the most quotable beats. Four things happen: rules go in,
+an output style goes in, `/fill` takes the window to the dumb zone, and `/compact` buys some of it
+back.
+
+Do not skip `/style eli5` **after** three long answers. The model keeps answering long, because the
+history outweighs the instruction — and then `/reset` and the same style produces a third of the
+tokens. That is the whole of context engineering in two commands.
+
+> The instruction did not lose to a bug. It lost to three previous answers. Whatever is in the window
+> in bulk beats whatever is in the window in principle.
+
+Then the dumb zone and the wall. Land both names, and land what `/compact` actually is: a summary
+written by the model, of the conversation, replacing the middle of it. Lossy on purpose.
+
+**Give the heads-up about Lesson 13 here**, in one sentence, because it is the answer to the problem
+they just felt:
+
+> There is an optional lesson at the end where you break a whole project into tickets small enough that
+> each one fits in a fresh window. That is what people mean by context engineering when they say it in
+> a job interview.
+
+### 1d · Lesson 04 · Tools and agents (~15 min)
+
+[Page](../lab/0004-tools-and-agents.html) · `python 04_tools_and_agents.py`
+
+The best fifteen minutes of the session for audience participation, because it opens with a **secret
+hunt**: attendees search `ai-harness-app/sandbox/` by hand and count what they find, before any agent
+runs.
 
 Run the hunt as a room. Ask for numbers out loud. Most people find four of the six. The two nobody
-finds are a hidden `.env` and a password buried inside a `postgres://` URL, and that miss is the
-whole argument for eliminating credentials instead of scanning for them. Do not give the answer
-early; let them be wrong first.
+finds are a hidden `.env` and a password buried inside a `postgres://` URL, and that miss is the whole
+argument for eliminating credentials instead of scanning for them. Do not give the answer early; let
+them be wrong first.
 
 > You just did what a scanner does, and you missed two. This is why "we grep for secrets" is not a
 > security control.
 
-**Lesson 05 · When the data lies (~10 min).** [Page](../lab/0005-when-data-lies.html) ·
-`python 05_prompt_injection.py`. A file in the repo gives the agent instructions and the agent
-refuses, not because it was asked nicely but because `_safe_path()` and a two-command allowlist
-would not carry out the request.
+Then the toolbox — and the old model **refuses it outright** (`This model doesn't support tool use`),
+which is why the lesson switches tiers in front of the room. Read the `⚙`/`↳` transcript together, stop
+on the approval prompt, and finish on `/context`: four tool schemas, sent on every single turn whether
+used or not.
 
-This is the beat this audience will reuse in front of customers:
+> The loop is nine lines. That is the entire difference between a chatbot and an agent.
 
-> The model was talked into it. The controls refused anyway. When a vendor tells you their agent is
-> safe because of its system prompt, that is the wrong answer.
+### 1e · Lesson 05 · The harness (~15 min)
 
-⚠️ **The model's refusal is not deterministic.** Sometimes it declines the injected instructions on
-its own, sometimes it tries and the tool layer blocks it. Both outcomes prove the point, and the
-page says so. Do not promise the room a specific output.
+[Page](../lab/0005-the-harness.html) · `python 05_harness.py`
 
-**Point at lessons 03 and 04 and move on.** They cover the system prompt plus the iteration cap, and
-token accounting plus compaction. Say plainly: "these two are yours to read, they are written for
-that, and 04 is where `/compact` comes from." Do not summarise them from the front. If you start,
-you will spend nine minutes you do not have.
+Everything at once: rules, skills, output style, MCP, LSP, subagents, hooks and memory. One task per
+component, all six inside the one session. No new loop — `agent.py` has not changed since lesson 04,
+and saying that out loud is the point.
 
-**Gate:** do not start Module 2 until the room has seen a refusal in lesson 05. If you are already
-behind, see *If you are running late*.
+The script sends nothing on start. It prints the component panel and the six tasks, then waits. Every
+prompt in this lesson is one an attendee pastes, including task 4's delegated audit.
+
+Four beats that matter more than completeness:
+
+- **Five of the seven are text.** Rules, skills, style, memory and tool descriptions are all things the
+  model reads. One is a control: the hook. Task 5 has them argue with `deny_secret_reads` in the chatbox
+  and watch it refuse without consulting anybody.
+- **`prove_the_controls()`.** The script prints it when you quit the chatbox: three attacks, three
+  refusals, no model in the loop, identical on every laptop in the room. ⚠️ **The model's behaviour is
+  not deterministic.** Sometimes it declines on its own, sometimes it tries and the tool layer blocks
+  it. Demo from *that* panel and treat the model's behaviour as the anecdote.
+- **`audit.log`.** Have them `cat` it. The model has no way to know it exists. That is the difference
+  between "the agent did something" and "we can prove what the agent did".
+- **MCP, and where the tools came from.** The lesson uses a local stdio server, and the page stops there.
+  `python 05_harness.py --remote` points at an unauthenticated internet playground; it is a projector
+  demo now, not an attendee step, so run it once from the front if you have the minute. If the proxy
+  blocks it, **the block is the finding**. Say that sentence; do not treat it as a failed demo.
+
+Open on the CTF callback — this room has hands-on jailbreaking experience from last year's mid-year
+kick-off, so use it rather than teaching around it.
+
+> The model's judgement was the unreliable control. The path check, the allowlist and the approval gate
+> are the reliable ones, and they are twenty lines of Python.
+
+**Gate:** do not start slot 2 until the room has seen a hook refuse something in lesson 05. If you are
+already behind, see *If you are running late*.
+
+### 1f · Lesson 06 · Who runs the agents? (~5 min)
+
+[Page](../lab/0006-who-runs-the-agents.html) · no script
+
+You lead this one from the front. Nobody types anything. The page asks each attendee to answer three
+questions for themselves, and each of them running out of answer is the content. Give them a few seconds
+on each before you land it.
+
+- **Count the agents.** How many agents ran in this venue today, who started them, what did they do,
+  when? No answer exists, for their laptop or anyone's, because no control was set before the agents
+  started. Say the words **agent discovery**.
+- **They already know how to break one.** Half this room did hands-on jailbreaking at last year's APJ SE
+  Bootcamp, and more of them at the TechSummit26 AI Agentic workshops and the channel partner events.
+  The deck and the recording are linked from the page as an optional step. Do not play them.
+- **Could you stop one?** Do we know if any agent here is doing something suspicious, how would we
+  prevent it, is there a kill switch? Land the honest answer: nobody can say, because no control was
+  enforced before the agents started.
+
+Then name the three things Secure AI Agents does about it: discover and centrally manage agents, control
+agent access and enforce least privilege, govern and audit agent actions for compliance. That is the
+handover into Part 2.
+
+Close Part 1:
+
+> Claude Code has all seven components you just built. You are not about to learn a new tool, you are
+> about to recognise one.
 
 ---
 
@@ -124,271 +266,314 @@ behind, see *If you are running late*.
 
 **Goal:** every laptop in the room has an agent that answers a question.
 
-Attendees work through [Lesson 06](../lab/0006-setup.html). This used to be the highest-risk five
-minutes of the session. It is less risky now, because Part 1 already required the credentials and
-the virtual environment, so most of the breakage has surfaced during Module 1.
+Attendees work through [Lesson 07](../lab/0007-setup.html). This used to be the highest-risk five
+minutes of the session. It is less risky now, because Part 1 already required the credentials and the
+virtual environment, so most of the breakage has surfaced during slot 1.
 
-**All helpers are on the floor for this module.** Nobody sits down.
+**All helpers are on the floor for this module.** Nobody sits down. If you are running this one *before*
+the break — the preferred shape — helpers keep working through the break on whatever is still red.
 
-Trainer B narrates the steps from the front at the pace of the slowest third, while helpers
-work the room. The two most common failures are a new terminal window with no environment
-variables, and a virtual environment that is not switched on (no `(.venv)` in the prompt).
-Both are in [helper-runbook.md](helper-runbook.md).
+Trainer B narrates the steps from the front at the pace of the slowest third, while helpers work the
+room. The two most common failures are a new terminal window with no environment variables, and a
+virtual environment that is not switched on (no `(.venv)` in the prompt). Both are in
+[helper-runbook.md](helper-runbook.md).
 
-Say the `(.venv)` thing out loud as you narrate step 5. It is one sentence and it prevents a
-dozen hands going up later:
+Say the `(.venv)` thing out loud as you narrate step 4. It is one sentence and it prevents a dozen
+hands going up later:
 
-> If your prompt does not start with `(.venv)`, Python cannot see `boto3`. Every window,
-> every time.
+> If your prompt does not start with `(.venv)`, Python cannot see `boto3`. Every window, every time.
 
-**Gate:** do not start Module 3 until you have visually confirmed the room. Ask for hands
-*down* if the agent answered; hands still up are your work list. If more than about five
-people are stuck, pair them with a neighbour rather than holding sixty people.
+Then narrate step 5 slowly, because it sets up the rest of the afternoon: after `claude` starts,
+press `Shift+Tab` until the bottom line says **auto**. Say why once, and say it honestly:
+
+> Auto mode is on so that sixty people move at the same speed. On Monday, in a repo that matters, do
+> not use it. You read each command before you approve it.
+
+Every lesson from here on assumes auto mode, so a room that misses this will be stopped at an approval
+prompt in Module 3 without knowing why.
+
+**Gate:** do not start Module 3 until you have visually confirmed the room. Ask for hands *down* if the
+agent answered; hands still up are your work list. If more than about five people are stuck, pair them
+with a neighbour rather than holding sixty people.
 
 Say out loud, because it is the free teaching beat of the day:
 
-> The credentials you pasted were themselves short-lived. Nobody gave you a permanent AWS
-> key. Before you clicked, your standing access to that account was zero. That is the whole
-> idea of Module 4. Hold that thought for twenty minutes.
+> The credentials that command gave you were themselves short-lived. Nobody gave you a permanent AWS
+> key. Before you ran it, your standing access to that account was zero. That is the whole idea of
+> Module 4. Hold that thought for twenty minutes.
 
 ---
 
-## Module 3 · Find the secrets (13 min)
+## Module 3 · Vibe coding: Find the secrets (13 min)
 
-**Goal:** everyone has an agent-produced table of four secrets, and can name the difference
-between eliminating one and vaulting one, **with the Idira product name attached to each**.
+**Goal:** everyone has an agent-produced table of four secrets, and can name the difference between
+eliminating one and vaulting one, **with the Idira product name attached to each**.
 
-Attendees work [Lesson 07](../lab/0007-find-the-secrets.html). Mostly self-paced; Trainer A
-punctuates it with three interventions:
+Attendees work [Lesson 08](../lab/0008-find-the-secrets.html). Mostly self-paced; Trainer A punctuates
+it with three interventions:
 
-1. **After the app fails** (~3 min in). Read the error aloud. "It does not say *no
-   credentials*. It says the credentials were *rejected*. So it has credentials. Where?"
-2. **After the review returns** (~8 min in). Take three answers from the room on what was
-   found. Do not accept "an AWS key"; push for all four.
-3. **The two-fixes table** (~11 min in). Do this from the front, on the slide. It is the
-   conceptual centre of the workshop and it must not be skimmed as reading.
+1. **After the app fails** (~3 min in). Read the error aloud. "It does not say *no credentials*. It says
+   the credentials were *rejected*. So it has credentials. Where?"
+2. **After the review returns** (~8 min in). Take three answers from the room on what was found. Do not
+   accept "an AWS key"; push for all four.
+3. **The two-fixes table** (~11 min in). Do this from the front, on the slide. It is the conceptual
+   centre of the workshop and it must not be skimmed as reading.
 
 Callback to Part 1 that costs you ten seconds and is worth it:
 
-> In lesson 02 you hunted six of these by hand and found four. The agent found them in one pass.
-> That is a better scanner, and it is still not a fix.
+> In lesson 04 you hunted six of these by hand and found four. The agent found them in one pass. That
+> is a better scanner, and it is still not a fix.
 
 On intervention 3, land the product names, because this room will be asked for them by name:
 
-> Eliminate → **Idira Secure Cloud Access**. Vault → **Idira Secrets Manager**. Say both
-> halves to a client. "Eliminate what you can, vault the rest."
+> Eliminate → **Idira Secure Cloud Access**. Vault → **Idira Secrets Manager**. Say both halves to a
+> client. "Eliminate what you can, vault the rest."
 
-The lesson also asks them to run the built-in `/security-review`. On a fresh clone there may
-be no *pending changes* for it to look at, in which case the lesson tells them to ask for the
-whole project instead. **Know which behaviour your repo produces.** It is a dry-run capture
-item in [owner-prep.md](owner-prep.md). Say it from the front so sixty people do not
-each discover it separately.
+The lesson also asks them to run the built-in `/security-review`. On a fresh clone there may be no
+*pending changes* for it to look at, in which case the lesson tells them to ask for the whole project
+instead. **Know which behaviour your repo produces.** It is a dry-run capture item in
+[owner-prep.md](owner-prep.md). Say it from the front so sixty people do not each discover it
+separately.
 
-The honest claim about AI-generated credentials belongs here, worded as in the lesson:
-models *frequently* inline credentials when prompted casually, not always. Do not overstate
-it; this room will catch you.
+The honest claim about AI-generated credentials belongs here, worded as in the lesson: models
+*frequently* inline credentials when prompted casually, not always. Do not overstate it; this room will
+catch you.
 
 ---
 
-## Module 4 · Zero standing privileges (10 min)
+## Module 4 · Skills: ZSP by Idsec CLI (12 min)
 
-**Goal:** every attendee has run `get_caller_identity()` and seen an elevated role ARN with
-their own name in it.
+**Goal:** every attendee has run `get_caller_identity()` and seen an elevated role ARN with their own
+name in it.
 
-Attendees work [Lesson 08](../lab/0008-zsp-access.html). Trainer B demos steps 1 to 4 from the
-front first, at full size, then releases the room. Do not let sixty people discover
-`list-targets` output formatting simultaneously without having seen it once.
+Attendees work [Lesson 09](../lab/0009-zsp-access.html). Trainer B demos steps 1 to 4 from the front
+first, at full size, then releases the room. Do not let sixty people discover `list-targets` output
+formatting simultaneously without having seen it once.
 
 Four beats to call out. The last two are twenty seconds each, not sections:
 
-- **The skill is one page of English.** Have people actually open `SKILL.md`. This is the
-  moment the phrase "AI harness" becomes concrete rather than a slide, and Part 1 has already
-  primed them for it.
+- **The skill is one page of English.** Step 2 has them page through all three `SKILL.md` files with
+  `more`. Part 1 has already primed them for this — lesson 05 loaded a skill the same way, and they
+  watched the catalogue cost two lines until it was needed.
 - **The ARN carries their name.** A shared access key can never tell you who used it.
-- **Nothing was pre-wired for this.** No OIDC provider, no IAM trust policy, no per-person role,
-  no CloudFormation. It is in the lesson as a callout under *The idea*, and it answers the first
-  question a customer asks about effort. One sentence:
+- **Nothing was pre-wired for this.** No OIDC provider, no IAM trust policy, no per-person role, no
+  CloudFormation. It is in the lesson as a callout under *The idea*, and it answers the first question a
+  customer asks about effort. One sentence:
 
-  > Nobody set up federation in that AWS account for you. There is no identity provider to
-  > configure, no trust relationship to write and no role per person to maintain. Secure Cloud
-  > Access brokers the request, so the setup cost you are looking at is the login you already did.
+  > Nobody set up federation in that AWS account for you. There is no identity provider to configure, no
+  > trust relationship to write and no role per person to maintain. Secure Cloud Access brokers the
+  > request, so the setup cost you are looking at is the login you already did.
 
-- **Name Idira EPM, once, out loud.** It is in the lesson as a callout under step 2, and it answers
-  the question this room will ask on a customer site: *what stops anyone downloading this CLI and
-  requesting access?* One sentence:
+- **Name Idira EPM, once, out loud.** It is in the lesson as a callout under step 3, and it answers the
+  question this room will ask on a customer site: *what stops anyone downloading this CLI and requesting
+  access?* One sentence:
 
-  > `idsec` is itself a privileged tool. **Idira EPM** decides which executables may run on the
-  > endpoint and by whom: application control, an approval flow when it blocks something, and an
-  > audit trail. **EPM** governs which tool may run; **Secure Cloud Access** governs what access
-  > that tool can obtain; **Secrets Manager** holds what you cannot eliminate.
+  > `idsec` is itself a privileged tool. **Idira EPM** decides which executables may run on the endpoint
+  > and by whom: application control, an approval flow when it blocks something, and an audit trail.
+  > **EPM** governs the agents and tools that run on the laptop; **Secure Cloud Access** and **Secure
+  > Infrastructure Access** govern the access they can obtain; **Secrets Management** governs your
+  > machine identities everywhere else.
 
-  Do not open the EPM console and do not demo it. It is not in the lab and there is no time. This is
-  a naming beat that makes the story complete, nothing more.
+  Do not open the EPM console and do not demo it. It is not in the lab and there is no time. This is a
+  naming beat that makes the story complete, nothing more.
 
-**Watch for:** the credential hand-off in step 5 requires leaving the agent (`/exit`) to set
-environment variables. People will try to get the agent to do it and it cannot.
+**Watch for:** the agent is told to *print* the elevate command, not run it, and step 6 has the
+attendee leave the agent (`/exit`) and run it themselves. People will try to get the agent to do it.
+It cannot set an environment variable in their shell, and you do not want the credentials in its
+transcript either. Both halves of that are worth saying out loud.
 
-**Close the module by promising the kill switch.** One sentence, because the old deck used to do
-this and Module 6 lands measurably harder when it was foreshadowed:
+**Close on the honesty number.** One of the four secrets is now gone and three are not, and Lesson 09
+says so under *What this fixes, and what it does not*. Say the number from the front. It is the line
+that makes the whole session credible to a security audience. Then point at the two optional steps at
+the end of the lesson: the same elevation for **Azure**, which returns a session id and no credential at
+all, and **Lesson 14**, which deletes the key this lesson made unnecessary. Both are for after the
+workshop.
 
-> In about twenty minutes you are all going to connect an agent through the Broker and call a tool.
-> Then I am going to click one button up here, and all sixty of you will lose access at the same
-> instant. Watch for that.
+**Then foreshadow Module 5.** One sentence, because the old deck used to do this and Module 5 lands
+measurably harder when it was set up:
 
-⚠️ **On the projector, do not run `elevate` live without checking first.** Depending on the CLI
-build, its JSON response can contain the short-lived credentials themselves in an
-`accessCredentials` field, and the agent shows you command output verbatim. Confirm what your
-build prints during the dry run (G7). If it prints credentials, demo steps 1 to 3 from the front and
-let attendees run `elevate` at their own desks. Attendees' own credentials on their own screens
-are fine; they are short-lived and scoped to a sandbox account.
+> In about ten minutes you are all going to connect an agent through the Broker and call a tool you hold
+> no credential for. Then you are going to find your own name on that call, in the audit log, and the one
+> screen where I could take it away from all sixty of you at once.
 
----
+Do **not** promise a live kill switch. Nothing in the tenant is changed during the session.
 
-## Module 5 · Delete the key (8 min)
-
-**Goal:** `python summarize.py` works, and `grep AKIA` finds nothing.
-
-Attendees work [Lesson 09](../lab/0009-fix-the-app.html). Fast module, because the agent does the
-work. Trainer A's job is to slow people down at two points:
-
-1. **Before approving the change.** They are the review step. Make them read the diff.
-2. **After it works.** Land the distinction explicitly: not hidden, not moved, not rotated,
-   *eliminated*. Seven lines removed, nothing added, no vault to run, no rotation schedule.
-
-Then close the honesty loop: **three of the four secrets are still there.** Say the number.
-It is the line that makes the whole session credible to a security audience.
-
-**The DC-specific beat**, which is in the lesson as a stop callout. Read it from the front,
-because it is the question a customer asks thirty seconds after this demo:
-
-> Deleting the constants is the right answer *for the AWS key*. It is not a general answer to
-> secrets. In production, everything you cannot eliminate goes into **Idira Secrets Manager**:
-> vaulted, rotated, audited, fetched at run time. Never a long-lived secret in an environment
-> variable. That is a config file wearing a disguise.
+⚠️ **On the projector, do not run `elevate` live.** Its JSON response carries the short-lived
+credentials in an `accessCredentials` field. The lab's one-liner ends in `eval`, so at a desk it prints
+nothing, but anything you type by hand from the front might. Demo steps 1 to 5 on the projector and let
+attendees run the elevate command at their own desks. Their own credentials on their own screens are
+fine; they are short-lived and scoped to a sandbox account.
 
 ---
 
-## Module 6 · The Identity Broker (12 min) 🛡️
+## Module 5 · MCP: AI Agent Identity Broker (20 min) 🛡️
 
-**Goal:** every attendee has an MCP server connected through the Broker, has authenticated as
-their own numbered user, has called a tool while holding **no credential for that system**, and
-has watched the room lose access when the trainer clicks Disable.
+**Goal:** every attendee has an MCP server connected through the Broker, has authenticated as their own
+user, has called a tool while holding **no credential for that system**, and has then read their own
+call back out of the console as an administrator would.
 
-This module is mandatory because it is the part Domain Consultants get asked to demo. Treat it
-as a rehearsal for that demo, not as an exercise.
+This module is mandatory because it is the part Domain Consultants get asked to demo. Treat it as a
+rehearsal for that demo, not as an exercise.
 
-Attendees work [Lesson 10](../lab/0010-identity-broker.html). Trainer B drives it from the
-front, at the pace of the room, in three parts:
+Attendees work [Lesson 10](../lab/0010-identity-broker.html), which is in two halves: four steps as a
+user, four as an administrator. Trainer B drives it from the front at the pace of the room.
 
-**Part 1, connect (≈5 min).** `claude mcp add …` outside the agent, then `/mcp` inside it,
-then the browser sign-in. Have the Gateway URL and the Client ID **on a slide, large**, and
-leave them up for the whole module. The Client Secret is the only thing that needs care:
-`--client-secret` takes no value and prompts, so it never reaches shell history.
+**Nothing in the `apj-secrets` tenant is changed during the session.** No server is disabled, no policy
+is edited. Say so, so nobody waits for a demo that is not coming.
 
-Two failure modes, both expected: a server listed as *needs authentication* (they have not run
-`/mcp` yet) and a browser callback page that does not load (the callback is
-`http://localhost:<port>`, and a VPN or proxy can eat it). Both are in the helper runbook.
+**Part 1, connect and call a tool (≈8 min).** `/mcp` inside the agent to see it is empty, `/exit`, then
+`claude mcp add …` in the terminal, then `/mcp` again and the browser sign-in. The Gateway URL and
+Client ID are printed in the lesson, so nothing needs to be on a slide. The **Client Secret** is in
+`#cybr-japac-ts-all`: `--client-secret` takes no value and prompts, so it never reaches shell history.
 
-**Part 2, the audit log, on the projector (≈3 min).** Do this *live*, big, in the console. Ask
-someone to shout their attendee number and find their call. What the room needs to see, in one
-sentence:
+Then two prompts: `What MCP tools are available?` and the `analyze_domain` call on
+`paloaltonetworks.com`.
 
-> The log names the human, the agent, the tool and the server, and it does that for every
-> call, successful or refused.
+Three failure modes, all expected: a server listed as *needs authentication* (they have not run `/mcp`
+yet), the sign-in opening in the wrong browser or profile, and a callback page that does not load (the
+callback is `http://localhost:<port>`, and a VPN or proxy can eat it). All three are in the helper
+runbook.
 
-Then the sentence that makes it matter to a security person:
+The callback here is short and worth it:
 
-> The agent never held a credential for that system. The Broker holds it. That is why there is
-> nothing to leak and nothing to rotate.
+> In lesson 05 you connected to an MCP server by pasting a URL, with no authentication at all, and some
+> of you got blocked by the proxy. This is the same protocol with somebody in charge of it.
 
-**Part 3, the kill switch (≈4 min).** The moment of the session. With everyone connected and
-working, set the MCP server to **Disabled** in the console. Wait. Let attendees discover their
-next tool call fails.
+**Part 2, the console, as an administrator (≈8 min).** Attendees have read access, so they do this
+themselves, four screens at under two minutes each: the agent inventory and its **Connected MCP
+servers** tab, the MCP server and its three tabs, the **AI agents access policies** list, and the
+**Audit and Reports** space filtered to Time range, Service name = Secure AI Agents, and their own
+Username.
 
-Say it while they are watching:
+Sixty people are hitting the same tenant, so expect the console to be slow. That is what the spare time
+is for.
 
-> One click. Every agent, every attendee, immediately. No credential to hunt down, no key to
-> rotate, no application to redeploy.
+Two sentences the room needs while they are on the policy screen:
 
-Then **Enable it again** and confirm the room recovers. Do not leave it disabled. The optional
-advanced courses do not need it, but a room that thinks it broke something is a distracted room.
+> Remove the tool, the agent or the role from this policy and the calls stop. Every connected agent, at
+> once, from one screen. That is the kill switch, and disabling the MCP server does the same thing.
 
-Also cover, briefly and from the front, the two enforcement facts the lesson states, because
-they are the ones a customer pushes on:
+> The agent never held a credential for that system. The Broker holds it. That is why there is nothing
+> to leak and nothing to rotate.
 
-- Access is **deny by default**. A policy allows a call only when it matches *both* the
-  principal (user or role **and** the AI agent) and the resource (the tool on that server).
-  Console path: **Manage > Policies > AI agents access**.
+**Part 3, the two enforcement facts (≈3 min).** From the front, because these are what a customer
+pushes on:
+
+- Access is **deny by default**. A policy allows a call only when it matches *both* the principal (user
+  or role **and** the AI agent) and the resource (the tool on that server). Console path:
+  **Manage > Policies > AI agents access**.
 - **Both** the agent and the server must be enabled for any policy to apply.
 
-Point at the last section of the lesson, *Your five-minute client demo*, and tell them
-plainly: that is the script, it works, use it.
+Then a minute of slack, because the browser sign-in is where a room of sixty spreads out.
+
+Point at the last section of the lesson, *Your five-minute demo*, and tell them plainly: that is the
+script, it works, use it. Beat 4 is the live kill switch, which they did **not** see today, so tell them
+to rehearse it in their own tenant before they show it.
 
 ---
 
-## Module 7 · Wrap and Q&A (8 min)
+## Module 6 · Wrap and Q&A (8 min)
 
-- 2 min: recap using the table at the bottom of Lesson 09, plus the one Broker sentence
-- 2 min: what we deliberately did *not* cover. Vaulting the other three secrets in **Idira
-  Secrets Manager**, and writing access policies (they consumed one today; they did not author
-  one). Both are follow-up sessions.
+- 2 min: recap using *What this fixes, and what it does not* at the bottom of Lesson 09, plus the one
+  Broker sentence
+- 2 min: what we deliberately did *not* cover. Vaulting the other three secrets in **Idira Secrets
+  Manager**, and writing access policies (they consumed one today; they did not author one). Both are
+  follow-up sessions.
 - 4 min: questions
 
-Two take-home pointers. First, **lessons 03 and 04**, which nobody ran live:
+Two take-home pointers. First, the page that turns today into a customer conversation:
 
-> 03 is the system prompt and the iteration cap. 04 is why your agent does not fall over on a long
-> task, and it is where `/compact` comes from. Twenty minutes, on the train, and you will be able
-> to answer the context-window question a customer asks.
+> [Post-Workshop Resources](../lab/reference/securing-agentic-ai.html) has the deck for the whole
+> platform, plus two videos. That is the page to open on the train.
 
-Then the three optional advanced courses, by name, so people know what they are choosing between:
+Then the four optional deep dives, by name, so people know what they are choosing between:
 
 - [Lesson 11 · Build something from nothing with a simple prompt](../lab/0011-build-from-nothing.html) · ~10 min
 - [Lesson 12 · Write your own skill](../lab/0012-write-a-skill.html) · ~15 min
 - [Lesson 13 · Build something AFK](../lab/0013-afk-harness.html) · ~20 min, the full harness
+- [Lesson 14 · Delete the key](../lab/0014-fix-the-app.html) · ~8 min, the follow-up to Lesson 09
 
-And at the [cheat sheet](../lab/reference/cheatsheet.html). Tell people the folder is theirs to
-keep, and that the lab pages work on a phone too. They are responsive, so the guide is
-readable on the train home.
+And at the [cheat sheet](../lab/reference/cheatsheet.html). Tell people the folder is theirs to keep,
+and that the lab pages work on a phone too. They are responsive, so the guide is readable on the train
+home.
+
+---
+
+## Module 7 · Buffer, or release the room early (2 min)
+
+Two minutes of slack, deliberately at the end. If the clock held, hand it to Q&A. If a helper is still
+unblocking somebody, this is where that happens instead of eating the wrap.
+
+---
+
+## Module 8 · Optional deep dives, in the room (whatever is left)
+
+Slot 2 should finish with real time left. Do not fill it from the front. Release the room into Lessons
+11 to 14 with helpers floating, and say which one suits whom in one sentence each: **11** if you want to
+play, **12** if you want something reusable at work on Monday, **13** if you want to see the whole
+harness, **14** if you want the sandbox app's key actually deleted. Trainers stay for questions rather
+than starting new material.
+
+**Lesson 14 is the one a helper should watch.** The agent does the editing, so the attendee is the
+review step. Slow them down twice: before they accept the change, make them read the diff, and after it
+works, land the distinction. Not hidden, not moved, not rotated, *eliminated*. Seven lines removed,
+nothing added, no vault to run. The page carries the customer-facing version of that as a stop callout:
+
+> Deleting the constants is the right answer *for the AWS key*. It is not a general answer to secrets.
+> In production, everything you cannot eliminate goes into **Idira Secrets Manager**: vaulted, rotated,
+> audited, fetched at run time. Never a long-lived secret in an environment variable. That is a config
+> file wearing a disguise.
 
 ---
 
 ## If you are running late
 
-With a 3 minute buffer you should assume you will be. Cut in this order:
+Slot 1 is where this happens. Cut in this order:
 
-1. **Lesson 05's second run** (the "run it again and watch it differ" step). Demo the
-   non-determinism from the front instead of having sixty people re-run it. Saves 3 min.
-2. **Module 3, intervention 2.** Take one answer from the room instead of three. Saves 3 min.
-3. **Module 4's front-of-room demo.** Release the room straight into the lesson. Saves 4 min,
-   costs you helper load.
-4. **Lesson 02's secret hunt, as a room.** Give them the answer table after two minutes rather than
-   letting them search for five. Saves 3 min and costs you the best participation beat of the day,
-   which is why it is fourth and not first.
-5. **Module 5, step 4** ("find what you did not fix"), but then you *must* state the
-   three-of-four number from the front. Saves 3 min. Never cut the honesty, only the exercise.
-6. **Module 6, the policy explanation.** Reduce it to the two enforcement facts and point at
-   the lesson for the rest. Saves 2 min.
+1. **Lesson 03's second `/fill`.** Take the window to the dumb zone once, from the front, rather than
+   having sixty people do it twice. Saves 3 min.
+2. **Lesson 05's jailbreak attempts** (task 5, the three prompts they argue with). Demo one from the
+   front instead, and keep the `prove_the_controls()` panel, which is the deterministic part. Saves 3 min.
+3. **Lesson 04's secret hunt, as a room.** Give them the answer table after two minutes rather than
+   letting them search for five. Saves 3 min and costs you the best participation beat of the day, which
+   is why it is third and not first.
+4. **Module 3, intervention 2.** Take one answer from the room instead of three. Saves 3 min.
+5. **Module 4's front-of-room demo.** Release the room straight into the lesson. Saves 4 min, costs you
+   helper load.
+6. **Module 5, the policy explanation.** Reduce it to the two enforcement facts and point at the lesson
+   for the rest. Saves 2 min.
 
-That is 18 minutes of cuts available before you have to touch anything structural.
+That is 18 minutes of cuts available before you have to touch anything structural — and slot 2's slack
+is behind that. Lesson 05's `--remote` demo is not on this list because it is no longer an attendee
+step: skipping it costs nothing and saves nothing.
 
-Do not cut Module 2. Do not cut Module 6, and in particular **do not cut the kill switch**.
-It is the single most memorable thirty seconds of the session and the thing attendees will
-reuse in front of customers. Do not cut the Q&A; this audience will have good questions and
-cutting them is how a workshop gets remembered badly.
+Do not cut Module 2. Do not cut Module 5, and in particular **do not cut the audit search**. Finding
+their own name on the call is the thing attendees will reuse in front of customers. Do not cut the Q&A;
+this audience will have good questions and cutting them is how a workshop gets remembered badly.
 
-**If you are more than ten minutes down by the end of Module 1**, drop lesson 05 to a two-minute
-front-of-room demo and tell the room to read the page later. That recovers 8 minutes in one move.
-Lessons 06 to 10 do not depend on lesson 05 having been run.
+**If you are more than ten minutes down by the end of lesson 04**, cut lesson 05 to tasks 1, 5 and 6
+(MCP, hooks, memory) and demo the rest from the front. The `prove_the_controls()` panel prints either
+way, on quit. One thing to say if you cut task 4: `audit.log` will hold no subagent calls, because
+nobody ran a subagent. Let the room read the page later.
 
-If you are so far behind that Module 6 will not fit, cut Module 5 to a front-of-room demo
-instead and let attendees do Lesson 09 afterwards. Lesson 10 does not depend on Lesson 09 having
-been completed.
+Lesson 06 is already the short one, and it needs no laptops. If the clock has gone, run it as three
+questions asked from the front in two minutes and skip the optional media. Do not drop it: it is the
+handover into Part 2, and it is the argument this audience takes to customers.
+
+If you are so far behind that lesson 05 will not fit in slot 1, take it into slot 2 *before* Module 2
+rather than dropping it. It is fifteen minutes and it is what Part 2 is a callback to. Slot 2 has the
+room for it.
+
+If Module 5 is running out of room, take Module 7's two minutes and drop Module 4's front-of-room demo.
+Do not cut the Broker itself; it is the part clients ask to see. Nothing in the mandatory path waits on
+Lesson 14, because deleting the key is now an optional follow-up.
 
 ## If you are running early
 
-You will not be, but if you are: release the room into Lessons 11 to 13 and let helpers float. Say
-which one suits whom. 11 if you want to play, 12 if you want something reusable at work, 13 if you
-want to see the whole harness. Or point people at lessons 03 and 04, which they have not done.
+In slot 1: let the chatbox do the work. Every Part 1 lesson has an experiment nobody has time for
+normally — argue with the hook in lesson 05, widen the allowlist in `tools.py`, `/style eli5`
+mid-history in lesson 03. Take one, do it live, take questions.
 
-Do not add material from the front. The fast finishers are already occupied and the rest need
-the air.
+In slot 2: release the room into Lessons 11 to 14 and let helpers float, as Module 8 describes.
+
+Do not add material from the front. The fast finishers are already occupied and the rest need the air.

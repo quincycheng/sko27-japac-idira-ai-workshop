@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>06 · Who runs the agents? · SKO27 TechSummit - AI Workshop for Idira DC</title>
+<link rel="icon" type="image/svg+xml" href="assets/idira-icon.svg">
+<link rel="stylesheet" href="assets/lab.css">
+</head>
+<body>
+<div id="progress-rail"><div id="progress-fill"></div></div>
+
+<div class="wrap">
+
+<nav id="page-nav"></nav>
+
+<header class="lesson">
+  <p class="kicker">Break time activity · Govern what you built</p>
+  <h1>Who runs the agents? 🔍</h1>
+  <p class="standfirst">
+    No terminal for this one. You have built an agent that reads files, runs commands and calls tools from
+    an MCP server. So has everyone else in this room. Three questions follow. Answer them for yourself.
+    You will not get far.
+  </p>
+  <ul class="meta">
+    <li class="tag-must">Everyone</li>
+    <li>💬 Discussion. Nothing to install.</li>
+    <li id="step-counter">&nbsp;</li>
+  </ul>
+</header>
+
+<h2>Your Tasks</h2>
+
+<p class="section-intro">Three questions to answer for yourself. Read them, and work out what you would
+say. The point is not the answer. It is how quickly you run out of one.</p>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">1</div><p class="step-title">Count the agents in this room</p></div>
+  <div class="step-body">
+    <p>There are about sixty laptops here. Every one of them has started an agent in the last hour. Answer
+    these four:</p>
+    <ul>
+      <li><strong>How many</strong> AI agents have run in this venue today?</li>
+      <li><strong>Who</strong> started each one?</li>
+      <li><strong>What</strong> did each one do? Which files, which commands, which services?</li>
+      <li><strong>When</strong> did it do them?</li>
+    </ul>
+    <p>Nobody set a control before any of this started. No inventory was kept, no identity was issued, and
+    nothing was told to record what ran. So the answer is not hard to find. It was never written down.</p>
+    <div class="note">
+      <p><span class="callout-label">💡 This is agent discovery.</span> The first control any customer
+      needs is a list of the agents they are running. Most organisations cannot produce one, and they are
+      adding agents faster than they are adding inventory.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">2</div><p class="step-title">Jailbreaking LLM</p></div>
+  <div class="step-body">
+    <p>Many of you already know how to talk a model past its own rules.</p>
+    <figure>
+      <img src="assets/apj-se-bootcamp.jpg" alt="Attendees at the APJ SE Bootcamp working through the
+      jailbreaking and capture-the-flag exercises.">
+      <figcaption>APJ SE Bootcamp, July 2025. The jailbreaking and capture-the-flag exercises.</figcaption>
+    </figure>
+    <p>That was last year. This year the same ground was covered at the AI Agentic workshops at
+    TechSummit26, and again at the channel partner events. <strong>Jailbreaking is not specialist knowledge
+    any more.</strong> It is in this room, and it is in your customers' rooms.</p>
+    <p>The rules an agent is given are text. Text can be argued with. A control that has to hold cannot be
+    a sentence.</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">3</div><p class="step-title">Could you stop one?</p></div>
+  <div class="step-body">
+    <p>Assume one agent in this room is doing something it should not. Reading a colleague's files,
+    exfiltrating a key, calling a paid API in a loop. Answer these three:</p>
+    <ul>
+      <li>Do we <strong>know</strong> whether anyone or any agent is doing something suspicious right now?</li>
+      <li>How would we <strong>prevent</strong> it?</li>
+      <li>Is there a <strong>kill switch</strong> that stops it?</li>
+    </ul>
+    <div class="stop">
+      <p><span class="callout-label">🚨 The honest answer.</span> Nobody can answer any of those three.
+      Not because the people are careless. Because <strong>no control was enforced before the agents
+      started</strong>. Discovery, authorisation and audit have to be in place before the question
+      is asked. Asked afterwards, there is nothing to read and nothing to switch off.</p>
+    </div>
+    <p>That is the whole argument you take to a customer. It is not that AI agents are dangerous. It is that
+    an agent nobody registered, holding an identity nobody issued, doing work nobody logged, cannot be
+    governed at all.</p>
+  </div>
+</div>
+
+<div class="step step-opt">
+  <div class="step-head"><div class="step-num">🧪</div><p class="step-title">Optional: ARKX Workshop</p></div>
+  <div class="step-body">
+    <p>The reference materials below require a corporate Google login to view. If you are unable to access them, 
+      no worries at all! They are strictly optional and not required for today's workshop.</p>
+    <div class="embed">
+      <iframe src="https://docs.google.com/presentation/d/1BaiRvWdpemi7TnPazzAwIT-aInYqLegF/embed?start=false&amp;loop=false"
+              title="APJ SE Bootcamp jailbreaking deck" allowfullscreen></iframe>
+    </div>
+    <p><a href="https://docs.google.com/presentation/d/1BaiRvWdpemi7TnPazzAwIT-aInYqLegF/edit?usp=sharing&amp;ouid=108997718105437091547&amp;rtpof=true&amp;sd=true" target="_blank">Open the deck in Google Slides</a></p>
+    <div class="embed">
+      <iframe src="https://drive.google.com/file/d/1sdhi-IxOrnAJLFoY6ZgFdNSn4nkdeN-h/preview"
+              title="APJ SE Bootcamp jailbreaking recording" allowfullscreen></iframe>
+    </div>
+    <p><a href="https://drive.google.com/file/d/1sdhi-IxOrnAJLFoY6ZgFdNSn4nkdeN-h/view?usp=sharing" target="_blank">Open the recording in Google Drive</a></p>
+  </div>
+</div>
+
+<h2>Knowledge Check</h2>
+
+<p class="section-intro">Two questions. Pick an answer to see why it is right or wrong.</p>
+
+<div class="check" data-answer="c">
+  <p class="check-q">How many AI agents ran in this room in the last hour?</p>
+  <ul class="opts">
+    <li><button data-opt="a">About sixty, one per attendee</button></li>
+    <li><button data-opt="b">More than sixty, because subagents count too</button></li>
+    <li><button data-opt="c">Nobody present can say, because nothing recorded it</button></li>
+  </ul>
+  <p class="why" data-for="a">A reasonable guess, and a guess. Some people ran the lesson twice and some not at all. Try again.</p>
+  <p class="why" data-for="b">True, and still a guess. Your own subagent is in your log. The other fifty-nine are in nobody's. Try again.</p>
+  <p class="why" data-for="c">✅ Correct. Sixty local log files are not an inventory. Discovery is a control you switch on beforehand, not a number you reconstruct afterwards.</p>
+</div>
+
+<div class="check" data-answer="b">
+  <p class="check-q">One agent here starts exfiltrating a key. What stops it?</p>
+  <ul class="opts">
+    <li><button data-opt="a">The rules in its system prompt, which forbid exactly that</button></li>
+    <li><button data-opt="b">Nothing, unless a control was enforced before it started</button></li>
+    <li><button data-opt="c">The audit log, which records the call</button></li>
+  </ul>
+  <p class="why" data-for="a">You spent Lesson 05 watching a rule be argued with. A prompt is a request. Try again.</p>
+  <p class="why" data-for="b">✅ Correct. Enforcement has to be in the path of the call, and it has to be there first. After the fact there is nothing to stop and often nothing to read.</p>
+  <p class="why" data-for="c">A log tells you afterwards. It refuses nothing. Worth having, and not a kill switch. Try again.</p>
+</div>
+
+<h2>Where Idira fits</h2>
+
+<p class="section-intro">This lesson had no answer of its own. This is the answer.</p>
+
+<p><strong>Idira Secure AI Agents</strong> is built for the three questions you just failed to answer:</p>
+
+<ul>
+  <li><strong>Discover and centrally manage agents.</strong> One inventory of every agent that is running,
+    instead of sixty local log files.</li>
+  <li><strong>Control agent access and enforce least privilege.</strong> Each agent gets its own identity
+    and only the access its job needs, brokered rather than stored.</li>
+  <li><strong>Govern and audit agent actions to support compliance.</strong> One record of what every
+    agent did, held somewhere the agent cannot reach or edit.</li>
+</ul>
+
+<p>Read the product page at
+<a href="https://www.paloaltonetworks.com/idira/agentic" target="_blank">paloaltonetworks.com/idira/agentic</a>.
+Part 2 puts you in front of it: Lesson 10 connects an agent through the AI Agent Identity Broker and calls
+a tool with credentials it never holds.</p>
+
+<p>Two more pages for after the workshop. Both need a sign-in.</p>
+
+<ul>
+  <li><a href="https://docs.cyberark.com/manage/latest/en/content/secureai/secureaimcpintro.htm" target="_blank">Secure
+    AI Agents and MCP</a>: how the broker sits in front of an MCP server.</li>
+  <li><a href="https://docs.cyberark.com/whats-new/latest/en/index.html?service=secure-ai-agents" target="_blank">What
+    is new in Secure AI Agents</a>: the current feature list, which moves faster than this page does.</li>
+</ul>
+
+<!-- idira: 06 -->
+<!-- BEGIN GENERATED: idira 06 — build-lab-code.py owns this block -->
+<div class="idira">
+  <p class="idira-risk"><span class="callout-label">🧨 The risk you just saw.</span> Sixty agents ran in this room, and nobody can say how many there were, whose they were, or what they did.</p>
+  <p class="idira-kicker">What answers it</p>
+  <dl>
+    <dt>Securing AI Agents</dt>
+    <dd>Discovers and centrally manages agents, brokers their access with least privilege, and audits what each one did.</dd>
+    <dt>Identity Security Platform</dt>
+    <dd>Gives each agent an identity of its own, which is the only thing anyone can later revoke.</dd>
+    <dt>Endpoint Privilege Manager</dt>
+    <dd>Governs which programs may start on a managed laptop, so an unregistered agent has somewhere it can be stopped.</dd>
+  </dl>
+  <p class="idira-say">🗣️ “You cannot govern agents you cannot list. Discovery, identity and audit go in before the first agent runs, not after.”</p>
+  <p class="idira-more"><a href="reference/securing-agentic-ai.html">One platform, every identity. The deck and the videos →</a></p>
+</div>
+<!-- END GENERATED: idira 06 -->
+
+<h2>Key takeaways</h2>
+
+<ul>
+  <li><strong>You cannot govern what you cannot list.</strong> Agent discovery is the first control,
+    because every other control needs to know what it is protecting.</li>
+  <li><strong>Jailbreaking is common knowledge.</strong> Half this room has done it on purpose. Plan for
+    the rules being argued past, because they will be.</li>
+  <li><strong>Prevention has to be in place first.</strong> Identity, least privilege and audit are
+    switched on before the agent runs, or they are not controls.</li>
+  <li><strong>The kill switch is an identity you can revoke.</strong> An agent holding a credential nobody
+    issued cannot be stopped by anybody.</li>
+</ul>
+
+<h2>Part 1 complete</h2>
+
+<div class="win">
+  <p><span class="callout-label">🎓 You now know how an AI harness is built.</span> Five lessons, five
+  short scripts, no magic left in the box:</p>
+  <ul>
+    <li><strong>Lesson 01:</strong> a model is a stateless text function. It cannot act.</li>
+    <li><strong>Lesson 02:</strong> memory is a list your code keeps and re-sends. <code>in=</code> only
+      ever goes up.</li>
+    <li><strong>Lesson 03:</strong> rules, a style and a transcript compete for one window. The dumb zone
+      is real and compaction is lossy.</li>
+    <li><strong>Lesson 04:</strong> a loop plus a toolbox makes an agent. The model asks, your code
+      decides, and that gap is where safety lives.</li>
+    <li><strong>Lesson 05:</strong> seven components. Five of them text, one of them code.</li>
+  </ul>
+  <p>Every AI agent platform you will be asked about is this, plus engineering.</p>
+</div>
+
+<div class="note">
+  <p><span class="callout-label">🚀 Now for the practical half.</span> Part 2 puts you in front of a
+  <em>real</em> harness, <strong>Claude Code</strong>, which has all seven components you just built:
+  <code>CLAUDE.md</code> for rules, skills, output styles, MCP servers, an LSP, subagents, hooks and
+  memory. <strong>You are not about to learn a new tool. You are about to recognise one.</strong></p>
+  <p>And it points that harness at Idira problems: finding secrets in a repository, standing up zero
+  standing privileges, removing a hardcoded key, and the Identity Broker. The permission prompts you will
+  click through are Lesson 05's controls in a nicer coat.</p>
+  <p><strong>Lesson 07 starts by waking up your agent.</strong> Same terminal, same credentials. See you
+  there.</p>
+</div>
+
+<div id="page-pager"></div>
+
+</div>
+<script src="assets/lab.js"></script>
+</body>
+</html>
