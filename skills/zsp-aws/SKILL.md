@@ -22,33 +22,54 @@ run `idsec configure` — it would overwrite it.
 ## Step 2 — Find what the user is allowed to elevate into
 
 ```
-idsec sca cloud-access list-targets --csp aws
+idsec exec sca cloud-access list-targets --csp aws
 ```
 
 This returns the AWS workspaces (accounts) and roles this user may assume. Show the user
 the list. If it is empty, they have no elevation policy assigned — that is an
 administrator's job, not something to work around.
 
-## Step 3 — Elevate
+## Step 3 — Print the elevate command. Do not run it.
+
+The elevation response contains the short-lived credentials themselves. If you run it, they
+land in your context and in the session transcript. So **you do not run it.** Fill in the
+values you found in Step 2, print the command, and tell the user to run it in their own
+terminal.
+
+macOS and Linux:
 
 ```
-idsec sca cloud-access elevate --csp aws --workspace-id <aws-account-id> --roleIds <role-arn>
+eval "$(idsec exec sca cloud-access elevate --csp aws --workspace-id <aws-account-id> --roleIds <role-arn> --raw | jq -r '.response.results[0].accessCredentials | fromjson | "export AWS_ACCESS_KEY_ID=\(.aws_access_key)\nexport AWS_SECRET_ACCESS_KEY=\(.aws_secret_access_key)\nexport AWS_SESSION_TOKEN=\(.aws_session_token)"')"
 ```
 
-If the account is managed by an AWS Organization, add `--organization-id <o-xxxxxxxx>`.
+PowerShell:
+
+```
+idsec exec sca cloud-access elevate --csp aws --workspace-id <aws-account-id> --roleIds <role-arn> --raw | jq -r '.response.results[0].accessCredentials | fromjson | "$env:AWS_ACCESS_KEY_ID=\"\(.aws_access_key)\"\n$env:AWS_SECRET_ACCESS_KEY=\"\(.aws_secret_access_key)\"\n$env:AWS_SESSION_TOKEN=\"\(.aws_session_token)\""' | Invoke-Expression
+```
+
+Three details in that pipeline, all of which break it if changed:
+
+- `accessCredentials` is a JSON string *inside* the JSON, which is why `fromjson` is there.
+- The field is `aws_access_key`, not `aws_access_key_id`. It maps to `AWS_ACCESS_KEY_ID`.
+- `--raw` gives plain JSON. Without it the output may be decorated or paginated.
 
 Take `<aws-account-id>` and `<role-arn>` from the `list-targets` output — do not guess
 them. Confirm the choice with the user when more than one target is available.
 
+If the account is managed by an AWS Organization, add `--organization-id <o-xxxxxxxx>`.
+
 AWS accepts **one** role per elevation, so `--roleIds` takes a single role ARN here.
 
-Run `idsec sca cloud-access elevate --help` before your first elevation in a session to
-confirm the flags and to see exactly how this build returns the credentials.
+Nothing prints when the command succeeds. The credentials are environment variables in that
+one terminal, they were never written to a file, and they were never shown on screen.
 
-⚠️ The response may contain the short-lived credentials themselves, in an `accessCredentials`
-field. **Do not repeat them in your reply, and never write them to a file.** Report that
-elevation succeeded and which role is now active, and let the user collect the credentials
-the way their lab or runbook tells them to.
+The pipeline needs `jq`. If the user reports `jq: command not found`, it is either not
+installed or not on their `PATH` in that window.
+
+⚠️ If the user asks you to run the elevation yourself, say why you would rather not, and
+offer the printed command instead. Only run it if they ask a second time. Even then, never
+repeat the credentials in your reply and never write them to a file.
 
 ## Step 4 — Verify
 
@@ -84,6 +105,22 @@ Do not replace the deleted constants with anything: not a `.env` file, not
 `os.environ["AWS_SECRET_ACCESS_KEY"]`, not a default argument. boto3 reads the environment
 itself, and every one of those alternatives puts the secret back into the code's care.
 
+## When HTTPS to the Idira tenant fails
+
+On a corporate network the TLS certificate may be re-signed by an inspecting proxy, and
+`idsec` then reports a certificate error. Fix it in this order:
+
+1. `--trusted-cert <path-to-pem>` — point `idsec` at the proxy's CA certificate. This is the
+   correct fix and it keeps verification on.
+2. `--proxy-address <url>` — plus `--proxy-username` and `--proxy-password` if the proxy
+   needs them.
+3. `--disable-cert-verification` — last resort. It turns certificate verification off, so
+   the connection can be intercepted. `idsec`'s own help calls it unsafe and says to avoid
+   it in production.
+
+Never add `--disable-cert-verification` on your own initiative. Offer options 1 and 2 first,
+explain what option 3 gives up, and use it only if the user asks for it explicitly.
+
 ## What this does and does not solve
 
 Zero standing privileges eliminates AWS credentials. It does nothing for other secrets — a
@@ -93,10 +130,13 @@ covered.
 
 ## Rules
 
-1. **Never print the credentials.** Report that elevation succeeded and which role is now
-   active. Never echo an access key, secret key or session token.
-2. **Credentials live in one shell.** If they are set as environment variables they exist
+1. **The user elevates, not you.** Print the command from Step 3 and let them run it. The
+   secret then never enters your context or the transcript.
+2. **Never print the credentials.** If you ever do see them, report that elevation succeeded
+   and which role is now active. Never echo an access key, secret key or session token.
+3. **Credentials live in one shell.** If they are set as environment variables they exist
    only in that terminal session, and they expire. A tool that worked ten minutes ago and
    now returns an authentication error usually just needs Step 1 and Step 3 again.
-3. **Never write the short-lived credentials into a file** to "make them last". That
+4. **Never write the short-lived credentials into a file** to "make them last". That
    recreates the problem this skill exists to remove.
+5. **Never turn off certificate verification unasked.** See the TLS section above.

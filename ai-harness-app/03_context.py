@@ -1,158 +1,106 @@
-"""LESSON 04 — Context management: the thing that makes agents survive long tasks.
+"""LESSON 03 — Context engineering: everything the model sees, and who decided.
 
-The loop from Lesson 03 has a hidden failure mode: every turn appends to
-`messages`, so the context grows without bound. Long investigation -> you blow
-the context window, latency and cost climb, and the model gets lost in its own
-transcript. This is THE hard part of building a real harness.
+The model has one input: a flat stream of tokens. This lesson puts three things
+into that stream on purpose and watches what each one costs.
 
-Two moves shown here:
-  1. ACCOUNTING  -> watch input tokens climb each turn (usage is on every response).
-  2. COMPACTION  -> when history gets big, summarize the old middle turns into a
-                    single note and keep going. This is, in miniature, exactly
-                    what Claude Code does when it "compacts" a long session.
+    1. RULES        prompts/system.md  -- who the agent is, and how it should work
+    2. OUTPUT STYLE styles/*.md        -- how the answer should be written
+    3. HISTORY      the transcript     -- lesson 02, still running
+
+All three are files or lists WE control. None of them are properties of the model.
+Together they are "context engineering", and the gauge at the bottom of every
+answer is the bill.
+
+Two things this lesson exists to show:
+
+  * THE DUMB ZONE. As the window fills, answers get worse -- less precise, more
+    forgetful of their own earlier claims -- and nothing in the output announces
+    it. The gauge turns amber at 50% to make an invisible failure visible. That
+    threshold is a teaching device, not a published number.
+
+  * THE WALL. Keep going and the request stops fitting entirely. It does not
+    degrade; it fails. `/compact` folds the middle of the conversation into a
+    note and buys the room back.
+
+    Talking your way to the wall on this model takes about twenty turns, at
+    roughly five percent a turn. If you do not have twenty turns, `/fill`
+    pads the transcript with clearly-labelled filler and puts the wall one
+    question away. The filler is fake; everything that then happens to it --
+    the tokens, the cost, the refusal from Bedrock -- is not.
+
+  * HISTORY OUTWEIGHS INSTRUCTIONS. Switch to `/style eli5` after three long
+    answers and you get a shorter answer -- but still with the headings and
+    bullets the style forbids, because the model is copying the three examples
+    in front of it rather than obeying the file. `/reset` first and the same
+    style produces 139 output tokens against deep-dive's 397. Measured on this
+    model, this week; the ratio will differ, the effect will not.
+
+    That is worth more than the token count. An instruction competes with
+    everything else in the window, and it does not automatically win. Anyone
+    planning to control an agent by wording its prompt more firmly should watch
+    this happen once.
+
+One thing to notice about WHERE the instructions go. This model does have a
+system role, so they travel in the API's `system` field, which sounds like a
+boundary and is not one: by the time the model reads them they are tokens in the
+same single stream as your question. `/system` shows you the text; the footer
+shows you what it cost. Point a lesson at Mistral 7B instead (see config.py) and
+the harness has to prepend the same text into your first message, because that
+model has no system field at all -- same tokens, same effect, and the pretence of
+a boundary drops away entirely.
+
+Everything a tool returns will land in that same undivided stream in lesson 04,
+which is why lesson 05 happens.
 
 Run it:
-    python 04_context.py
+    python 03_context.py
+    python 03_context.py eli5        # start on the short style instead
 """
 
 import sys
 
+import session
 import ui
-from config import MODEL, PROVIDER, client
-from tools import TOOLS, execute_tool
 
-SYSTEM_PROMPT = (
-    "You are a security triage agent. Investigate the repo with tools, then "
-    "report concrete findings as file:line with a one-line risk explanation."
-)
-
-MAX_ITERATIONS = 20
-# Deliberately tiny so compaction triggers on stage in a small repo. In real
-# life you'd set this to a fraction of the model's context window.
-COMPACT_THRESHOLD_TOKENS = 3000
+# Three questions that each pull a long answer, so the gauge moves visibly
+# within a minute rather than over twenty. On the deep-dive style these run
+# several hundred tokens each.
+QUESTIONS = [
+    "What is an AI agent, and how is it different from a chatbot?",
+    "Why is a long conversation a security problem as well as a cost problem?",
+    "What could go wrong if an agent can read files and also read its own instructions?",
+]
 
 
-def run_agent(task: str) -> str:
-    messages = [{"role": "user", "content": task}]
+def main() -> None:
+    style = sys.argv[1] if len(sys.argv) > 1 else "deep-dive"
 
-    for step in range(1, MAX_ITERATIONS + 1):
-        with ui.thinking():
-            response = client.messages.create(
-                model=MODEL,
-                max_tokens=4096,
-                system=SYSTEM_PROMPT,
-                tools=TOOLS,
-                messages=messages,
-            )
-
-        # (1) ACCOUNTING: input_tokens is the size of everything we sent this
-        # turn -- it only goes up as the transcript grows. This is the number
-        # that eventually kills a naive agent. Printed live, turn by turn --
-        # watching it climb is this lesson's whole point.
-        used = response.usage.input_tokens
-        ui.context(step, used, len(messages))
-
-        if response.stop_reason == "pause_turn":
-            messages.append({"role": "assistant", "content": response.content})
-            continue
-
-        # This turn is the answer; the caller renders it once.
-        if response.stop_reason != "tool_use":
-            return _final_text(response)
-
-        for block in response.content:
-            if block.type == "text" and block.text.strip():
-                ui.model(block.text)
-
-        messages.append({"role": "assistant", "content": response.content})
-
-        tool_results = []
-        for block in response.content:
-            if block.type == "tool_use":
-                ui.tool(block.name, block.input)
-                tool_results.append(
-                    {
-                        "type": "tool_result",
-                        "tool_use_id": block.id,
-                        "content": execute_tool(block.name, block.input),
-                    }
-                )
-        messages.append({"role": "user", "content": tool_results})
-
-        # (2) COMPACTION: when the transcript is getting heavy, fold the old
-        # turns into a summary so the loop can keep running.
-        if used > COMPACT_THRESHOLD_TOKENS:
-            messages = compact(messages)
-
-    return "(stopped at iteration cap)"
-
-
-def compact(messages: list) -> list:
-    """Summarize everything except the original task and the last 2 messages.
-
-    We ask the model itself to write the summary -- cheap, and it keeps exactly
-    the details the model thinks it needs. The tricky part is boundaries: never
-    split a tool_use from its matching tool_result, or the next call 400s. Here
-    we keep the very first message (the task) and the last two intact, and
-    compress the middle.
-    """
-    if len(messages) <= 4:
-        return messages  # nothing worth compacting yet
-
-    head, middle, tail = messages[:1], messages[1:-2], messages[-2:]
-
-    transcript = _stringify(middle)
-    summary = client.messages.create(
-        model=MODEL,
-        max_tokens=1024,
-        messages=[
-            {
-                "role": "user",
-                "content": (
-                    "Summarize this agent transcript for your own future reference. "
-                    "Keep every concrete finding (file:line, secret, risk) and which "
-                    "files were already inspected. Drop chatter.\n\n" + transcript
-                ),
-            }
-        ],
+    chat = session.Session(
+        tier="legacy",
+        remember=True,
+        system=session.read_prompt("system"),
+        style=style,
+        max_tokens=600,
     )
-    note = _final_text(summary)
-    ui.compacted(len(middle), len(note))
 
-    compacted_marker = {
-        "role": "user",
-        "content": f"[Earlier investigation, compacted]\n{note}",
-    }
-    # Tail must still start cleanly. If the last two messages begin mid-tool-call,
-    # keeping the head + a summary + tail preserves the tool_use/tool_result
-    # pairing because we never sliced inside the tail.
-    return head + [compacted_marker] + tail
+    ui.banner("Lesson 03 — context engineering", chat.model_id, chat.caps)
+    ui.system_view(chat.system_prompt, chat.style_text, chat.caps.system)
 
+    for question in QUESTIONS:
+        ui.task(question)
+        if chat.send(question) is None:
+            # Hit the wall mid-script. That is a fine place to stop -- it is the
+            # lesson, and the panel just printed says what to do about it.
+            break
 
-def _stringify(messages: list) -> str:
-    out = []
-    for m in messages:
-        content = m["content"]
-        if isinstance(content, str):
-            out.append(f"{m['role']}: {content}")
-        else:
-            for block in content:
-                btype = getattr(block, "type", None) or (
-                    block.get("type") if isinstance(block, dict) else None
-                )
-                out.append(f"{m['role']}: <{btype} block>")
-    return "\n".join(out)
+    ui.note("Now: /style eli5 — then ask the same question again.")
+    ui.note("Shorter, but still bulleted: it is copying the answers above it.")
+    ui.note("Now /reset and ask once more. 139 tokens, not 397. Prose costs money.")
+    ui.note("Then /fill 60 for the dumb zone, or /fill to stand at the wall.")
+    ui.note("At the wall, ask one more question — then /compact and ask it again.")
 
-
-def _final_text(response) -> str:
-    return "\n".join(b.text for b in response.content if b.type == "text").strip()
+    session.chat(chat)
 
 
 if __name__ == "__main__":
-    task = sys.argv[1] if len(sys.argv) > 1 else (
-        "Do a thorough audit: inspect every file, then report all security "
-        "findings prioritized by severity."
-    )
-    ui.banner("Lesson 04 — context management", PROVIDER, MODEL)
-    ui.task(task)
-    ui.final(run_agent(task))
+    main()

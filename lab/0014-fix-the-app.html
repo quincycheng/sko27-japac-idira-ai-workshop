@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>09 · Delete the key · SKO27 TechSummit - AI Workshop for Idira DC</title>
+<title>14 · Delete the key · SKO27 TechSummit - AI Workshop for Idira DC</title>
+<link rel="icon" type="image/svg+xml" href="assets/idira-icon.svg">
 <link rel="stylesheet" href="assets/lab.css">
 </head>
 <body>
@@ -14,15 +15,17 @@
 <nav id="page-nav"></nav>
 
 <header class="lesson">
-  <p class="kicker">Part 2 · Lesson 09</p>
+  <p class="kicker">Part 3 · Optional Deep Dives</p>
   <h1>Delete the key ✂️</h1>
   <p class="standfirst">
-    The satisfying part. You are going to make the app work <em>better</em> by taking code out
-    of it — and one of the four secrets will simply stop existing.
+    This lesson follows <a href="0009-zsp-access.html">Lesson 09</a>. Zero standing privileges made the
+    app's AWS key unnecessary, so now you delete it. The app will work <em>better</em> with seven lines
+    taken out of it, one of the four secrets will have stopped existing, and you will know exactly why
+    the other three are still there.
   </p>
   <ul class="meta">
-    <li class="tag-must">Everyone</li>
-    <li>⏱️ ~8 minutes</li>
+    <li class="tag-opt">Optional deep dive</li>
+    <li>Seven lines out, nothing in</li>
     <li id="step-counter">&nbsp;</li>
   </ul>
 </header>
@@ -30,12 +33,24 @@
 <div class="os-switch" data-os-switch></div>
 
 <div class="note">
-  <p><span class="callout-label">Before you start</span> your terminal must still have the
-  elevated credentials from Lesson 08. Quick check — this should print a role name, not an error:</p>
+  <p><span class="callout-label">Before you start</span> your terminal needs elevated AWS credentials.
+  If you are still in the terminal you used for <a href="0009-zsp-access.html">Lesson 09</a>, you have
+  them. Coming back to this later? Log in and elevate again:</p>
+  <div class="code"><pre><code>idsec login</code></pre></div>
+  <div class="os os-mac">
+    <div class="code"><pre><code>eval "$(idsec exec sca cloud-access elevate --csp aws --workspace-id 409556437035 --roleIds arn:aws:iam::409556437035:role/CW-SCA-AdminAccess --raw | jq -r '.response.results[0].accessCredentials | fromjson | "export AWS_ACCESS_KEY_ID=\(.aws_access_key)\nexport AWS_SECRET_ACCESS_KEY=\(.aws_secret_access_key)\nexport AWS_SESSION_TOKEN=\(.aws_session_token)"')"</code></pre></div>
+  </div>
+  <div class="os os-win">
+    <div class="code"><pre><code>idsec exec sca cloud-access elevate --csp aws --workspace-id 409556437035 --roleIds arn:aws:iam::409556437035:role/CW-SCA-AdminAccess --raw | jq -r '.response.results[0].accessCredentials | fromjson | "$env:AWS_ACCESS_KEY_ID=\"\(.aws_access_key)\"\n$env:AWS_SECRET_ACCESS_KEY=\"\(.aws_secret_access_key)\"\n$env:AWS_SESSION_TOKEN=\"\(.aws_session_token)\""' | Invoke-Expression</code></pre></div>
+  </div>
+  <p>Then check. This should print a role name, not an error:</p>
   <div class="code"><pre><code>python -c "import boto3; print(boto3.client('sts').get_caller_identity()['Arn'])"</code></pre></div>
+  <p>You also need to be inside <code>sandbox-app</code>, the project from
+  <a href="0008-find-the-secrets.html">Lesson 08</a>.</p>
 </div>
 
-<h2>What we are about to change</h2>
+<p><strong>Here is the whole change, before you make it.</strong> Everything in red goes; nothing takes
+its place.</p>
 
 <figure>
 <pre class="diff"><code><span class="dim">config/settings.py</span>
@@ -60,68 +75,70 @@
 <span class="del">-     aws_secret_access_key=AWS_SECRET_ACCESS_KEY,</span>
 <span class="dim">  )</span>
 </code></pre>
-<figcaption>Seven lines removed. Nothing added. 🎉</figcaption>
+<figcaption>Seven lines removed. Nothing added.</figcaption>
 </figure>
 
 <div class="warn">
   <p><span class="callout-label">🔗 Notice the two <code>import</code> lines.</span> They are easy to
   forget and they matter: a file that still <em>asks</em> for a constant you deleted stops working
   immediately (<code>ImportError: cannot import name 'AWS_ACCESS_KEY_ID'</code>). Deleting a secret
-  means deleting everything that reaches for it — which is exactly the kind of thing you check when
-  you review an agent's work. 👀</p>
+  means deleting everything that reaches for it. That is exactly the kind of thing you check when
+  you review an agent's work.</p>
 </div>
 
 <p>That is the whole fix. When you do not pass credentials, the AWS library looks for them in your
-environment — which is where your temporary, expiring, audited credentials already are.</p>
+environment. That is where your temporary, expiring, audited credentials already are.</p>
 
-<h2>Steps</h2>
+<h2>Your Tasks</h2>
+
+<p class="section-intro">Four steps. The agent does the editing and you do the reviewing, which is the
+division of labour for the rest of your career. Tick each one off as you go.</p>
 
 <div class="step">
   <div class="step-head"><div class="step-num">1</div><p class="step-title">Ask the agent to remove them</p></div>
   <div class="step-body">
     <div class="code"><pre><code>claude</code></pre></div>
-    <p>Then:</p>
-    <div class="code"><pre><code>I now have short-lived AWS credentials in my environment. Remove the
-hardcoded AWS credentials from this project so the app uses the environment
-instead. Show me exactly what you changed before you change it.</code></pre></div>
-    <p>The <code>zsp-aws</code> skill you installed in Lesson 08 covers this step too, so the agent
+    <p>Press <code>Shift+Tab</code> a few times until the bottom line says <strong>auto</strong>.
+    Then:</p>
+    <div class="code"><pre><code>I now have short-lived AWS credentials in my environment. Remove the hardcoded AWS credentials from this project so the app uses the environment instead. Then show me exactly what you changed.</code></pre></div>
+    <p>The <code>zsp-aws</code> skill you installed in Lesson 09 covers this step too, so the agent
     already knows what “properly” looks like here.</p>
     <div class="warn">
-      <p><span class="callout-label">👀 Read the changes before approving.</span> You are the review
-      step. Four things to check:</p>
+      <p><span class="callout-label">👀 Read the changes.</span> Auto mode means it edits the files
+      without asking, so you are the review step afterwards. Four things to check:</p>
       <ul>
-        <li>the two credential lines are gone from <code>config/settings.py</code> 🗑️</li>
-        <li>the two arguments are gone from the <code>boto3.client(...)</code> call ✂️</li>
+        <li>the two credential lines are gone from <code>config/settings.py</code></li>
+        <li>the two arguments are gone from the <code>boto3.client(...)</code> call</li>
         <li>the two <code>import</code> lines naming those constants are gone from
-        <code>summarize.py</code> 🔗</li>
-        <li><code>region_name</code> and <code>MODEL_ID</code> were left alone ✅</li>
+        <code>summarize.py</code></li>
+        <li><code>region_name</code> and <code>MODEL_ID</code> were left alone</li>
       </ul>
-      <p>And one thing that should <strong>not</strong> be there: 🚫 no <code>.env</code> file, no
+      <p>And one thing that should <strong>not</strong> be there: no <code>.env</code> file, no
       <code>os.environ["AWS_SECRET_ACCESS_KEY"]</code>, no “safer place” for the key. There is no
-      safer place — there is no key. If the agent invents somewhere to put one, tell it to take it
-      out.</p>
+      safer place, because there is no key. If the agent invents somewhere to put one, tell it to take
+      it out.</p>
     </div>
   </div>
 </div>
 
 <div class="step">
-  <div class="step-head"><div class="step-num">2</div><p class="step-title">Run it — for real this time</p></div>
+  <div class="step-head"><div class="step-num">2</div><p class="step-title">Run it, for real this time</p></div>
   <div class="step-body">
     <p>Leave the agent (<code>/exit</code>) and run:</p>
     <div class="code"><pre><code>python summarize.py</code></pre></div>
-    <p>You should get three bullet points about the incident, then the single most urgent action —
-    written by Claude, running on Bedrock. 🎉</p>
+    <p>You should get three bullet points about the incident, then the single most urgent action. It is
+    written by Claude, running on Bedrock.</p>
     <div class="warn">
       <p><span class="callout-label">💥 <code>ImportError: cannot import name
       'AWS_ACCESS_KEY_ID'</code>?</span> The agent deleted the credentials but left the
       <code>import</code> that asks for them. Go back into the agent and say: <em>“summarize.py still
-      imports the constants you deleted — remove them from the import and run the app to prove it
-      works.”</em> This is the most common way this lesson goes wrong. 🔗</p>
+      imports the constants you deleted. Remove them from the import and run the app to prove it
+      works.”</em> This is the most common way this lesson goes wrong.</p>
     </div>
     <div class="win">
       <p><span class="callout-label">✅ Stop and appreciate this.</span> The app just authenticated
       to AWS and there is <strong>no credential anywhere in it</strong>. Search the whole project
-      if you like — there is nothing to find, because there is nothing there.</p>
+      if you like. There is nothing to find, because there is nothing there.</p>
     </div>
   </div>
 </div>
@@ -135,24 +152,23 @@ instead. Show me exactly what you changed before you change it.</code></pre></di
     </div>
     <div class="os os-win">
       <div class="code"><pre><code>Get-ChildItem -Recurse -Include *.py, *.json, *.txt | Select-String -Pattern "AKIA"</code></pre></div>
-      <p>No output means no match. 🎯</p>
+      <p>No output means no match.</p>
     </div>
     <div class="note">
-      <p><span class="callout-label">🧟 Why we skip <code>__pycache__</code> — and why you should
+      <p><span class="callout-label">💡 Why we skip <code>__pycache__</code>, and why you should
       care.</span> Python keeps a <em>compiled copy</em> of every file it imports in a
       <code>__pycache__</code> folder, and that copy still contains the old text of the secret until
       Python rebuilds it. Deleting a credential from source does not reach into caches, build
-      artefacts, container layers or git history. 🕳️</p>
-      <p>So in a real engagement there is one more step after this one: <strong>delete the key at
-      the source</strong> — in AWS IAM — now that nothing needs it. That is what makes every stale
-      copy worthless, in every cache, image and old commit you will never find. Removing it from the
-      code is what makes deleting it <em>safe</em>; deleting it at the source is what makes you
-      finished. ✅</p>
+      artefacts, container layers or git history.</p>
+      <p>So in a real engagement there is one more step after this one. <strong>Delete the key at the
+      source</strong>, in AWS IAM, now that nothing needs it. That is what makes every stale copy
+      worthless, in every cache, image and old commit you will never find. Removing it from the code is
+      what makes deleting it <em>safe</em>. Deleting it at the source is what makes you finished.</p>
     </div>
     <div class="note">
-      <p><span class="callout-label">🧠 The important distinction.</span> You did not <em>hide</em>
+      <p><span class="callout-label">💡 The important distinction.</span> You did not <em>hide</em>
       the key. You did not <em>move</em> it. You did not <em>rotate</em> it. You removed the
-      <strong>need</strong> for it. Nothing has to be stored, watched, rotated or revoked — because
+      <strong>need</strong> for it. Nothing has to be stored, watched, rotated or revoked, because
       nothing exists. That is elimination, and it is the strongest fix available.</p>
     </div>
   </div>
@@ -162,40 +178,40 @@ instead. Show me exactly what you changed before you change it.</code></pre></di
   <div class="step-head"><div class="step-num">4</div><p class="step-title">Now find what you did not fix</p></div>
   <div class="step-body">
     <p>Back in the agent:</p>
-    <div class="code"><pre><code>Review this project for hardcoded secrets again. Tell me which ones are
-gone, which ones remain, and for each remaining one, why zero standing
-privileges cannot solve it.</code></pre></div>
-    <p>Three secrets remain: 🐙 GitHub, 💬 Slack, 🗄️ the database. Ask the agent to explain why —
-    it will tell you that none of those systems can mint short-lived credentials on demand, so the
-    secret has to exist <em>somewhere</em>.</p>
+    <div class="code"><pre><code>Review this project for hardcoded secrets again. Tell me which ones are gone, which ones remain, and for each remaining one, why zero standing privileges cannot solve it.</code></pre></div>
+    <p>Three secrets remain: GitHub, Slack and the database. Ask the agent to explain why. It will tell
+    you that none of those systems can mint short-lived credentials on demand, so the secret has to exist
+    <em>somewhere</em>.</p>
     <p>Somewhere is a vault. That is <strong>Idira Secrets Manager</strong>, that is the
-    <em>onboard</em> fix from Lesson 07, and that is a different session. Today you learned to spot
-    the difference — which is genuinely the harder skill. 🧭</p>
+    <em>onboard</em> fix from Lesson 08, and that is a different session. Today you learned to spot
+    the difference, which is the harder skill.</p>
   </div>
 </div>
 
 <div class="stop">
-  <p><span class="callout-label">🏢 Before you demo this to a client, read this bit.</span> What you
-  just did — deleting the constants and letting the app pick up short-lived credentials from the
-  environment — is the right answer for the AWS key, and it is the right answer in production
-  too.</p>
+  <p><span class="callout-label">🚨 Before you demo this to a client, read this bit.</span> You deleted
+  the constants and let the app pick up short-lived credentials from the environment. That is the right
+  answer for the AWS key, and it is the right answer in production too.</p>
   <p>But it is <strong>not</strong> a general answer to secrets, and a client will test you on that.
   In a real production environment:</p>
   <ul>
-    <li>✂️ <strong>Eliminate where the platform allows it.</strong> Cloud access, via Idira Secure
+    <li><strong>Eliminate where the platform allows it.</strong> Cloud access, via Idira Secure
     Cloud Access. No stored credential at all.</li>
-    <li>🔒 <strong>Everything else goes into Idira Secrets Manager</strong> — the GitHub token, the
+    <li><strong>Everything else goes into Idira Secrets Manager:</strong> the GitHub token, the
     Slack webhook, the database password. Vaulted, rotated on a schedule, access audited, and
     retrieved by the application at run time rather than living in <code>integrations.json</code>.</li>
-    <li>🚫 <strong>Never</strong> an environment variable full of long-lived secrets as the
-    destination. That is the same secret in a slightly less obvious place — it still leaks through
+    <li><strong>Never</strong> an environment variable full of long-lived secrets as the
+    destination. That is the same secret in a less obvious place. It still leaks through
     process listings, crash dumps, CI logs and <code>printenv</code>.</li>
   </ul>
   <p>Short-lived environment variables from a zero-standing-privileges elevation are fine, because
-  they expire on their own. Long-lived ones are a config file wearing a disguise. 🎭</p>
+  they expire on their own. Long-lived ones are a config file in disguise.</p>
 </div>
 
-<h2>What you have done so far 🏁</h2>
+<h2>What you have done so far</h2>
+
+<p class="section-intro">Four moves, four results. This is the table to have in your head when somebody
+asks what an afternoon of this produces.</p>
 
 <table>
   <tr><th>Move</th><th>Tool</th><th>Result</th></tr>
@@ -205,41 +221,81 @@ privileges cannot solve it.</code></pre></div>
   <tr><td>Removed the credential entirely</td><td>A skill you were handed</td><td>1 secret eliminated, 3 correctly flagged</td></tr>
 </table>
 
+<h2>Knowledge Check</h2>
+
+<p class="section-intro">Two questions on what you can honestly claim now. Pick an answer to see why it
+is right or wrong. A wrong one is worth reading.</p>
+
 <div class="check" data-answer="c">
-  <p class="check-q">📉 The fixed app is <em>shorter</em> than the broken one. Why is that a good sign?</p>
+  <p class="check-q">The fixed app is <em>shorter</em> than the broken one. Why is that a good sign?</p>
   <ul class="opts">
     <li><button data-opt="a">Shorter files load faster, so the app starts up more quickly</button></li>
     <li><button data-opt="b">Fewer lines means fewer bugs, which is true of all code changes</button></li>
     <li><button data-opt="c">The safest secret is one nobody has to store, rotate or protect</button></li>
   </ul>
   <p class="why" data-for="a">Startup time was never the concern here, and seven lines change nothing. Think about what those seven lines were <em>for</em>. Try again.</p>
-  <p class="why" data-for="b">A nice rule of thumb, but too general — it would be just as true if we had deleted the error handling, which would be bad. Try again.</p>
-  <p class="why" data-for="c">✅ Exactly. Security fixes usually add work: a vault to run, a rotation schedule, a scanner exception. This one removed work. That is why elimination beats protection whenever it is available.</p>
+  <p class="why" data-for="b">A nice rule of thumb, but too general. It would be just as true if we had deleted the error handling, which would be bad. Try again.</p>
+  <p class="why" data-for="c">✅ Correct. Security fixes usually add work: a vault to run, a rotation schedule, a scanner exception. This one removed work. That is why elimination beats protection whenever it is available.</p>
 </div>
 
 <div class="check" data-answer="a">
-  <p class="check-q">🗣️ A colleague sees your work and says “great, the app is secret-free now”. Reply?</p>
+  <p class="check-q">A colleague sees your work and says “great, the app is secret-free now”. Reply?</p>
   <ul class="opts">
     <li><button data-opt="a">“One of four is gone. The other three still need a real vault.”</button></li>
     <li><button data-opt="b">“Correct, and the same trick will work on the GitHub token too.”</button></li>
     <li><button data-opt="c">“Correct, since none of the remaining values are real credentials.”</button></li>
   </ul>
-  <p class="why" data-for="a">✅ That is the honest answer, and it is the one that gets you taken seriously. Overclaiming a partial fix is how a finding gets closed while the risk stays open.</p>
-  <p class="why" data-for="b">It will not — GitHub does not issue short-lived tokens on request the way AWS does through SCA. That one needs a vault. Try again.</p>
+  <p class="why" data-for="a">✅ Correct. That is the honest answer, and it is the one that gets you taken seriously. Overclaiming a partial fix is how a finding gets closed while the risk stays open.</p>
+  <p class="why" data-for="b">It will not. GitHub does not issue short-lived tokens on request the way AWS does through SCA. That one needs a vault. Try again.</p>
   <p class="why" data-for="c">They are fake <em>in this workshop</em>. In the real version of this app they would be very real indeed. Try again.</p>
 </div>
 
 <div class="ask">
   🗣️ <strong>Ask your agent:</strong> “Write me a short note to my team explaining what we changed
   and what is still outstanding.” Read it, correct anything it overclaims, and take it with you.
-  📨
 </div>
 
+<h2>Where Idira fits</h2>
+
+<p class="section-intro">Each lesson names the risk it just demonstrated and the Palo Alto Networks
+product that answers it.</p>
+
+<!-- idira: 14 -->
+<!-- BEGIN GENERATED: idira 14 — build-lab-code.py owns this block -->
+<div class="idira">
+  <p class="idira-risk"><span class="callout-label">🧨 The risk you just saw.</span> One of the four secrets could be removed and three could not. &quot;We moved it to an environment variable&quot; closes the ticket and leaves the risk open.</p>
+  <p class="idira-kicker">What answers it</p>
+  <dl>
+    <dt>Secure Cloud Access</dt>
+    <dd>Makes elimination possible: the application asks for access when it runs, instead of holding a key that still works tomorrow.</dd>
+    <dt>Secrets Manager SaaS</dt>
+    <dd>Is where the three you could not eliminate belong, with rotation and an audit trail instead of a config file.</dd>
+    <dt>Secrets Hub</dt>
+    <dd>Covers the case where those three already live in a cloud store and nobody will rewrite the application to move them.</dd>
+  </dl>
+  <p class="idira-say">🗣️ “Eliminate first, vault what is left, and say how many are still there. The number is the finding.”</p>
+  <p class="idira-more"><a href="reference/securing-agentic-ai.html">One platform, every identity. The deck and the videos →</a></p>
+</div>
+<!-- END GENERATED: idira 14 -->
+
+<h2>Key takeaways</h2>
+
+<ul>
+  <li><strong>Elimination is the only fix that removes work.</strong> No vault to run, no rotation
+    schedule, no scanner exception, because there is nothing left to protect.</li>
+  <li><strong>You did not hide, move or rotate it.</strong> You removed the <em>need</em> for it. Those
+    are four different outcomes and only one of them is finished.</li>
+  <li><strong>Deleting it from the code is not deleting it.</strong> Caches, images and git history all
+    still have it. Revoking the key in AWS IAM is what makes every stale copy worthless.</li>
+  <li><strong>One of four is gone, and three still need a vault.</strong> A short-lived environment
+    variable is fine because it expires. A long-lived one is a config file in disguise.</li>
+</ul>
+
 <div class="win">
-  <p><span class="callout-label">🎉 That is the app fixed.</span> One lesson left, and it is the one
-  your clients will ask you to show them:
-  <a href="0010-identity-broker.html">Lesson 10 · The Identity Broker</a>. You have given an agent a
-  key that expires — now give it access with no key at all. 🛡️</p>
+  <p><span class="callout-label">✅ That is the app fixed.</span> Lesson 09 gave the app a key that
+  expires. This lesson removed the key it no longer needed. If you have not seen it yet,
+  <a href="0010-identity-broker.html">Lesson 10 · MCP: AI Agent Identity Broker</a> is the one your
+  clients will ask you to show them: an agent with access and no key at all.</p>
 </div>
 
 <div id="page-pager"></div>

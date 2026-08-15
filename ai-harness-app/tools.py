@@ -200,7 +200,7 @@ _SENSITIVE = re.compile(
     r"(^|/)\.env$|secret|credential|password|token|\.pem$|id_rsa", re.IGNORECASE
 )
 
-# The refusal text a human denial produces. Lesson 05 matches on it so the
+# The refusal text a human denial produces. Lesson 05's control probe returns it, so the
 # post-mortem can credit the strongest control in the demo.
 HUMAN_DENIED = "Refused: denied by the human operator."
 

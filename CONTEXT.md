@@ -81,7 +81,7 @@ excerpts in this material have already drifted once.
 
 Tap is the primary interaction and hover is a desktop nicety, because these pages are read on phones.
 
-### Knowledge check
+### Knowledge Check
 
 A short retrieval exercise inside a lab guide page. Its purpose is durability, not
 assessment — nothing is scored or collected. Answer options are written to equal length so
@@ -173,8 +173,8 @@ asking. Named in Part 1 as one component of a full harness; not built there.
 
 Anything the harness deliberately persists *between* runs, as opposed to the transcript it holds
 *during* one. The distinction is load-bearing in Part 1: a fresh process forgetting everything is
-lesson 01's whole point, so persistence is introduced only in the last lesson, as a design choice
-with a file behind it.
+lesson 01's whole point, so persistence is introduced only in the last of the five scripts, as a design
+choice with a file behind it.
 
 Not to be confused with **conversation memory**, which is within a single session.
 
@@ -196,7 +196,7 @@ keep, and its cost is visible on the context gauge immediately.
    harness runs interview → spec → tickets → implement → review.
 
 The two are not rivals: the workflow sense is something you can only build once the machinery
-sense exists. Part 1 ends on the machinery, the optional advanced course on the workflow.
+sense exists. Part 1 ends on the machinery, the optional deep dive on the workflow.
 
 ### Context engineering
 
@@ -382,7 +382,7 @@ One registered agent identity plus sixty humans therefore yields sixty distingui
 principals — which is why a single shared server record serves the whole room without collapsing
 the audit trail. OBO is a mandatory demonstration in this workshop, not an advanced topic.
 
-## Securing agentic AI
+## Securing Human, Machine & Agentic AI Identities
 
 The set of products the workshop maps onto the parts of a harness. Each lesson in Part 1 exposes one
 kind of risk and names the product that answers it, so a Domain Consultant leaves with the mapping
@@ -430,7 +430,7 @@ and what comes out of it, at runtime, outside the application.
 Two points of care. First, **it is not branded Idira**, so introduce it as Palo Alto's, the way the
 material already says *Idira by Palo Alto Networks*. Second, it is the answer to a question Part 1
 raises and cannot answer on its own: a prompt is not a guardrail, and the controls that saved the
-agent in the injection lesson were the tool layer's. Prism AIRS is that layer for the *content* of
+agent in the harness lesson were the tool layer's. Prism AIRS is that layer for the *content* of
 the conversation, where the tool sandbox is that layer for the *actions*.
 
 Neither replaces the other, and saying so is the point of naming it at all.
@@ -513,7 +513,8 @@ tool, since anyone able to run it can request elevation.
 Named in the workshop, never demonstrated: it has no lab task and no tenant-side preparation beyond
 confirming the attendees' laptops are permitted to run `idsec`.
 
-The layering above is one row of the larger map under **Securing agentic AI**, and EPM's row there is
+The layering above is one row of the larger map under **Securing Human, Machine & Agentic AI
+Identities**, and EPM's row there is
 the same argument arriving from the other direction: a **skill** is prose that tells an agent to run a
 privileged binary, so whatever governs that binary governs the skill.
 
@@ -546,8 +547,10 @@ describe the credentials rather than the principle, the word is **short-lived** 
 
 ### AWS access
 
-Attendees reach AWS through SSO at `https://ngid.cyberark.cloud/` → CYBR User Portal →
-the **AWS** icon. This is the path to the credentials Claude Code uses for Bedrock.
+Attendees get AWS credentials from the `idsec` CLI, against their own CYBRWorld tenant
+(`demo.cyberark.cloud`): `idsec login`, then `idsec exec sca cloud-access elevate --csp aws`, with
+`jq` lifting the credentials out of the JSON and into three environment variables. No web portal is
+used anywhere in the lab. This is the path to the credentials Claude Code uses for Bedrock.
 
 ### Bedrock
 

@@ -9,7 +9,8 @@
 # belongs here.
 #
 # ⚠️ READ THE LAST SECTION BEFORE ADDING A SECRET PATTERN. The fake credentials in
-# sandbox-app/ are the point of this workshop and must stay tracked.
+# sandbox-app/ and ai-harness-app/sandbox/ are the point of this workshop and must
+# stay tracked — including one deliberate .env, which needs a negation to survive.
 
 
 # ---------------------------------------------------------------------------
@@ -62,9 +63,17 @@ pip-wheel-metadata/
 .claude/statsig/
 .claude/history.jsonl
 
-# Lessons 3 and 5 tell attendees to copy skills into the app they are working
+# Lessons 09 and 13 tell attendees to copy skills into the app they are working
 # in. Those are copies of skills/ — the originals are tracked, the copies are not.
 sandbox-app/.claude/
+
+# Part 1 Lesson 06 wires up an audit hook, which appends a line per tool call.
+# Written by every attendee, interesting to none of them tomorrow.
+#
+# ai-harness-app/memory.md is deliberately NOT here. It ships with one seeded
+# line so Lesson 06 can show memory changing behaviour, and attendees appending
+# to it is the exercise. If it gets messy, `git checkout` it.
+ai-harness-app/audit.log
 
 
 # ---------------------------------------------------------------------------
@@ -85,13 +94,13 @@ sandbox-app/.claude/
 *.zip
 
 # The attendee-facing bundle, if you build it in place (owner-prep gate G3).
-vibe-coding-workshop-dist/
+sko27-japac-idira-ai-workshop-dist/
 
 
 # ---------------------------------------------------------------------------
 # Attendee scratch space
 # ---------------------------------------------------------------------------
-# Lessons 6 and 8 start from an empty folder. If someone creates it inside their
+# Lessons 12 and 14 start from an empty folder. If someone creates it inside their
 # clone rather than beside it, these names catch the common cases. Not
 # exhaustive — it cannot be — but it covers the folder names the lab suggests.
 
@@ -139,7 +148,7 @@ $RECYCLE.BIN/
 # Nothing in this repo needs any of these. They are here because an agent asked
 # to "put the credentials somewhere safer" will sometimes reach for a .env file,
 # and a room of sixty people running that prompt is exactly when you want this
-# net in place. See the helper runbook, Lesson 4.
+# net in place. See the helper runbook, Lesson 10.
 
 .env
 .env.*
@@ -157,15 +166,15 @@ credentials
 # 🚨 DO NOT IGNORE THESE
 # ---------------------------------------------------------------------------
 # The whole workshop depends on the planted fake credentials being present in a
-# fresh clone. Lesson 2 asks an agent to find them; Lesson 4 deletes one of them;
-# Part 1's Stage 2 asks the attendee to find them by hand first. If a future
+# fresh clone. Lesson 08 asks an agent to find them; Lesson 10 deletes one of them;
+# Lesson 04 asks the attendee to find them by hand first. If a future
 # secret-scanning pattern hides these files, those lessons have no content.
 #
 # Every value is a public example placeholder — AWS's own documentation strings
 # and obviously-fake GitHub, Stripe, Slack and Postgres values. None of them
 # authenticate to anything, anywhere. See the note at the end of README.md.
 #
-# ⚠️ ai-harness-app/sandbox/.env is matched by the `.env` rule above, and Stage 2
+# ⚠️ ai-harness-app/sandbox/.env is matched by the `.env` rule above, and Lesson 04
 # specifically teaches that a hidden dotfile is the secret people miss. Without
 # this negation a fresh clone is missing two of the six planted secrets and the
 # lesson quietly loses its punchline.
@@ -177,4 +186,5 @@ credentials
 !sandbox-app/config/settings.py
 !sandbox-app/config/integrations.json
 !sandbox-app/config/__init__.py
+
 !ai-harness-app/sandbox/.env

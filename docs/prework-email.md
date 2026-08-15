@@ -12,7 +12,9 @@ mirror both `idsec` archives.
 Hi `<name>`,
 
 You are booked into **SKO27 TechSummit - Idira AI Workshops** on **`<date>` at `<time>`** — the
-vibe coding session. It is 90 minutes and almost all of it is hands-on, on your own laptop.
+vibe coding session. It is **two sessions — 1:00–2:00pm and 3:00–4:30pm**, and almost all of it
+is hands-on, on your own laptop. In the first half you build an AI agent out of parts, in about
+fifteen lines of Python at a time. In the second half you point a real one at an Idira problem.
 
 **Please do the setup below before the day.** It takes about 25 minutes. There are around
 sixty of us and two trainers — if everyone installs software during the session, nobody gets to
@@ -20,16 +22,23 @@ the interesting part.
 
 ## Your details
 
+You sign in with **your own CYBRWorld account**, the one ending in `@cyberarklab.com`. Nobody issues
+you a workshop login. These three answers are what `idsec configure` asks for:
+
 | | |
 | --- | --- |
-| **Attendee number** | `<nn>` |
-| **Portal** | https://ngid.cyberark.cloud/ |
-| **Username** | `<username>` |
-| **Initial password** | `<password>` |
-| **`idsec configure` — tenant subdomain** | `<subdomain>` |
-| **`idsec configure` — username** | `<username>` |
+| **Identity Tenant Subdomain** | `demo` |
+| **Identity URL** | https://aam4614.my.idaptive.app/ |
+| **Username** | your own, ending in `@cyberarklab.com` |
 
-Bring these with you. You will also get them on a card on the day.
+Already using `idsec` against another tenant? Make a second profile:
+`idsec configure --profile-name cybrworld`, then `idsec login --profile-name cybrworld`.
+
+**There is a second tenant, and it is browser-only.** Lesson 10 opens the console at
+`apj-secrets.cyberark.cloud`. `idsec` is not involved and there is nothing to install for it. Please
+open it this week and check you can sign in with your own account. No account there? Ask your manager
+or a colleague. Everybody on the team has administrator rights on that tenant and can create one for
+you, so this is a five-minute job if you do it before the day.
 
 ## Downloads
 
@@ -44,22 +53,21 @@ The releases page is the primary source — pick the newest release and the file
 machine. The prework page tells you exactly which filename to look for. The mirrors are there in
 case GitHub is blocked on your network.
 
-## Two things we need to hear about this week 🚩
+## What we need to hear about this week 🚩
 
-Everything else on this list you can fix yourself. These two you cannot, and neither can a helper on
-the day. Both need days of lead time, so please check them now and **reply to this email** if either
-looks wrong.
+The setup script checks everything, including your AWS access and whether each program really
+starts. Two of its answers cannot be fixed from your seat, and neither can a helper fix them on the
+day. Both need days of lead time. So please run the script this week and **reply to this email** if
+you see either of these.
 
-**1. Can you reach AWS through the portal?** Sign in at https://ngid.cyberark.cloud/, open **CYBR
-User Portal**, click the **AWS** tile. You should see an account with an **Access keys** link next to
-it. Nothing to copy yet — you just need to know it is there. A missing tile, no accounts, or no
-Access keys link is an **access entitlement** we have to grant for you in advance.
+**1. No AWS role came back.** The script runs `idsec exec sca cloud-access list-targets --csp aws`
+for you. An empty list, or an error about policy, is an **access entitlement** we have to grant in
+advance.
 
-**2. Will your laptop let the two programs run?** 🖥️ After you have done the setup below, try `idsec
-version` and `claude --version`. If either one is *blocked* rather than missing — a message about a
-policy, an administrator, or **Idira EPM** — that is endpoint application control, and it needs a
-policy change rather than anything you can do. Please don't try to work around it. Just reply, and
-use the **Request for authorization** button if you are offered one.
+**2. A program is blocked rather than missing.** 🖥️ A message about a policy, an administrator, or
+**Idira EPM** is endpoint application control. It needs a policy change rather than anything you can
+do. Please don't try to work around it. Just reply, and use the **Request for authorization** button
+if you are offered one.
 
 ## What to do
 
@@ -79,10 +87,22 @@ use the **Request for authorization** button if you are offered one.
    project folder, and it changes nothing without asking you first.
 3. **Anything it could not fix**, or if you would rather read what you are doing: open the folder, go
    into `lab`, and **double-click `0000-prework.html`**. Pick macOS or Windows at the top and the
-   whole page adjusts to your machine. It walks through the same seven steps by hand.
+   whole page adjusts to your machine. It walks through the same nine steps by hand.
 
-That page is the real instructions — this email is just the links, your login, and the script that
-saves you most of the typing.
+4. **Arrange your screen, and leave it that way.** 🪟 Put the **lab guide on one half** of your screen
+   and a **terminal on the other**, side by side. Every instruction on the day is "read this, then type
+   that", and you do not want to be flipping between two full-screen windows to follow it.
+
+   On a Mac, hover the green ● button of a window and choose **Tile Window to Left of Screen**, then do
+   the other window on the right. On Windows, click a window and press `Win` + `←`, then the other and
+   `Win` + `→`. Give the terminal about **80 columns** — a bit wider than
+   half on a small laptop screen is fine.
+
+   Do it today rather than on the day. It takes ten seconds when nobody is talking and two minutes when
+   somebody is. 🖥️ Bringing a second screen? Even better — guide on one, terminal on the other.
+
+That page is the real instructions — this email is just the links, your tenant settings, and the
+script that saves you most of the typing.
 
 ## A few things worth knowing
 
@@ -100,9 +120,9 @@ remember from that step:
   you will need it more than once on the day. (This is the single most common problem in the
   room, and the easiest to fix.)
 
-**If `python` is not found but `python3` is**, that is normal on a Mac and step 2 shows you how
-to add a one-line alias so every instruction in the lab just works. No admin rights, nothing
-installed.
+**If `python` is not found but `python3` is**, that is normal on a Mac and nothing needs fixing.
+Use `python3` for the one command that creates the virtual environment. After that, the environment
+supplies its own `python`, so every instruction in the lab works.
 
 **No coding experience is needed.** Genuinely, that is the point of the session. If you have
 never opened a terminal, you are exactly who this was written for.
@@ -114,8 +134,8 @@ never opened a terminal, you are exactly who this was written for.
 Run the setup script first if you have not — it names the problem for you, which makes your reply
 much easier for us to act on. Then paste what it printed into your reply.
 
-And the two at the top of this email, again, because they are the ones that cannot wait: **the AWS
-portal check** and **a program your laptop refuses to run**. Both need days, not minutes.
+And the two at the top of this email, again, because they are the ones that cannot wait: **no AWS
+role** and **a program your laptop refuses to run**. Both need days, not minutes.
 
 See you on `<date>`. Bring a charger. 🔋
 
@@ -126,14 +146,20 @@ See you on `<date>`. Bring a charger. 🔋
 ## Checklist for the sender
 
 - [ ] The workshop folder is distributed as a **git repository** (clone URL, or a zip that still
-      contains `.git/`) — Lesson 07 uses `/security-review`, which needs version control
+      contains `.git/`) — Lesson 08 uses `/security-review`, which needs version control
 - [ ] `docs/` is **not** in what attendees receive
 - [ ] Share links or clone URL tested from a device that has never opened them
 - [ ] `idsec` mirrors are on a share that needs **no login**
 - [ ] The `idsec` archive filenames match what `lab/0000-prework.html` step 5 tells people to type
-- [ ] Attendee numbers and logins are correct per row — mail-merge, do not hand-edit sixty emails
-- [ ] `idsec configure` has been run once by you, and its prompts match what the card says
-- [ ] **`idsec` and Claude Code are permitted by the EPM policy on the attendees' laptop fleet** —
+- [ ] Every attendee has a **CYBRWorld account** ending in `@cyberarklab.com`, and an AWS
+      entitlement in Secure Cloud Access against it — checked before this email goes out
+- [ ] `idsec configure` has been run once by you against `demo.cyberark.cloud`, and its prompts match
+      the three values in this email
+- [ ] Every attendee can **sign in to `apj-secrets.cyberark.cloud`** in a browser, which Lesson 10
+      needs. Anyone on the team can create an account there, so the email asks them to check it
+      themselves. Gate G4 in [owner-prep.md](owner-prep.md) covers what to do about stragglers
+- [ ] `jq` installs cleanly on both platforms from the URLs in `lab/0000-prework.html` step 5
+- [ ] **`idsec`, `jq` and Claude Code are permitted by the EPM policy on the attendees' laptop fleet** —
       confirmed with the team that owns the EPM sets, *before* this email goes out, because the fix
       has a lead time and no attendee can apply it
 - [ ] Calendar invite sent separately, with the same links in the body
@@ -141,6 +167,9 @@ See you on `<date>`. Bring a charger. 🔋
 ### Not in this email, on purpose
 
 The **Identity Broker** details for Lesson 10 — Gateway URL, Client ID, Client Secret — are
-**not** sent in advance. There is no prework for that lesson, and a client secret in sixty
-inboxes is a worse idea than a client secret on sixty cards. Put them on the cards or on a
-slide on the day. See gate G5 in [owner-prep.md](owner-prep.md).
+**not** sent in advance. A client secret in sixty inboxes is a worse idea than a client secret on
+sixty cards. Put them on the cards or on a slide on the day. See gate G5 in
+[owner-prep.md](owner-prep.md).
+
+The tenant address and the sign-in check **are** in the email. Neither is a secret, and the sign-in
+is the one part of Lesson 10 that has to be sorted out beforehand.

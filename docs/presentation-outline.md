@@ -3,7 +3,7 @@
 **3 minutes. Hard stop.** Three slides.
 
 **There is no deck any more.** This session used to open with twelve minutes of slides explaining
-what an AI agent is. Part 1 replaced them: attendees now build one, in five steps, starting from
+what an AI agent is. Part 1 replaced them: attendees now build one, in six steps, starting from
 fifteen lines of Python. It costs the same time and it lands harder, because nobody has to take your
 word for anything.
 
@@ -46,20 +46,37 @@ One line for this specific room:
 
 ## 2 · How the room works (1 min 15 s) 🗺️
 
-Four things. Put them all on one slide so you cannot accidentally talk for four minutes.
+Five things. Put them all on one slide so you cannot accidentally talk for four minutes.
 
-**Thirteen lessons, numbered in the order you do them.**
+**Arrange your screen, right now, before anything else.** Lab guide on one half, terminal on the
+other. The prework asked them to do this, so it is a reminder and not an exercise — but say it, and
+give it ten seconds of silence, because the alternative is sixty people alt-tabbing for three hours:
 
-- **01 to 05, Part 1.** You build an AI agent out of parts. Five small Python files, about thirty
-  lines each. By the end there is nothing in the box you have not seen.
-- **06 to 10, Part 2.** You use a real one, Claude Code, on Idira problems.
-- **11 to 13, optional advanced courses.** For people who finish early.
+> Lab guide on the left, terminal on the right, side by side. Every instruction today is "read this,
+> then type that". You do not want to be flipping between windows to do it.
 
-**We are running 01, 02 and 05 together. Lessons 03 and 04 are yours to read.** Say this clearly or
-twenty people will quietly work ahead while you are talking:
+**Fourteen lessons, numbered in the order you do them.**
 
-> Two of the Part 1 lessons are self-paced. They are written for that, and they are marked. Read
-> them on the train if you like. Nothing later today depends on you having done them.
+- **01 to 05, Part 1.** You build an AI agent out of parts, in the first ninety minutes. Five small
+  Python files that all share one session file. By the end there is nothing in the box you have not
+  seen.
+- **06, the break time activity.** No terminal. You answer three questions about the sixty agents that
+  just ran in this room.
+- **07 to 10, Part 2.** You use a real one — Claude Code, which already has every component you just
+  built — on Idira problems.
+- **11 to 14, Part 3, optional deep dives.** For people who finish early.
+
+**Part 1 we run together, from the front.** Say this clearly or twenty people will quietly work ahead
+while you are talking:
+
+> All six Part 1 lessons we do together, at the same time, because the numbers on your screen are
+> the lesson and I want to talk about them while they are on your screen. Part 2 you drive yourself.
+
+Then the line that saves you forty questions, because sixty people running the same script will get
+sixty different numbers:
+
+> Your token counts and percentages will not match mine, and they will not match your neighbour's.
+> The *shape* is the lesson, never the digits.
 
 **The page selector.** The dropdown at the top of every lab page, between Back and Next. Nobody has
 to go back to the index to move on and nobody gets lost.
@@ -71,7 +88,7 @@ Then give people permission not to finish, which costs ten seconds and saves sev
 afternoon:
 
 > Sixty people, mixed comfort with a terminal. Somebody in this room is going to feel behind. That
-> is fine and it is expected. Lessons 11 to 13 exist precisely so that finishing early is not the
+> is fine and it is expected. Lessons 11 to 14 exist precisely so that finishing early is not the
 > goal.
 
 ## 3 · Go (1 min) 🚀
@@ -87,6 +104,7 @@ Naming the gaps buys real credibility with this audience and costs nothing.
 
 Then:
 
+- Terminal and lab guide **side by side** 🪟
 - Double-click `lab/index.html`
 - Start at **Lesson 01**
 - Hold up your numbered card if you are stuck 🙋
@@ -99,19 +117,28 @@ end and the first question will cost you four minutes.
 
 ## Notes for the presenter
 
-**Do not demo.** The old deck had a two-minute live demo at this point. Lesson 02 now does that job
-better, because attendees run it themselves after failing to find the secrets by hand. If you demo
-here you will spoil that, and you will overrun.
+**Do not demo.** The old deck had a two-minute live demo at this point. **Lesson 04** now does that
+job better, because attendees run the agent themselves *after* failing to find the secrets by hand.
+If you demo here you will spoil that, and you will overrun.
 
-**Do not explain what an agent is.** Lessons 01 and 02 do it in code. Anything you say here is
-something they will hear again in six minutes, which trains the room to tune you out.
+**Do not explain what an agent is.** Part 1 does it in code, six times over. Anything you say here is
+something they will hear again in six minutes, which trains the room to tune you out. In particular,
+do not preview the context gauge, the dumb zone or the hook that refuses — those are Lessons 03 and 05,
+and they only land when the attendee's own screen is the evidence.
+
+**Tile your own windows before you start.** You are about to tell sixty people to do it, on a slide,
+and a projector showing a full-screen terminal in front of a full-screen browser undoes the
+instruction faster than you can give it. [owner-prep.md](owner-prep.md) has it in the 60-minutes-before
+list.
 
 **Terminal font size.** Rehearse it at projector resolution from the back row. Nearly everything in
-this session is terminal output, and a demo nobody can read is worse than no demo.
+this session is terminal output, and a demo nobody can read is worse than no demo. Part 1 raises the
+stakes on this: the token counts and the context gauge are the whole point of six lessons, and they
+are small numbers in a panel.
 
 **Timekeeping.** If you are past 3 minutes at the end of slide 2, cut slide 3's "not covering" list
-and say it in the wrap instead. Never cut the card instruction or the self-paced warning; those two
-are what keep sixty people synchronised.
+and say it in the wrap instead. Never cut the card instruction, the tiling instruction or the
+"your numbers will differ" line; those three are what keep sixty people synchronised.
 
 ---
 
@@ -181,11 +208,11 @@ holds nothing at all:
 
 The beat that lands best with this audience:
 
-> You already did this. Earlier you copied credentials out of the portal that started with `ASIA`
-> and came with a session token. Those expire. Nobody has ever given you a permanent AWS key for
-> this tenant.
+> You already did this. Earlier you ran one `idsec` command and got credentials that started with
+> `ASIA` and came with a session token. Those expire. Nobody has ever given you a permanent AWS key
+> for this tenant. The difference this time is that the agent works out the command and you run it.
 
-The before/after diagram lives in [Lesson 08](../lab/0008-zsp-access.html).
+The before/after diagram lives in [Lesson 09](../lab/0009-zsp-access.html).
 
 Two twenty-second additions, both now callouts in the lesson itself:
 
@@ -205,13 +232,13 @@ The stack as one line, which is the sentence worth taking away:
 No EPM demo and no console screenshot. It is not in the lab, and promising a demo you do not give is
 worse than not mentioning it.
 
-### The Identity Broker → now Module 6
+### The Identity Broker → now Module 5
 
 This is the part that sells the session to this audience, so do not rush it.
 
 An agent needs to reach a system. Two ways to arrange that:
 
-| Without the Broker | With the Idira Identity Broker |
+| Without the Broker | With the Idira AI Agent Identity Broker |
 | --- | --- |
 | The agent holds a credential | The **Broker** holds the credential |
 | The credential is in a config file, an env var, or the model's context | The agent never sees it |
@@ -225,23 +252,26 @@ The governance sentence, because a customer will ask:
 
 The without/with diagram lives in [Lesson 10](../lab/0010-identity-broker.html).
 
-**The kill switch is still worth foreshadowing.** You no longer have a slide for it, so do it at the
+**Module 5 is still worth foreshadowing.** You no longer have a slide for it, so do it at the
 end of Module 4 instead, in one sentence:
 
-> In about twenty minutes you are all going to connect an agent through the Broker and call a tool.
-> Then I am going to click one button up here, and all sixty of you will lose access at the same
-> instant. Watch for that.
+> In about ten minutes you are all going to connect an agent through the Broker and call a tool you
+> hold no credential for. Then you are going to find your own name on that call, in the audit log, and
+> the one screen where I could take it away from all sixty of you at once.
+
+Do **not** promise a live kill switch. Nothing in the workshop tenant is changed during the session,
+so the switch is a screen you point at, not a button anyone clicks.
 
 ### Three things that were true of the deck and are still true
 
 **The one thing not to say.** Do not imply the exercise makes the app secret-free. It removes one of
-four secrets. Three remain, deliberately, and Lesson 09 makes attendees find them again. Overclaim
-in Module 3 and Lesson 09 contradicts you in front of the room.
+four secrets. Three remain, deliberately, and Lesson 09 names them again under *What this fixes, and
+what it does not*. Overclaim in Module 3 and the lesson contradicts you in front of the room.
 
 **The one thing to repeat.** *Onboard* versus *eliminate*, with the product name attached to each.
 Module 3, again in Module 4, again in the wrap. If people leave with one idea, this is the one worth
 having.
 
-**The one thing to promise.** The kill switch. Set the expectation early and pay it off in Module 6.
-It is the thirty seconds attendees will reuse in front of customers, and foreshadowing it doubles
-the effect.
+**The one thing to promise.** That they will find their own name on an agent's tool call. Set the
+expectation early and pay it off in Module 5. It is the moment attendees will reuse in front of
+customers, and foreshadowing it doubles the effect.

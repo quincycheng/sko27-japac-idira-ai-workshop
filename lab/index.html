@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SKO27 TechSummit - AI Workshop for Idira DC</title>
+<link rel="icon" type="image/svg+xml" href="assets/idira-icon.svg">
 <link rel="stylesheet" href="assets/lab.css">
 </head>
 <body>
@@ -18,226 +19,227 @@
   <h1>AI Workshop for Idira DC 🎸</h1>
   <p class="standfirst">
     By the end of today you will be able to explain what an AI agent is to a customer without
-    hand-waving, because you will have built one yourself from fifteen lines of Python. You will also
-    be able to demo how Idira secures one — zero standing privileges, no credential in the app, every
-    call brokered and audited. No coding experience needed.
+    hand-waving, because you will have built one yourself from fifteen lines of Python. You will also be
+    able to demo how Idira secures one. That means zero standing privileges, no credential in the app,
+    and every call brokered and audited. No coding experience needed.
   </p>
   <ul class="meta">
-    <li>⏱️ Part 1 ~45 min · Part 2 ~50 min · Optional advanced ~45 min</li>
+    <li>⏱️ 1:00–2:00pm, then 3:00–4:30pm</li>
     <li>💻 macOS or Windows</li>
     <li>🚫 No admin rights needed</li>
+    <li id="step-counter">&nbsp;</li>
   </ul>
 </header>
 
-<h2>Before the session</h2>
+<h2>Before you start</h2>
 
-<ul class="cards">
-  <li><a href="0000-prework.html">
-    <div class="card-top"><span class="card-n">00</span><span class="card-title">Prework 🧰</span></div>
-    <p class="card-desc">Done at your desk beforehand — and there is now a script that checks and fixes most of it for you. <strong>Before the session</strong> · ~25 min</p>
-  </a></li>
-</ul>
+<p class="section-intro">Four things, in this order. The first one happens at your own desk beforehand;
+the other three take a couple of minutes once you sit down.</p>
 
-<h2>Part 1 · How an AI harness is built 🏗️</h2>
+<div class="step">
+  <div class="step-head"><div class="step-num">1</div><p class="step-title">Do the prework, before the day</p></div>
+  <div class="step-body">
+    <p>One page, done at your desk. It puts the workshop folder, a Python environment, Claude Code and
+    <code>idsec</code> on your laptop and proves each one works. A script checks and fixes most of it for
+    you, so this is shorter than it looks.</p>
+    <ul class="cards">
+      <li><a href="0000-prework.html">
+        <div class="card-top"><span class="card-n">00</span><span class="card-title">Prework 🧰</span></div>
+        <p class="card-desc">Get the folder, the virtual environment, Claude Code and <code>idsec</code> in place, and prove each one works. <strong>Before the session</strong></p>
+      </a></li>
+    </ul>
+  </div>
+</div>
 
-<p>Five lessons, five small Python files in <code>ai-harness-app/</code>, each about thirty lines. You
-run each one, read what it does, then break it on purpose. By the end there is nothing left in the
-box you have not seen.</p>
+<div class="step">
+  <div class="step-head"><div class="step-num">2</div><p class="step-title">Confirm the seven ticks</p></div>
+  <div class="step-body">
+    <p>All seven come from the prework. Check them now rather than halfway through lesson 01:</p>
+    <ul>
+      <li>The <strong>workshop folder</strong> unzipped somewhere you can find again</li>
+      <li>A <strong>virtual environment</strong> in that folder, with <code>boto3</code> and
+      <code>anthropic</code> installed, and you know the command to activate it</li>
+      <li><strong>Claude Code</strong>: <code>claude --version</code> prints a number</li>
+      <li><strong>idsec</strong> and <strong>jq</strong>: <code>idsec version</code> and
+      <code>jq --version</code> both print a number, and you have run <code>idsec configure</code>
+      once</li>
+      <li><strong>AWS access</strong>: <code>idsec exec sca cloud-access list-targets --csp aws</code>
+      lists at least one account and role</li>
+      <li>Your own <strong>CYBRWorld login</strong>, the one ending in <code>@cyberarklab.com</code></li>
+      <li>A sign-in for the <strong><code>apj-secrets</code></strong> tenant, which Lesson 10 opens in
+      a browser</li>
+    </ul>
+    <div class="warn">
+      <p><span class="callout-label">🙋 Missing something?</span> Run the prework script first. It checks
+      every item on that list except the browser sign-in, fixes most of them, and tells you plainly which
+      ones it cannot:</p>
+      <div class="code"><pre><code># macOS
+cd ~/Downloads/sko27-japac-idira-ai-workshop
+bash check-prereqs.sh
 
-<p>Lesson 0N goes with the script called <code>0N_something.py</code>, so a page and its script never
-disagree about which step you are on.</p>
+# Windows PowerShell
+cd $HOME\Downloads\sko27-japac-idira-ai-workshop
+.\check-prereqs.ps1</code></pre></div>
+      <p>Then don't sit quietly about whatever is left. Hold up your numbered card and a helper will come
+      to you.</p>
+    </div>
+  </div>
+</div>
 
-<figure>
-<svg viewBox="0 0 760 200" role="img" aria-label="The evolution from a simple LLM call, through prompt engineering and context engineering, to a full AI harness.">
-  <defs>
-    <marker id="evo" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink-faint)"/>
-    </marker>
-  </defs>
+<div class="step">
+  <div class="step-head"><div class="step-num">3</div><p class="step-title">Put the terminal and this guide side by side</p></div>
+  <div class="step-body">
+    <p>Every lesson is “read a paragraph, run a command, look at the numbers”, and alt-tabbing between two
+    full-screen windows is the single biggest source of lost time in this room. Terminal on the
+    <strong>left</strong>, this guide in the browser on the <strong>right</strong>.</p>
+    <div class="os-switch" data-os-switch></div>
+    <div class="os os-mac">
+      <p>Hover the green ● of the terminal window → <strong>Tile Window to Left of Screen</strong>, then
+      click the browser to fill the right. Dragging a window to a screen edge does the same thing.</p>
+    </div>
+    <div class="os os-win">
+      <p>Click the terminal and press <kbd>Win</kbd> + <kbd>←</kbd>, then click the browser and press
+      <kbd>Win</kbd> + <kbd>→</kbd>.</p>
+    </div>
+    <p>Give the terminal about two-thirds if your screen is small. Part 1 prints a context gauge that
+    wants roughly 80 columns. If the tables and boxes come out wrapped and unreadable, widen the
+    terminal or shrink its font. Two screens? Even better: guide on the laptop, terminal on the
+    external display. Everything you are meant to notice in Part 1 is a number that changes, and you
+    cannot notice it behind another window.</p>
+  </div>
+</div>
 
-  <g>
-    <rect x="10" y="24" width="168" height="100" rx="10" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
-    <text x="94" y="56" text-anchor="middle" font-size="21">💬</text>
-    <text x="94" y="82" text-anchor="middle" class="svg-label" fill="var(--ink)">A simple call</text>
-    <text x="94" y="102" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">text in, text out</text>
-    <text x="94" y="116" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">no memory, no hands</text>
-  </g>
-  <g>
-    <rect x="206" y="24" width="168" height="100" rx="10" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
-    <text x="290" y="56" text-anchor="middle" font-size="21">✍️</text>
-    <text x="290" y="82" text-anchor="middle" class="svg-label" fill="var(--ink)">Prompt engineering</text>
-    <text x="290" y="102" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">a role, rules,</text>
-    <text x="290" y="116" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">a shape for the answer</text>
-  </g>
-  <g>
-    <rect x="402" y="24" width="168" height="100" rx="10" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
-    <text x="486" y="56" text-anchor="middle" font-size="21">🧠</text>
-    <text x="486" y="82" text-anchor="middle" class="svg-label" fill="var(--ink)">Context engineering</text>
-    <text x="486" y="102" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">deciding what it sees</text>
-    <text x="486" y="116" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">at the moment it works</text>
-  </g>
-  <g>
-    <rect x="598" y="24" width="152" height="100" rx="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>
-    <text x="674" y="56" text-anchor="middle" font-size="21">🏗️</text>
-    <text x="674" y="82" text-anchor="middle" class="svg-label" fill="var(--ink)">An AI harness</text>
-    <text x="674" y="102" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">loop + tools + limits</text>
-    <text x="674" y="116" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">= Claude Code</text>
-  </g>
+<div class="step">
+  <div class="step-head"><div class="step-num">4</div><p class="step-title">Open these two tabs and leave them open</p></div>
+  <div class="step-body">
+    <p>Alongside whichever lesson you are on. One is for commands, one is for the customer
+    conversation.</p>
+    <ul>
+      <li><a href="reference/cheatsheet.html">The cheat sheet</a>: every command from the lab on one
+        page.</li>
+      <li><a href="reference/securing-agentic-ai.html">Post-Workshop Resources</a>: the deck behind the
+        workshop, and two videos to take home.</li>
+    </ul>
+  </div>
+</div>
 
-  <line x1="181" y1="74" x2="201" y2="74" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#evo)"/>
-  <line x1="377" y1="74" x2="397" y2="74" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#evo)"/>
-  <line x1="573" y1="74" x2="593" y2="74" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#evo)"/>
+<h2>Part 1 · Build your own AI harness</h2>
 
-  <text x="380" y="158" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">Each step adds a few lines of code, and one new way to get it wrong.</text>
-  <text x="380" y="180" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">You will build all four, in order, in under half an hour. 🛠️</text>
-</svg>
-<figcaption>The four things people mean when they say “AI”, in the order they were invented.</figcaption>
-</figure>
+<p class="section-intro">The first slot, 1:00–2:00pm. Five lessons. Each one runs a small Python file
+in <code>ai-harness-app/</code>. Run it, read what it does, then break it on purpose.</p>
+
+<p>Lesson N goes with the script called <code>NN_something.py</code>, so a page and its script never
+disagree about which step you are on. All five scripts run the same app, so the model, the system
+prompt, the output style, the context gauge and the token counts are on screen the whole way
+through.</p>
 
 <ul class="cards">
   <li><a href="0001-one-call.html">
     <div class="card-top"><span class="card-n">01</span><span class="card-title">One call to a model ⚛️</span></div>
-    <p class="card-desc">Fifteen lines. A model that talks and cannot act — then find the wall it cannot get past. <strong>Everyone</strong> · ~8 min</p>
+    <p class="card-desc">Fifteen lines and a genuinely old model. It cannot remember you and cannot act. Find both walls. <strong>Everyone</strong></p>
   </a></li>
 
-  <li><a href="0002-give-it-a-tool.html">
-    <div class="card-top"><span class="card-n">02</span><span class="card-title">Give it a tool 🔧</span></div>
-    <p class="card-desc">Hunt six planted secrets yourself, then watch an agent do it. The loop that makes it an agent, line by line. <strong>Everyone</strong> · ~10 min</p>
+  <li><a href="0002-conversation-history.html">
+    <div class="card-top"><span class="card-n">02</span><span class="card-title">Conversation history 🔁</span></div>
+    <p class="card-desc">One word changes and the model appears to remember you. It did not. The harness re-sends the whole transcript, and the bill only goes up. <strong>Everyone</strong></p>
   </a></li>
 
-  <li><a href="0003-make-it-an-agent.html">
-    <div class="card-top"><span class="card-n">03</span><span class="card-title">Make it an agent 🧠</span></div>
-    <p class="card-desc">A system prompt, a toolbox, and a hard limit. Ask it to delete everything and watch it fail. <strong>Everyone</strong> · 📖 self-paced · ~9 min</p>
+  <li><a href="0003-context-engineering.html">
+    <div class="card-top"><span class="card-n">03</span><span class="card-title">Context engineering 🧠</span></div>
+    <p class="card-desc">Rules and an output style, then fill the window on purpose: the dumb zone, the wall, and what <code>/compact</code> throws away. <strong>Everyone</strong></p>
   </a></li>
 
-  <li><a href="0004-context-engineering.html">
-    <div class="card-top"><span class="card-n">04</span><span class="card-title">Context engineering 📉</span></div>
-    <p class="card-desc">Watch the token count climb until the agent folds its own transcript away. This is what <code>/compact</code> is. <strong>Everyone</strong> · 📖 self-paced · ~9 min</p>
+  <li><a href="0004-tools-and-agents.html">
+    <div class="card-top"><span class="card-n">04</span><span class="card-title">Tools and agents 🔧</span></div>
+    <p class="card-desc">Hunt six planted secrets yourself, watch the old model refuse the toolbox, then watch a better one investigate. <strong>Everyone</strong></p>
   </a></li>
 
-  <li><a href="0005-when-data-lies.html">
-    <div class="card-top"><span class="card-n">05</span><span class="card-title">When the data lies 🎣</span></div>
-    <p class="card-desc">A file gives your agent orders. Prompts do not save you; nine lines of Python do. <strong>Everyone</strong> · ~10 min</p>
+  <li><a href="0005-the-harness.html">
+    <div class="card-top"><span class="card-n">05</span><span class="card-title">The harness 🏗️</span></div>
+    <p class="card-desc">One task per component: MCP, skills, the LSP, subagents, hooks, memory. Five of them are text. One is a control. <strong>Everyone</strong></p>
   </a></li>
 </ul>
 
-<h2>Part 2 · AI Harness: Claude Code 🎸</h2>
+<h2>Break time activity · Govern what you built</h2>
 
-<p>Same loop you just built, with better tools — pointed at an app nobody should be proud of.</p>
-
-<figure>
-<svg viewBox="0 0 760 165" role="img" aria-label="Five moves: look at the app, find the secrets, elevate from zero standing privileges, delete the key, then broker access with no key at all.">
-  <defs>
-    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink-faint)"/>
-    </marker>
-  </defs>
-
-  <g>
-    <rect x="15" y="22" width="133" height="106" rx="10" fill="var(--paper)" stroke="var(--line)" stroke-width="1.5"/>
-    <text x="81" y="56" text-anchor="middle" font-size="22">🔎</text>
-    <text x="81" y="82" text-anchor="middle" class="svg-label" fill="var(--ink)">1 · Look</text>
-    <text x="81" y="102" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">ask Claude to</text>
-    <text x="81" y="116" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">review the app</text>
-  </g>
-
-  <g>
-    <rect x="164" y="22" width="133" height="106" rx="10" fill="var(--danger-soft)" stroke="var(--danger)" stroke-width="1.5"/>
-    <text x="230" y="56" text-anchor="middle" font-size="22">🔑</text>
-    <text x="230" y="82" text-anchor="middle" class="svg-label" fill="var(--ink)">2 · Find</text>
-    <text x="230" y="102" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">four secrets in</text>
-    <text x="230" y="116" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">plain text</text>
-  </g>
-
-  <g>
-    <rect x="313" y="22" width="133" height="106" rx="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
-    <text x="379" y="56" text-anchor="middle" font-size="22">🎫</text>
-    <text x="379" y="82" text-anchor="middle" class="svg-label" fill="var(--ink)">3 · Elevate</text>
-    <text x="379" y="102" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">borrow access</text>
-    <text x="379" y="116" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">that expires</text>
-  </g>
-
-  <g>
-    <rect x="462" y="22" width="133" height="106" rx="10" fill="var(--win-soft)" stroke="var(--win)" stroke-width="1.5"/>
-    <text x="528" y="56" text-anchor="middle" font-size="22">✂️</text>
-    <text x="528" y="82" text-anchor="middle" class="svg-label" fill="var(--ink)">4 · Delete</text>
-    <text x="528" y="102" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">the key is gone,</text>
-    <text x="528" y="116" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">not hidden</text>
-  </g>
-
-  <g>
-    <rect x="611" y="22" width="133" height="106" rx="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>
-    <text x="677" y="56" text-anchor="middle" font-size="22">🛡️</text>
-    <text x="677" y="82" text-anchor="middle" class="svg-label" fill="var(--ink)">5 · Broker</text>
-    <text x="677" y="102" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">no key at all,</text>
-    <text x="677" y="116" text-anchor="middle" class="svg-sub" fill="var(--ink-soft)">every call logged</text>
-  </g>
-
-  <line x1="151" y1="75" x2="161" y2="75" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#ah)"/>
-  <line x1="300" y1="75" x2="310" y2="75" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#ah)"/>
-  <line x1="449" y1="75" x2="459" y2="75" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#ah)"/>
-  <line x1="598" y1="75" x2="608" y2="75" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#ah)"/>
-
-  <text x="380" y="152" text-anchor="middle" class="svg-sub" fill="var(--ink-faint)">risk → remedy → the thing you demo</text>
-</svg>
-<figcaption>The whole workshop in five moves. Everything else is detail.</figcaption>
-</figure>
+<p class="section-intro">The last thing in the first slot, just before the break. No script and no
+terminal. You answer three questions about the sixty agents that just ran in this room.</p>
 
 <ul class="cards">
-  <li><a href="0006-setup.html">
-    <div class="card-top"><span class="card-n">06</span><span class="card-title">Wake up your agent 🤖</span></div>
-    <p class="card-desc">Prove Claude Code works and is talking to Amazon Bedrock. <strong>Everyone</strong> · ~5 min</p>
+  <li><a href="0006-who-runs-the-agents.html">
+    <div class="card-top"><span class="card-n">06</span><span class="card-title">Who runs the agents? 🔍</span></div>
+    <p class="card-desc">Sixty agents just ran in this room. Nobody can say how many, whose they were, or what they did. Work out what you would say to a customer. <strong>Everyone</strong></p>
+  </a></li>
+</ul>
+
+<h2>Part 2 · Practical Guide to AI Harness</h2>
+
+<p class="section-intro">The second slot, 3:00–4:30pm. The same loop you just built, with better
+tools, pointed at an app nobody should be proud of. You are not learning a new tool here. You are
+recognising one.</p>
+
+<p><strong>Claude Code has all seven components from Lesson 05</strong>: <code>CLAUDE.md</code> for
+rules, skills, output styles, MCP servers, an LSP, subagents, hooks and memory.</p>
+
+<ul class="cards">
+  <li><a href="0007-setup.html">
+    <div class="card-top"><span class="card-n">07</span><span class="card-title">Get Started: Claude Code 🤖</span></div>
+    <p class="card-desc">Prove Claude Code works and is talking to Amazon Bedrock. <strong>Everyone</strong></p>
   </a></li>
 
-  <li><a href="0007-find-the-secrets.html">
-    <div class="card-top"><span class="card-n">07</span><span class="card-title">Find the secrets 🔎</span></div>
-    <p class="card-desc">Meet a real-looking app and let Claude review it. It will not like what it finds. <strong>Everyone</strong> · ~13 min</p>
+  <li><a href="0008-find-the-secrets.html">
+    <div class="card-top"><span class="card-n">08</span><span class="card-title">Vibe coding: Find the secrets 🔎</span></div>
+    <p class="card-desc">Meet a real-looking app and let Claude review it. It will not like what it finds. <strong>Everyone</strong></p>
   </a></li>
 
-  <li><a href="0008-zsp-access.html">
-    <div class="card-top"><span class="card-n">08</span><span class="card-title">Zero standing privileges 🎫</span></div>
-    <p class="card-desc">Hold no AWS access at all — then use a skill to ask Idira for it, briefly. <strong>Everyone</strong> · ~10 min</p>
-  </a></li>
-
-  <li><a href="0009-fix-the-app.html">
-    <div class="card-top"><span class="card-n">09</span><span class="card-title">Delete the key ✂️</span></div>
-    <p class="card-desc">Make the app work with <em>no</em> credentials in it — and say out loud what is still unfixed. <strong>Everyone</strong> · ~8 min</p>
+  <li><a href="0009-zsp-access.html">
+    <div class="card-top"><span class="card-n">09</span><span class="card-title">Skills: ZSP by Idsec CLI 🎫</span></div>
+    <p class="card-desc">Hold no AWS access at all, then use a skill to ask Idira for it, briefly. <strong>Everyone</strong></p>
   </a></li>
 
   <li><a href="0010-identity-broker.html">
-    <div class="card-top"><span class="card-n">10</span><span class="card-title">The Identity Broker 🛡️</span></div>
-    <p class="card-desc">Give an agent access to a tool while it holds no credential — then watch one click cut off the whole room. <strong>Everyone</strong> · ~12 min</p>
+    <div class="card-top"><span class="card-n">10</span><span class="card-title">MCP: AI Agent Identity Broker 🛡️</span></div>
+    <p class="card-desc">Give an agent access to a tool while it holds no credential, then find your own name in the audit log. <strong>Everyone</strong></p>
   </a></li>
 </ul>
 
-<h3>Optional advanced courses 🍰</h3>
+<h2>Part 3 · Optional Deep Dives</h2>
+
+<p class="section-intro">For anyone who finishes early, or wants to keep going afterwards. Nothing later
+depends on these.</p>
 
 <ul class="cards">
   <li><a href="0011-build-from-nothing.html">
     <div class="card-top"><span class="card-n">11</span><span class="card-title">Build from one prompt 🎸</span></div>
-    <p class="card-desc">An empty folder and a sentence. Then the experiment: does it put a key in the file? <strong>Optional advanced</strong> · ~10 min</p>
+    <p class="card-desc">An empty folder and a sentence. Then the experiment: does it put a key in the file? <strong>Optional deep dive</strong></p>
   </a></li>
 
   <li><a href="0012-write-a-skill.html">
     <div class="card-top"><span class="card-n">12</span><span class="card-title">Write your own skill 📝</span></div>
-    <p class="card-desc">Turn something you already know how to do into a page the agent follows every time. <strong>Optional advanced</strong> · ~15 min</p>
+    <p class="card-desc">Turn something you already know how to do into a page the agent follows every time. <strong>Optional deep dive</strong></p>
   </a></li>
 
   <li><a href="0013-afk-harness.html">
     <div class="card-top"><span class="card-n">13</span><span class="card-title">Build something AFK 🛋️</span></div>
-    <p class="card-desc">Front-load every decision, then let the agent implement while you go to a meeting. <strong>Optional advanced</strong> · ~20 min</p>
+    <p class="card-desc">Front-load every decision, then let the agent implement while you go to a meeting. These are Lesson 05's subagents, applied to a whole project. <strong>Optional deep dive</strong></p>
+  </a></li>
+
+  <li><a href="0014-fix-the-app.html">
+    <div class="card-top"><span class="card-n">14</span><span class="card-title">Delete the key ✂️</span></div>
+    <p class="card-desc">The follow-up to Lesson 09. Make the app work with <em>no</em> credentials in it, then say out loud what is still unfixed. <strong>Optional deep dive</strong></p>
   </a></li>
 </ul>
 
-<p>Keep <a href="reference/cheatsheet.html">the cheat sheet 📋</a> open in another tab — every command from the lab is on one page.</p>
-
 <h2>Who is who today</h2>
+
+<p class="section-intro">Eleven names come up over the day. Here is what each one is, and whose computer
+it runs on.</p>
 
 <table>
   <tr><th>Name</th><th>What it is</th><th>Where it runs</th></tr>
   <tr>
     <td><strong>Claude Code</strong></td>
-    <td>An AI agent that lives in your terminal. It reads files, writes files, and runs commands — with your permission.</td>
+    <td>An AI agent that lives in your terminal. It reads files, writes files, and runs commands, with your permission.</td>
     <td>Your laptop</td>
   </tr>
   <tr>
@@ -251,7 +253,7 @@ disagree about which step you are on.</p>
     <td>Idira platform</td>
   </tr>
   <tr>
-    <td><strong>Idira Identity Broker</strong></td>
+    <td><strong>Idira AI Agent Identity Broker</strong></td>
     <td>Sits between AI agents and the tools they use. Holds the credentials, applies a policy, audits every call. Lesson 10.</td>
     <td>Idira platform</td>
   </tr>
@@ -275,61 +277,57 @@ disagree about which step you are on.</p>
     <td>Five short Python files in <code>ai-harness-app/</code>. The agent you build yourself in Part 1, with its own tiny repo to investigate.</td>
     <td>Your laptop</td>
   </tr>
+  <tr>
+    <td><strong>Llama 3 8B</strong> <code>tier=legacy</code></td>
+    <td>An April 2024 model on Bedrock: no tool support, an 8,192-token window. Lessons 01–03 run on it so the limits are real rather than described.</td>
+    <td>AWS</td>
+  </tr>
+  <tr>
+    <td><strong>Claude Sonnet 4.5</strong> <code>tier=frontier</code></td>
+    <td>200,000-token window, tools, the lot. Lesson 04 switches to it, after the old model refuses the toolbox in front of you.</td>
+    <td>AWS</td>
+  </tr>
 </table>
 
-<h2>Before you start ✅</h2>
+<h2>Knowledge Check</h2>
 
-<p>You should already have all of this from <a href="0000-prework.html">the prework</a>:</p>
-
-<ul>
-  <li>📦 The <strong>workshop folder</strong> unzipped somewhere you can find again</li>
-  <li>🐍 A <strong>virtual environment</strong> in that folder, with <code>boto3</code> and
-  <code>anthropic</code> installed — and you know the command to activate it</li>
-  <li>🤖 <strong>Claude Code</strong> — <code>claude --version</code> prints a number</li>
-  <li>⌨️ <strong>idsec</strong> — <code>idsec version</code> prints a number, and you have run
-  <code>idsec configure</code> once</li>
-  <li>🔐 <strong>AWS access</strong> — you can reach the AWS tile in the portal and see an
-  <strong>Access keys</strong> link</li>
-  <li>🎟️ Your <strong>numbered card</strong> with your login on it</li>
-</ul>
-
-<div class="warn">
-  <p><span class="callout-label">Missing something?</span> Run the prework script first. It checks
-  every item on that list, fixes most of them, and tells you plainly which ones it cannot:</p>
-  <div class="code"><pre><code># macOS
-cd ~/Downloads/vibe-coding-workshop
-bash check-prereqs.sh
-
-# Windows PowerShell
-cd $HOME\Downloads\vibe-coding-workshop
-.\check-prereqs.ps1</code></pre></div>
-  <p>Then don't sit quietly about whatever is left. 🙋 Hold up your numbered card and a helper will
-  come to you. It is faster to fix now than in twenty minutes.</p>
-</div>
+<p class="section-intro">Two questions before you begin. A customer will ask you both of them today.
+Pick an answer to see why it is right or wrong.</p>
 
 <div class="check" data-answer="b">
-  <p class="check-q">⌨️ What is <code>idsec</code>?</p>
+  <p class="check-q">What is <code>idsec</code>?</p>
   <ul class="opts">
     <li><button data-opt="a">A Python library the sandbox app imports to read secrets out of a vault</button></li>
-    <li><button data-opt="b">Idira's command-line tool — how you talk to the Idira platform from your own laptop</button></li>
+    <li><button data-opt="b">Idira's command-line tool, how you talk to the Idira platform from your own laptop</button></li>
     <li><button data-opt="c">An AWS CLI plugin that saves a long-lived access key to your disk</button></li>
   </ul>
-  <p class="why" data-for="a">Nothing in the sandbox app imports it — <code>idsec</code> is something you run, not something your code calls. Try again.</p>
-  <p class="why" data-for="b">✅ Correct. One file, no installer, no admin rights. You ran <code>idsec configure</code> once in the prework; today you just run <code>idsec login</code>, and from Lesson 08 onwards it is how you ask Idira for cloud access that expires.</p>
-  <p class="why" data-for="c">The opposite, and this is the bit worth remembering: <code>idsec</code> is not an AWS tool, and the whole point is that no long-lived key ever lands on your laptop. Try again.</p>
+  <p class="why" data-for="a">Nothing in the sandbox app imports it. <code>idsec</code> is something you run, not something your code calls. Try again.</p>
+  <p class="why" data-for="b">✅ Correct. One file, no installer, no admin rights. You ran <code>idsec configure</code> once in the prework. Today you just run <code>idsec login</code>. From Lesson 09 onwards it is how you ask Idira for cloud access that expires.</p>
+  <p class="why" data-for="c">The opposite, and this is the bit worth remembering. <code>idsec</code> is not an AWS tool. The whole point is that no long-lived key ever lands on your laptop. Try again.</p>
 </div>
 
 <div class="check" data-answer="c">
-  <p class="check-q">🔐 Which Claude account does Claude Code sign in to today?</p>
+  <p class="check-q">Which Claude account does Claude Code sign in to today?</p>
   <ul class="opts">
-    <li><button data-opt="a">Your personal Claude account — you will be prompted on first run</button></li>
-    <li><button data-opt="b">A shared workshop account from your numbered card</button></li>
-    <li><button data-opt="c">None — it reaches the model through Amazon Bedrock in your company's AWS account</button></li>
+    <li><button data-opt="a">Your personal Claude account, and you will be prompted on first run</button></li>
+    <li><button data-opt="b">A shared workshop account, set up for you in advance</button></li>
+    <li><button data-opt="c">None, because it reaches the model through Amazon Bedrock in your company's AWS account</button></li>
   </ul>
   <p class="why" data-for="a">No sign-in, and nothing to sign up for. Try again.</p>
-  <p class="why" data-for="b">Your card gets you into the Idira portal and AWS, not into Claude. Try again.</p>
-  <p class="why" data-for="c">✅ Exactly, and this is the version of the answer a customer will ask you for: the model runs as an AWS service inside their own account, so prompts and code do not leave their AWS environment. Lesson 06 proves it from your terminal.</p>
+  <p class="why" data-for="b">There is no shared account. Your own CYBRWorld login gets you AWS access, not Claude. Try again.</p>
+  <p class="why" data-for="c">✅ Exactly, and this is the answer a customer wants. The model runs as an AWS service inside their own account. Prompts and code do not leave their AWS environment. Lesson 07 proves it from your terminal.</p>
 </div>
+
+<h2>Where Idira fits</h2>
+
+<p class="section-intro">Every lesson ends by naming the risk it just demonstrated and the Palo Alto
+Networks product that answers it.</p>
+
+<p>Part 1 threads through Secure Cloud Access, Secrets Manager SaaS, Secrets Hub, Prism AIRS, Secure
+Workload Access, Securing AI Agents and the Identity Security Platform. Each one is introduced where
+the risk appears, rather than as a slide at the end. One platform secures every identity: human,
+machine and agentic AI. The deck that covers it is on
+the <a href="reference/securing-agentic-ai.html">Post-Workshop Resources</a> page.</p>
 
 <div id="page-pager"></div>
 

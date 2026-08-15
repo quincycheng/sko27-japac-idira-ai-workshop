@@ -70,6 +70,29 @@ function Have-Command ($Name) {
     return [bool](Get-Command $Name -ErrorAction SilentlyContinue)
 }
 
+# Get-Command only proves a file is on PATH. On a managed laptop the file can be
+# there and still refuse to start, because application control decides which
+# programs may run. So every tool below is checked by actually running it.
+function Test-Runs ($Exe, [string[]]$Arguments) {
+    try {
+        & $Exe @Arguments *> $null
+        return ($LASTEXITCODE -eq 0)
+    } catch {
+        return $false
+    }
+}
+
+# Printed when a program is on PATH but will not execute. Deliberately does not
+# suggest a workaround: routing around application control is the opposite of
+# what this workshop teaches.
+function Write-Blocked ($Name) {
+    Write-Bad "'$Name' is on your PATH but will not run"
+    Write-Info 'That is endpoint application control, not a PATH problem. It decides'
+    Write-Info 'which programs may run on a managed laptop. Please do not work around it.'
+    Write-Info "Offered a 'Request for authorization' button? Use it. Otherwise ask in the"
+    Write-Info 'workshop Slack channel or 📧 reply to the workshop email TODAY.'
+}
+
 Write-Host ''
 Write-Host '🚀 SKO27 TechSummit - AI Workshop for Idira DC' -ForegroundColor White
 Write-Host '   Prework checker · Windows · nothing here needs admin rights' -ForegroundColor DarkGray
@@ -199,7 +222,7 @@ if (-not (Test-Path $VPy)) {
                 Add-Fixed 'Libraries' 'installed'
             } else {
                 Write-Bad 'the install did not finish cleanly'
-                Add-Fail 'Libraries' 'install failed' 'Re-run: .venv\Scripts\python.exe -m pip install -r sandbox-app\requirements.txt'
+                Add-Fail 'Libraries' 'install failed' 'Re-run: .venv\Scripts\python.exe -m pip install -r ai-harness-app\requirements.txt -r sandbox-app\requirements.txt'
             }
         } else {
             Add-Fail 'Libraries' 'not installed' "Run: .venv\Scripts\python.exe -m pip install -r $($need[0])"
@@ -211,10 +234,14 @@ if (-not (Test-Path $VPy)) {
 
 Write-Step '5️⃣ ' 'Claude Code 🤖'
 
-if (Have-Command 'claude') {
+if ((Have-Command 'claude') -and (Test-Runs 'claude' @('--version'))) {
     $cv = (& claude --version 2>$null | Select-Object -First 1)
     Write-Good "claude $cv"
-    Add-Pass 'Claude Code' 'installed'
+    Add-Pass 'Claude Code' 'runs'
+} elseif (Have-Command 'claude') {
+    Write-Blocked 'claude'
+    Add-Fail 'Claude Code' 'found but will not run' `
+             'Get Claude Code allowed by your endpoint policy — reply to the workshop email'
 } else {
     Write-Bad "the 'claude' command was not found"
     Write-Dim 'It installs into your home folder. No admin rights, no Node.js.'
@@ -233,9 +260,9 @@ if (Have-Command 'claude') {
     }
 }
 
-# --------------------------------------------------------------- 6 · idsec
+# ---------------------------------------------------------- 6 · idsec and jq
 
-Write-Step '6️⃣ ' 'The idsec CLI ⌨️'
+Write-Step '6️⃣ ' 'The idsec CLI and jq ⌨️'
 
 function Get-IdsecUrl {
     # Newest release, the asset for 64-bit Windows.
@@ -262,10 +289,14 @@ function Add-UserPath ($Dir) {
 
 $idsecExe = Join-Path $BinDir 'idsec.exe'
 
-if (Have-Command 'idsec') {
+if ((Have-Command 'idsec') -and (Test-Runs 'idsec' @('version'))) {
     $iv = (& idsec version 2>$null | Select-Object -First 1)
     Write-Good "idsec $iv"
-    Add-Pass 'idsec CLI' 'installed'
+    Add-Pass 'idsec CLI' 'runs'
+} elseif (Have-Command 'idsec') {
+    Write-Blocked 'idsec'
+    Add-Fail 'idsec CLI' 'found but will not run' `
+             'Get idsec allowed by your endpoint policy — reply to the workshop email'
 } elseif (Test-Path $idsecExe) {
     Write-Warn "idsec is at $idsecExe but not on your PATH in this window"
     if (Confirm-Action "Add $BinDir to your user PATH?") {
@@ -331,55 +362,409 @@ if (Have-Command 'idsec') {
     }
 }
 
-# ------------------------------------------------------- 7 · idsec profile
+# jq comes next, in the same step, because the two are used together: idsec
+# returns the AWS credentials as JSON and jq is what lifts them out of it. Also a
+# single .exe, published as a plain binary rather than an archive, so there is
+# nothing to unpack.
 
-Write-Step '7️⃣ ' 'An idsec profile you can log in with 🔐'
+$jqExe = Join-Path $BinDir 'jq.exe'
+$jqUrl = 'https://github.com/jqlang/jq/releases/latest/download/jq-windows-amd64.exe'
 
-$profilePath = @('.idsec', '.idsec_profiles', '.ark_profiles', '.cyberark') |
-    ForEach-Object { Join-Path $HOME $_ } |
-    Where-Object { Test-Path $_ } |
-    Select-Object -First 1
-
-if ($profilePath) {
-    Write-Good "found idsec settings at $profilePath"
-    Write-Dim 'Confirm it works before the day by running: idsec login'
-    Add-Pass 'idsec profile' 'configured'
-} elseif (-not (Have-Command 'idsec') -and -not (Test-Path $idsecExe)) {
-    Write-Bad 'skipped — idsec is not installed yet'
-    Add-Fail 'idsec profile' 'blocked by idsec' 'Install idsec, then run: idsec configure'
+if ((Have-Command 'jq') -and (Test-Runs 'jq' @('--version'))) {
+    $jv = (& jq --version 2>$null | Select-Object -First 1)
+    Write-Good "jq $jv"
+    Add-Pass 'jq' 'runs'
+} elseif (Have-Command 'jq') {
+    Write-Blocked 'jq'
+    Add-Fail 'jq' 'found but will not run' `
+             'Get jq allowed by your endpoint policy — reply to the workshop email'
+} elseif (Test-Path $jqExe) {
+    Write-Warn "jq is at $jqExe but not on your PATH in this window"
+    if (Confirm-Action "Add $BinDir to your user PATH?") {
+        Add-UserPath $BinDir | Out-Null
+        Write-Good 'added — open a new PowerShell window, then run: jq --version'
+        Add-Fixed 'jq' 'PATH fixed (new window needed)'
+    } else {
+        Add-Fail 'jq' 'not on PATH' "Add $BinDir to your user PATH"
+    }
 } else {
-    Write-Bad 'no idsec settings found'
-    Write-Info "'idsec configure' asks a few questions. Answer them with the tenant"
-    Write-Info 'subdomain and username from your workshop email. 📧'
-    if (Confirm-Action "Run 'idsec configure' now? (it will ask you questions)") {
-        $exe = if (Have-Command 'idsec') { 'idsec' } else { $idsecExe }
-        & $exe configure
-        if ($LASTEXITCODE -eq 0) {
-            Write-Good 'configured — now prove it works with: idsec login'
-            Add-Fixed 'idsec profile' 'configured (run idsec login next)'
-        } else {
-            Write-Bad 'configure did not complete'
-            Add-Fail 'idsec profile' 'not configured' 'Run: idsec configure'
+    Write-Bad "the 'jq' command was not found"
+    Write-Dim "Also a single file. It reads your AWS credentials out of Idira's answer."
+    if (Confirm-Action "Download jq into $BinDir and set it up?") {
+        New-Item -ItemType Directory -Force -Path $BinDir | Out-Null
+        Write-Cmd "download $jqUrl"
+        try {
+            Invoke-WebRequest -Uri $jqUrl -OutFile $jqExe -UseBasicParsing
+            Unblock-File $jqExe -ErrorAction SilentlyContinue
+            Write-Good "installed to $jqExe"
+            if (Confirm-Action "Add $BinDir to your user PATH?") {
+                Add-UserPath $BinDir | Out-Null
+                Write-Good 'added — open a new PowerShell window afterwards'
+            }
+            Add-Fixed 'jq' 'installed (new window needed)'
+        } catch {
+            Remove-Item $jqExe -Force -ErrorAction SilentlyContinue
+            Write-Bad "the download failed: $($_.Exception.Message)"
+            Add-Fail 'jq' 'download failed' 'Install jq by hand — see prework step 5 in the lab guide'
         }
     } else {
-        Add-Fail 'idsec profile' 'not configured' 'Run: idsec configure (once — a second run overwrites it)'
+        Add-Fail 'jq' 'not installed' 'Install jq — see prework step 5 in the lab guide'
+    }
+}
+
+# ------------------------------------------------------- 7 · idsec profile
+
+Write-Step '7️⃣ ' 'An idsec profile, and a login that works 🔐'
+
+$Idsec = $null
+if ((Have-Command 'idsec') -and (Test-Runs 'idsec' @('version'))) {
+    $Idsec = 'idsec'
+} elseif ((Test-Path $idsecExe) -and (Test-Runs $idsecExe @('version'))) {
+    $Idsec = $idsecExe
+}
+
+function Show-CybrWorldValues {
+    Write-Info "'idsec configure' asks a few questions. Three answers matter:"
+    Write-Info '  Identity Tenant Subdomain  demo'
+    Write-Info '  Identity URL               https://aam4614.my.idaptive.app/'
+    Write-Info '  Username                   your own, ending in @cyberarklab.com'
+    Write-Dim 'That is your own CYBRWorld account. Nobody issues you a workshop login.'
+}
+
+# Ask the CLI what profiles it has. If this build has no 'profiles' command, fall
+# back to looking for the settings files. A bare ~\.idsec directory is not enough
+# on its own: it also holds the logs, so it exists after any command has run.
+function Test-IdsecProfile {
+    if (-not $Idsec) { return $false }
+    $out = & $Idsec profiles list 2>$null
+    if ($LASTEXITCODE -eq 0 -and ($out -join '').Trim()) { return $true }
+    $found = @(
+        (Join-Path $HOME '.idsec\profile*'),
+        (Join-Path $HOME '.idsec\*.json'),
+        (Join-Path $HOME '.idsec_profiles*'),
+        (Join-Path $HOME '.ark_profiles*')
+    ) | Where-Object { Test-Path $_ }
+    return ($found.Count -gt 0)
+}
+
+# Runs a real login, because a profile with one wrong answer in it looks perfect
+# until the day.
+function Invoke-IdsecLogin {
+    Write-Cmd "$Idsec login"
+    & $Idsec login
+    if ($LASTEXITCODE -eq 0) {
+        Write-Good 'logged in to CYBRWorld'
+        return $true
+    }
+    Write-Bad 'the login did not succeed'
+    Write-Info 'Check the three values, then fix whichever one is wrong:'
+    Write-Cmd "$Idsec profiles show"
+    Write-Cmd "$Idsec configure"
+    Show-CybrWorldValues
+    Write-Info 'Still failing? Ask in the workshop Slack channel, or 📧 reply to the'
+    Write-Info 'workshop email. Do it this week, not on the day.'
+    return $false
+}
+
+if (-not $Idsec) {
+    Write-Bad 'skipped — idsec does not run in this window yet'
+    Add-Fail 'idsec login' 'blocked by idsec' 'Finish step 6, open a new PowerShell window, then re-run this script'
+} elseif (Test-IdsecProfile) {
+    Write-Good 'an idsec profile exists'
+    if (Confirm-Action 'Log in now, to prove the profile actually works?') {
+        if (Invoke-IdsecLogin) {
+            Add-Pass 'idsec login' 'signed in to CYBRWorld'
+        } else {
+            Add-Fail 'idsec login' 'login failed' 'Fix your idsec profile: idsec configure — then: idsec login'
+        }
+    } else {
+        Add-Manual 'idsec login' 'run it by hand: idsec login'
+    }
+} else {
+    Write-Bad 'no idsec profile found'
+    Show-CybrWorldValues
+    Write-Dim 'Already using idsec against a different tenant? Do not overwrite it. Make a'
+    Write-Dim 'second profile instead: idsec configure --profile-name cybrworld'
+    if (Confirm-Action "Run 'idsec configure' now? (it will ask you questions)") {
+        & $Idsec configure
+        if ($LASTEXITCODE -eq 0) {
+            Write-Good 'configured'
+            if (Invoke-IdsecLogin) {
+                Add-Fixed 'idsec login' 'configured and signed in'
+            } else {
+                Add-Fail 'idsec login' 'configured, login failed' 'Fix the values: idsec configure — then: idsec login'
+            }
+        } else {
+            Write-Bad 'configure did not complete'
+            Add-Fail 'idsec login' 'not configured' 'Run: idsec configure'
+        }
+    } else {
+        Add-Fail 'idsec login' 'not configured' 'Run: idsec configure (once — a second run overwrites it)'
     }
 }
 
 # ------------------------------------------------------------ 8 · AWS access
 
-Write-Step '8️⃣ ' 'AWS access through the portal ☁️'
+Write-Step '8️⃣ ' 'Short-lived AWS credentials from idsec ☁️'
 
-Write-Warn 'no script can check this one for you — please click through it 🙏'
-Write-Info '1. Open https://ngid.cyberark.cloud/ and sign in'
-Write-Info '2. Open CYBR User Portal, then click the AWS tile'
-Write-Info '3. You should land on a page ending in awsapps.com/start/#'
-Write-Info "4. Next to your account, click 'Access keys' (or 'Get credentials')"
-Write-Info "5. Confirm you see 'Option 1: Set AWS environment variables'"
-Write-Dim 'Nothing to copy yet. You just need to know the link is there.'
-Write-Dim 'No AWS tile, no accounts, or no Access keys link? 📧 Reply to the workshop'
-Write-Dim 'email TODAY — it is an entitlement, and it cannot be fixed from your seat.'
-Add-Manual 'AWS portal access' 'check it by hand — step 8 above'
+$AwsWorkspace = '409556437035'
+$AwsRole      = 'arn:aws:iam::409556437035:role/CW-SCA-AdminAccess'
+
+$Jq = $null
+if ((Have-Command 'jq') -and (Test-Runs 'jq' @('--version'))) {
+    $Jq = 'jq'
+} elseif ((Test-Path $jqExe) -and (Test-Runs $jqExe @('--version'))) {
+    $Jq = $jqExe
+}
+
+# An elevate call can sit waiting on an approval, so it gets a time limit. Output
+# is read in memory rather than redirected to a file, because on this step that
+# output holds credentials. Returns $null if the time ran out.
+function Invoke-WithTimeout ($Exe, [string[]]$Arguments, [int]$Seconds) {
+    $psi = New-Object System.Diagnostics.ProcessStartInfo
+    $psi.FileName               = $Exe
+    $psi.Arguments              = ($Arguments -join ' ')
+    $psi.RedirectStandardOutput = $true
+    $psi.RedirectStandardError  = $true
+    $psi.UseShellExecute        = $false
+    $proc   = [System.Diagnostics.Process]::Start($psi)
+    $stdout = $proc.StandardOutput.ReadToEndAsync()
+    if (-not $proc.WaitForExit($Seconds * 1000)) {
+        try { $proc.Kill() } catch { }
+        return $null
+    }
+    return $stdout.Result
+}
+
+# The whole path, run for real: ask Idira to elevate, then ask AWS who you are.
+# The credentials live in this window's environment for a few seconds. Nothing is
+# printed and nothing is written to a file, and they are cleared at the end.
+function Invoke-AwsRehearsal {
+    Write-Info 'asking Idira for credentials — this can take a moment'
+    $raw = Invoke-WithTimeout $Idsec @(
+        'exec', 'sca', 'cloud-access', 'elevate', '--csp', 'aws',
+        '--workspace-id', $AwsWorkspace, '--roleIds', $AwsRole, '--raw'
+    ) 120
+    if ($null -eq $raw) {
+        Write-Bad 'the elevate call did not finish in two minutes'
+        Write-Info 'It may be waiting on an approval. Run it by hand — prework step 7.'
+        Add-Manual 'AWS credentials' 'elevate timed out — run it by hand, prework step 7'
+        return
+    }
+    $filter = '.response.results[0].accessCredentials | fromjson | "$env:AWS_ACCESS_KEY_ID=\"\(.aws_access_key)\"\n$env:AWS_SECRET_ACCESS_KEY=\"\(.aws_secret_access_key)\"\n$env:AWS_SESSION_TOKEN=\"\(.aws_session_token)\""'
+    $creds = ($raw | & $Jq -r $filter 2>$null) -join "`n"
+    $raw = $null
+    if (-not $creds.Trim()) {
+        Write-Bad 'no credentials came back'
+        Write-Info 'The role exists, so this is usually a policy on the role itself.'
+        Write-Info '📧 Reply to the workshop email today and paste in what you ran.'
+        Add-Fail 'AWS credentials' 'elevate returned nothing' '📧 Reply to the workshop email — elevate gave no credentials'
+        return
+    }
+    Write-Good 'credentials received'
+    try {
+        $creds | Invoke-Expression
+        $arn = & $VPy -c 'import boto3
+print(boto3.client("sts").get_caller_identity()["Arn"])' 2>$null
+        if ($arn) {
+            Write-Good "AWS accepted them: $arn"
+            Write-Dim 'They are gone now. This script never saved them anywhere.'
+            Add-Pass 'AWS credentials' 'elevate and AWS both worked'
+        } else {
+            Write-Bad 'the credentials came back, but AWS did not accept them'
+            Write-Info 'Do the two commands by hand — prework step 7 explains every error.'
+            Add-Fail 'AWS credentials' 'AWS rejected them' 'Run prework step 7 by hand, then 📧 reply to the workshop email'
+        }
+    } finally {
+        Remove-Item Env:AWS_ACCESS_KEY_ID, Env:AWS_SECRET_ACCESS_KEY, Env:AWS_SESSION_TOKEN -ErrorAction SilentlyContinue
+    }
+}
+
+if (-not $Idsec) {
+    Write-Bad 'skipped — idsec does not run in this window yet'
+    Add-Fail 'AWS credentials' 'idsec unavailable' 'Finish step 6, open a new PowerShell window, then re-run this script'
+} else {
+    Write-Cmd "$Idsec exec sca cloud-access list-targets --csp aws"
+    $targets = (& $Idsec exec sca cloud-access list-targets --csp aws 2>&1 | Out-String)
+    # Every AWS role comes back as an ARN, whether this build prints JSON or a
+    # table, so counting ARNs works either way.
+    $targetCount = ([regex]::Matches($targets, 'arn:aws:iam::')).Count
+    if ($targetCount -lt 1) {
+        Write-Bad 'no AWS role came back'
+        Write-Dim 'This is an access entitlement. It cannot be fixed from your seat, and'
+        Write-Dim 'it takes days. 📧 Reply to the workshop email TODAY.'
+        Add-Fail 'AWS credentials' 'no entitlement' '📧 Reply to the workshop email today — you have no AWS role yet'
+    } else {
+        Write-Good "$targetCount AWS role(s) available to you"
+        if (-not $Jq) {
+            Write-Warn 'jq does not run in this window, so the rest of this step is skipped'
+            Add-Manual 'AWS credentials' 'finish step 6, then re-run this script'
+        } elseif (-not (Test-Path $VPy)) {
+            Write-Warn 'no virtual environment yet, so the rest of this step is skipped'
+            Add-Manual 'AWS credentials' 'finish step 3, then re-run this script'
+        } elseif (Confirm-Action 'Run the full rehearsal now? It gets real credentials and throws them away.') {
+            Invoke-AwsRehearsal
+        } else {
+            Add-Manual 'AWS credentials' 'run the elevate one-liner by hand — prework step 7'
+        }
+    }
+}
+
+# ------------------------------------------------------- 9 · TLS to Bedrock
+
+# Every model call in this workshop is HTTPS to Bedrock, from Python in Part 1 and
+# from Claude Code in Part 2. A network that re-signs certificates breaks both, in
+# the same way, with an error that reads like a credential problem. It is worth two
+# seconds here because it is the one failure a helper cannot fix at the desk.
+
+# INFORMATION ONLY, and deliberately so. Part 1's Python does not verify
+# certificates at all (see the TLS note at the top of ai-harness-app/config.py), so
+# an inspecting proxy can no longer end somebody's session -- which means nothing
+# this step finds is a reason to escalate, and it never calls Add-Fail.
+#
+# It stays in the script because the ANSWER is still worth having: knowing that the
+# venue network re-signs certificates tells the workshop owner what to expect from
+# Claude Code in Part 2, which does verify. Kept as a warning, not a gate.
+Write-Step '9️⃣ ' 'How this network treats HTTPS 🔐 (information only)'
+
+$TlsPy = if (Test-Path $VPy) { $VPy } elseif (Have-Command 'python') { 'python' } elseif (Have-Command 'py') { 'py' } else { $null }
+
+# A CA bundle variable left pointing at a file that no longer exists used to break
+# every Python call in the workshop. It no longer does, because nothing here reads
+# a bundle any more. Still worth naming: it will bite something else on this laptop.
+$staleBundle = $null
+foreach ($name in 'AWS_CA_BUNDLE', 'REQUESTS_CA_BUNDLE', 'CURL_CA_BUNDLE', 'SSL_CERT_FILE') {
+    $value = [Environment]::GetEnvironmentVariable($name)
+    if ($value -and -not (Test-Path -LiteralPath $value -PathType Leaf)) { $staleBundle = $name }
+}
+
+if ($staleBundle) {
+    Write-Warn "$staleBundle points at a file that does not exist"
+    Write-Dim  'Nothing in this workshop reads it, so the lessons will run regardless.'
+    Write-Dim  'It will break other tools on this laptop, though, so worth tidying:'
+    Write-Cmd  'Remove-Item Env:AWS_CA_BUNDLE, Env:REQUESTS_CA_BUNDLE, Env:CURL_CA_BUNDLE, Env:SSL_CERT_FILE -ErrorAction SilentlyContinue'
+    Add-Manual 'HTTPS to Bedrock' "$staleBundle is stale — harmless here, worth tidying"
+} elseif (-not $TlsPy) {
+    Write-Dim 'skipped — no Python to test with yet, and nothing depends on the answer'
+    Add-Manual 'HTTPS to Bedrock' 'not checked — needs Python, but the lessons do not need this'
+} else {
+    # Written to a temp file rather than passed with -c: the script contains quotes
+    # and newlines, and PowerShell's argument quoting mangles both.
+    $probe = Join-Path ([IO.Path]::GetTempPath()) 'idira-tls-probe.py'
+    @'
+import os, socket, ssl
+
+HOST = "bedrock-runtime.us-east-1.amazonaws.com"
+
+
+def handshake(context):
+    """Return the peer certificate, or raise. No I/O beyond one TLS handshake."""
+    with socket.create_connection((HOST, 443), timeout=10) as raw:
+        with context.wrap_socket(raw, server_hostname=HOST) as tls:
+            return tls.getpeercert()
+
+
+def issuer_of(cert):
+    parts = dict(part[0] for part in cert.get("issuer", ()))
+    return parts.get("organizationName", "unknown")
+
+
+def certifi_context():
+    import certifi
+    return ssl.create_default_context(cafile=certifi.where())
+
+
+# Test the trust store botocore will ACTUALLY use, in the order botocore uses: an
+# explicit bundle variable wins, then certifi, then the platform store. Checking a
+# different store from the one the lesson uses would make this check worse than
+# not running it at all.
+bundle_var = next(
+    (name for name in ("AWS_CA_BUNDLE", "REQUESTS_CA_BUNDLE")
+     if os.environ.get(name) and os.path.isfile(os.environ[name])),
+    None,
+)
+
+try:
+    ctx = ssl.create_default_context(cafile=os.environ[bundle_var]) if bundle_var else certifi_context()
+except Exception:
+    bundle_var = None
+    ctx = ssl.create_default_context()
+
+try:
+    print("OK|" + issuer_of(handshake(ctx)))
+except ssl.SSLCertVerificationError as error:
+    # A bundle variable is set and did not work. Retry with certifi to tell the two
+    # cases apart: a bundle that does not cover AWS is one unset away from working,
+    # and telling someone their network is hostile when it is not wastes a reply.
+    if bundle_var:
+        try:
+            handshake(certifi_context())
+            print("BUNDLE|%s" % bundle_var)
+        except Exception:
+            print("INTERCEPT|%s" % error)
+    else:
+        print("INTERCEPT|%s" % error)
+except Exception as error:
+    print("NET|%s: %s" % (type(error).__name__, error))
+'@ | Set-Content -LiteralPath $probe -Encoding utf8
+
+    $result = (& $TlsPy $probe 2>$null | Select-Object -Last 1)
+    Remove-Item -LiteralPath $probe -ErrorAction SilentlyContinue
+
+    $kind, $detail = if ($result -match '^(\w+)\|(.*)$') { $Matches[1], $Matches[2] } else { 'UNKNOWN', '' }
+
+    switch ($kind) {
+        'OK' {
+            if ($detail -eq 'Amazon') {
+                Write-Good 'reached AWS, certificate issued by Amazon — a clean path'
+                Add-Pass 'HTTPS to Bedrock' 'clean path (Amazon)'
+            } else {
+                Write-Good "reached AWS — but the certificate was issued by: $detail"
+                Write-Dim  'Not Amazon, so something on this network is inspecting HTTPS. Part 1'
+                Write-Dim  'does not care: it does not verify certificates. Claude Code in Part 2'
+                Write-Dim  'does, so mention this in a reply — it is useful for us to know. 📧'
+                Add-Manual 'HTTPS to Bedrock' "inspected by $detail — fine for Part 1"
+            }
+        }
+        { $_ -in 'BUNDLE', 'INTERCEPT' } {
+            Write-Good 'reached AWS — the certificate did not verify on this machine'
+            Write-Dim $detail
+            Write-Dim 'Either a proxy is re-signing certificates, or a CA bundle variable here'
+            Write-Dim 'does not cover AWS. Part 1 runs anyway — it does not verify at all, on'
+            Write-Dim 'purpose (ai-harness-app/config.py explains why, and why you should not'
+            Write-Dim 'copy that choice). Claude Code in Part 2 DOES verify, so a reply telling'
+            Write-Dim 'us this is genuinely useful, and a corporate root CA path even more so:'
+            Write-Cmd  '$env:NODE_EXTRA_CA_CERTS="C:\path\to\corp-root.pem"'
+            Add-Manual 'HTTPS to Bedrock' 'inspected — fine for Part 1, may affect Part 2'
+        }
+        'NET' {
+            Write-Warn 'could not reach Bedrock at all'
+            Write-Dim $detail
+            Write-Dim 'Offline, a VPN, or egress filtering. This one WOULD stop the workshop, so'
+            Write-Dim 're-run it on the network you will actually use on the day.'
+            Add-Manual 'HTTPS to Bedrock' "no route from here — re-test on the day's network"
+        }
+        default {
+            Write-Dim 'the check did not produce a usable answer, and nothing depends on it'
+            Add-Manual 'HTTPS to Bedrock' 'inconclusive — mention it if the day goes wrong'
+        }
+    }
+}
+
+# ------------------------------------------------- 10 · apj-secrets sign-in
+
+# Lesson 10 reads the audit trail in a second tenant, apj-secrets, in a browser.
+# There is no idsec profile for it and nothing to install, so this script cannot
+# test it: it needs a real sign-in with a real MFA prompt. It is printed as a
+# reminder and never as a gate, the same treatment as the HTTPS step above.
+Write-Step '🔟 ' 'A sign-in for the apj-secrets tenant 🪪 (information only)'
+
+Write-Info 'Lesson 10 opens https://apj-secrets.cyberark.cloud/ in a browser. That is a'
+Write-Info 'different tenant from the one idsec uses, and this script cannot test it.'
+Write-Info 'Open it now and sign in with your own account. If the console loads, you are'
+Write-Info 'done. No account there? Ask your manager or a colleague: everybody on the'
+Write-Info 'team has administrator rights on that tenant and can create one for you.'
+Add-Manual 'apj-secrets sign-in' 'check it in a browser — prework step 9'
 
 # --------------------------------------------------------------- summary
 
@@ -391,35 +776,23 @@ foreach ($row in $Summary) {
     Write-Host $row.Detail -ForegroundColor DarkGray
 }
 
-# Two things no script can settle, and both need a reply days ahead rather than a
-# raised hand on the day: an entitlement nobody in the room can grant, and an
-# endpoint policy nobody in the room can change. Printed in both the pass and the
-# fail path, because the pass path is the one people actually read.
+# This script checks everything it can, including the AWS entitlement and whether
+# each program really starts. One thing is left, and it is the one with a lead
+# time: an endpoint policy nobody in the room can change. Printed in both the pass
+# and the fail path, because the pass path is the one people actually read.
 function Show-OnlyYou {
     Write-Host ''
-    Write-Host '  ──────────  Two things only you can confirm  ──────────' -ForegroundColor Yellow
+    Write-Host '  ──────────  One thing that needs days, not minutes  ──────────' -ForegroundColor Yellow
     Write-Host ''
-    Write-Host '  1. The AWS portal (8️⃣  above).' -NoNewline -ForegroundColor White
-    Write-Host ' Click through it now if you have not.'
-    Write-Host "     No AWS tile, no accounts, or no 'Access keys' link means you are missing an"
-    Write-Host '     entitlement. Nobody can grant it from a seat on the day.'
+    Write-Host '  Did this script say a program is blocked rather than missing?' -ForegroundColor White
+    Write-Host '  A message about a policy, an administrator, ''this application is blocked'','
+    Write-Host '  or Idira EPM is endpoint application control. It is not a setup problem.'
+    Write-Host '  This script cannot fix it and neither can a helper on the day: it needs an'
+    Write-Host '  endpoint policy change, and that takes days.'
     Write-Host ''
-    Write-Host '  2. Does this laptop actually let these programs run?' -ForegroundColor White
-    Write-Host '     Try both, in a new PowerShell window:'
-    Write-Host ''
-    Write-Host '         idsec version' -ForegroundColor Cyan
-    Write-Host '         claude --version' -ForegroundColor Cyan
-    Write-Host ''
-    Write-Host '     A version number from each means you are fine. But if either one is found'
-    Write-Host '     and still refuses to start — a message about a policy, an administrator,'
-    Write-Host "     'this application is blocked', or Idira EPM — that is endpoint application"
-    Write-Host '     control, not a setup problem. This script cannot fix it and neither can a'
-    Write-Host '     helper: it needs an endpoint policy change with a lead time of days. If a'
-    Write-Host '     Request for authorization prompt appears, use it.'
-    Write-Host ''
-    Write-Host '  Either of those looking wrong? 📧 Reply to the workshop email TODAY.' -ForegroundColor White
-    Write-Host '  Not tomorrow, and definitely not on the morning of the workshop. Both take'
-    Write-Host '  days to sort out, and both stop you doing the hands-on work entirely.'
+    Write-Host '  📧 Reply to the workshop email TODAY.' -NoNewline -ForegroundColor White
+    Write-Host ' If a Request for authorization prompt'
+    Write-Host '  appears, use it too. For anything smaller, ask in the workshop Slack channel.'
 }
 
 if ($Todo.Count -eq 0) {
