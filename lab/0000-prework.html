@@ -47,25 +47,41 @@ asks before it fixes anything. Most people are done in a couple of minutes.</p>
 
 <p>The ninth item is a browser sign-in. The script reminds you about it and cannot do it for you.</p>
 
-<p>Open a terminal, go to the workshop folder, and run it:</p>
+<p>Three steps:</p>
 
-<div class="os os-mac">
-  <div class="code"><pre><code>cd ~/Downloads/sko27-japac-idira-ai-workshop
+<ol>
+  <li><strong>Download the workshop package.</strong> Go to the
+    <a href="https://github.com/quincycheng/sko27-japac-idira-ai-workshop/releases">releases page</a>
+    and take the newest <code>sko27-japac-idira-ai-workshop.zip</code>. That is the file you want,
+    <em>not</em> “Source code (zip)”.</li>
+  <li><strong>Extract it into your <code>Downloads</code> folder.</strong> Double-click it on macOS;
+    right-click and choose <strong>Extract All</strong> on Windows. You should end up with
+    <code>Downloads/sko27-japac-idira-ai-workshop</code>.</li>
+  <li><strong>Open a terminal, go to that folder, and run the script.</strong>
+    <div class="os os-mac">
+      <p>Press <code>⌘ Space</code>, type <strong>Terminal</strong>, press <code>Return</code>. Then:</p>
+      <div class="code"><pre><code>cd ~/Downloads/sko27-japac-idira-ai-workshop
 bash check-prereqs.sh</code></pre></div>
-</div>
-<div class="os os-win">
-  <div class="code"><pre><code>cd $HOME\Downloads\sko27-japac-idira-ai-workshop
+    </div>
+    <div class="os os-win">
+      <p>Press the <strong>Windows key</strong>, type <strong>PowerShell</strong>, press
+      <code>Enter</code>, <em>not</em> Command Prompt. Then:</p>
+      <div class="code"><pre><code>cd $HOME\Downloads\sko27-japac-idira-ai-workshop
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\check-prereqs.ps1</code></pre></div>
-  <div class="note">
-    <p><span class="callout-label">🛑 About that middle line.</span> Managed Windows laptops block
-    scripts by default. That command allows them <strong>in this window only</strong> and needs no
-    admin rights. Close the window and the setting is gone.</p>
-  </div>
-</div>
+      <div class="note">
+        <p><span class="callout-label">🛑 About that middle line.</span> Managed Windows laptops block
+        scripts by default. That command allows them <strong>in this window only</strong> and needs no
+        admin rights. Close the window and the setting is gone.</p>
+      </div>
+    </div>
+  </li>
+</ol>
 
 <p>It prints a tick, a spanner or a cross for each item, then a summary and a numbered “still to do”
 list. Every offer is a <code>[y/N]</code> question. Answer <code>n</code> and it changes nothing.</p>
+
+<p>Two extra options, if you want them:</p>
 
 <ul>
   <li>Just look, change nothing:
@@ -76,11 +92,18 @@ list. Every offer is a <code>[y/N]</code> question. Answer <code>n</code> and it
     <span class="os os-inline os-win"><code>.\check-prereqs.ps1 -Yes</code></span></li>
 </ul>
 
+<h3>What it looks like</h3>
+
+<script src="https://asciinema.org/a/4398Ci3PFvKN1sAX.js" id="asciicast-4398Ci3PFvKN1sAX" async data-rows="24"></script>
+
+<p><em>Nothing above this line? You are reading this page offline. The recording is the one thing here
+that needs a connection: watch it at
+<a href="https://asciinema.org/a/4398Ci3PFvKN1sAX">asciinema.org/a/4398Ci3PFvKN1sAX</a>.</em></p>
+
 <div class="note">
-  <p><span class="callout-label">🧾 Two promises the script keeps.</span> Nothing is installed outside
-  your home folder and this project folder, and nothing is changed without asking you first. It will
-  also <em>refuse</em> to install Python. On a managed laptop that is the one step that needs admin
-  rights, so it tells you to email us instead.</p>
+  <p><span class="callout-label">📧 One thing it will not do.</span> It <em>refuses</em> to install
+  Python. On a managed laptop that is the one step that needs admin rights, so it tells you to email
+  us instead.</p>
   <p>It runs <code>idsec version</code>, <code>jq --version</code> and <code>claude --version</code> to
   prove each program actually starts. It offers to run <code>idsec configure</code> and
   <code>idsec login</code> with you. It also checks your <strong>AWS access</strong>, and offers to
@@ -128,28 +151,31 @@ go; nobody is checking which route you took.</p>
 <div class="step">
   <div class="step-head"><div class="step-num">1</div><p class="step-title">Get the workshop folder onto your laptop</p></div>
   <div class="step-body">
-    <p>Use the link in your workshop email. It is either a <strong>zip to unzip</strong> or a
-    <strong>repository to clone</strong>. Your email says which. Either way, put it in
-    <strong>Downloads</strong>.</p>
+    <p>Take the newest <code>sko27-japac-idira-ai-workshop.zip</code> from the
+    <a href="https://github.com/quincycheng/sko27-japac-idira-ai-workshop/releases">releases page</a>
+    and extract it into <strong>Downloads</strong>.</p>
     <p>You should end up with a folder called <code>sko27-japac-idira-ai-workshop</code> containing
     <code>lab</code>, <code>sandbox-app</code>, <code>ai-harness-app</code> and <code>skills</code>.</p>
     <div class="note">
-      <p><span class="callout-label">📛 Is the name slightly different?</span> A downloaded zip
-      sometimes unpacks to <code>sko27-japac-idira-ai-workshop-main</code> or similar. <strong>Rename
-      it to <code>sko27-japac-idira-ai-workshop</code></strong> now, before you go any further.
-      Every command on this page and on the cheat sheet uses that exact name. Renaming it once
-      here saves you editing every one of them.</p>
+      <p><span class="callout-label">📛 Is the name slightly different?</span> That means you took
+      GitHub's “Source code (zip)” rather than the workshop package, so it unpacked to
+      <code>sko27-japac-idira-ai-workshop-main</code> or similar. <strong>Rename it to
+      <code>sko27-japac-idira-ai-workshop</code></strong> now, before you go any further. Every
+      command on this page and on the cheat sheet uses that exact name. Renaming it once here saves
+      you editing every one of them.</p>
     </div>
     <div class="note">
       <p><span class="callout-label">📚 Why it is a repository.</span> The folder is tracked by
       <strong>git</strong>, the tool developers use to keep a history of changes. You never have to
       use git today. In Lesson 08 you will run Claude Code's built-in
-      <code>/security-review</code>, and that expects a project with a history. If you unzipped a
-      zip, the history came with it. Nothing for you to do.</p>
+      <code>/security-review</code>, and that expects a project with a history. The workshop package
+      carries that history with it, so there is nothing for you to do. This is the other reason to
+      take that file rather than “Source code (zip)”, which leaves the history behind.</p>
     </div>
     <div class="note">
-      <p>You are reading this page <em>from</em> that folder, so if you can see this, step 1 is
-      already done. There is no web server and no internet involved. These pages are just files.</p>
+      <p>If you are already reading this page <em>from</em> that folder, step 1 is done. These pages
+      are just files: no web server needed, and everything except the recording above works with no
+      internet at all.</p>
     </div>
     <p>Now open a terminal:</p>
     <div class="os os-mac">
