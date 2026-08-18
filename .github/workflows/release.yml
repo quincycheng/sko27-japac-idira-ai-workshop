@@ -1,0 +1,79 @@
+name: Build workshop package
+
+# Attaches sko27-japac-idira-ai-workshop.zip to a release.  The zip differs from
+# GitHub's automatic "Source code (zip)" in two ways that the prework page relies on:
+#   1. it unpacks to a folder called sko27-japac-idira-ai-workshop (no version suffix),
+#      so every "cd ~/Downloads/sko27-japac-idira-ai-workshop" in the lab guide works;
+#   2. it includes .git, so Lesson 07's /security-review has a history to look at.
+
+on:
+  push:
+    tags: ['*']
+  release:
+    # So that publishing a release from the GitHub UI also builds the package,
+    # rather than relying on the tag-push trigger firing for a UI-created tag.
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to build and attach the package to'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Work out which tag we are packaging
+        id: tag
+        # Manual dispatch supplies it; a release event carries it on the payload;
+        # a tag push leaves it in ref_name.
+        run: |
+          echo "name=${{ github.event.inputs.tag || github.event.release.tag_name || github.ref_name }}" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.tag.outputs.name }}
+          fetch-depth: 0          # full history — a shallow clone is not much use to /security-review
+
+      - name: Leave a named branch rather than a detached HEAD
+        # Checking out a tag detaches HEAD, and "HEAD detached at 0.1" reads as
+        # something broken to an audience meeting git for the first time.
+        run: |
+          git checkout -B main
+          git gc --quiet --aggressive --prune=now
+
+      - name: Build the zip
+        run: |
+          mkdir -p ../package/sko27-japac-idira-ai-workshop
+          # -a copies dotfiles, so .git and .gitignore come along.  Nothing is
+          # excluded: deleting a tracked file here would leave the extracted
+          # folder showing uncommitted deletions in `git status`.
+          cp -a . ../package/sko27-japac-idira-ai-workshop/
+          cd ../package
+          zip -qry ../sko27-japac-idira-ai-workshop.zip sko27-japac-idira-ai-workshop
+          cd ..
+          unzip -l sko27-japac-idira-ai-workshop.zip | tail -1
+
+      - name: Fail if the history did not make it in
+        run: |
+          unzip -Z1 ../sko27-japac-idira-ai-workshop.zip \
+            | grep -q '^sko27-japac-idira-ai-workshop/\.git/HEAD$' \
+            || { echo "::error::.git is missing from the package"; exit 1; }
+
+      - name: Attach it to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.name }}
+        run: |
+          # Pushing a tag does not create a release, so upload-only would fail on
+          # a fresh tag.  Create when it is missing, replace the asset when it is not.
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" ../sko27-japac-idira-ai-workshop.zip \
+              --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$TAG" ../sko27-japac-idira-ai-workshop.zip \
+              --repo "$GITHUB_REPOSITORY" --title "$TAG" --generate-notes
+          fi
