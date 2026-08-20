@@ -22,6 +22,18 @@ native English speakers, and their AI knowledge varies from none to expert. Writ
   `The Fast Way (Recommended)` on the setup page.
 - **No durations on attendee pages.** Times describing the trainer's clock, a customer demo, or a
   video length are fine.
+- **A step ends by naming its proof.** One line: the command that shows it worked, or the exact output
+  to expect. "It prints `libraries ready`." Not "you should be all set".
+- **Keep a step body under about 80 words of prose**, not counting code blocks, callouts and lists. If
+  it runs longer, the step is doing two things.
+- **Delete a `section-intro` unless the attendee acts on it.** "You can skip the first 2 steps" stays.
+  "Three rows move at once today" goes. The same test applies to a `standfirst`: two sentences, both
+  load-bearing.
+- Do not bold filenames, paths or variables. `<code>` carries those. Bold is for jargon on first use
+  and for the one word in a step you cannot afford to misread.
+
+These apply to prose an attendee reads between commands. `warn`, `stop` and knowledge-check `why`
+boxes are exempt from the word cap: they are safety and teaching text, and they are already short.
 
 Lesson 01 (`lab/0001-one-call.html`) is the reference for this style. Match it.
 
