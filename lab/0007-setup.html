@@ -111,7 +111,7 @@ from Part 1.</p>
     <p>You should see a version number.</p>
     <div class="warn">
       <p><span class="callout-label">“command not found”? Try this first.</span> Your terminal cannot
-      see the agent, which is a <code>PATH</code> problem rather than a missing install. The prework
+      see the agent, which is a <code>PATH</code> problem rather than a missing install. The setup
       script sorts it out and tells you what it did:</p>
       <div class="os os-mac">
         <div class="code"><pre><code>cd ~/Downloads/sko27-japac-idira-ai-workshop
@@ -130,7 +130,7 @@ bash check-prereqs.sh</code></pre></div>
 <div class="step">
   <div class="step-head"><div class="step-num">2</div><p class="step-title">Get your AWS credentials</p></div>
   <div class="step-body">
-    <p>Ask Idira for AWS credentials. Two commands, the same ones you ran in prework step 7. First
+    <p>Ask Idira for AWS credentials. Two commands, the same ones you ran in setup step 7. First
     log in:</p>
     <div class="code"><pre><code>idsec login</code></pre></div>
     <p>Sign in with your own CYBRWorld account. Then ask for the credentials. Use the
@@ -142,7 +142,7 @@ bash check-prereqs.sh</code></pre></div>
       <div class="code"><pre><code>idsec exec sca cloud-access elevate --csp aws --workspace-id 409556437035 --roleIds arn:aws:iam::409556437035:role/CW-SCA-AdminAccess --raw | jq -r '.response.results[0].accessCredentials | fromjson | "$env:AWS_ACCESS_KEY_ID=\"\(.aws_access_key)\"\n$env:AWS_SECRET_ACCESS_KEY=\"\(.aws_secret_access_key)\"\n$env:AWS_SESSION_TOKEN=\"\(.aws_session_token)\""' | Invoke-Expression</code></pre></div>
     </div>
     <p>Nothing prints. That is success. Three environment variables now hold your credentials. Stuck?
-    <a href="0000-prework.html">Prework step 7</a> covers every error this can give you.</p>
+    <a href="0000-setup.html">Setup step 7</a> covers every error this can give you.</p>
     <div class="note">
       <p><span class="callout-label">💡 Notice what just happened.</span> Nobody gave you a
       permanent AWS key. You asked for access, the platform checked who you are, and handed you
@@ -183,7 +183,7 @@ $env:ANTHROPIC_MODEL="us.anthropic.claude-opus-5"</code></pre></div>
   <div class="step-head"><div class="step-num">4</div><p class="step-title">Go to the folder and switch on your virtual environment</p></div>
   <div class="step-body">
     <p>Move into the workshop folder and <strong>activate</strong> the virtual environment you made
-    in the prework. This is a fresh window, so it is switched off:</p>
+    during setup. This is a fresh window, so it is switched off:</p>
     <div class="os os-mac">
       <div class="code"><pre><code>cd ~/Downloads/sko27-japac-idira-ai-workshop
 source .venv/bin/activate</code></pre></div>
@@ -215,7 +215,7 @@ source .venv/bin/activate</code></pre></div>
     <div class="warn">
       <p><span class="callout-label">Any of this failing? Try this first.</span> Almost always one of
       two things. Either there is no <code>(.venv)</code> in your prompt, in which case activate it
-      and you are done. Or you never made one, in which case the prework script builds it and
+      and you are done. Or you never made one, in which case the setup script builds it and
       installs the libraries for you:</p>
       <div class="os os-mac">
         <div class="code"><pre><code>bash check-prereqs.sh</code></pre></div>
@@ -265,7 +265,7 @@ the left column and do what the right column says.</p>
   <tr>
     <td><code>claude: command not found</code></td>
     <td>Installed, but your terminal cannot see it</td>
-    <td>Run the prework script, then a <strong>new</strong> terminal. Still failing? Raise your card</td>
+    <td>Run the setup script, then a <strong>new</strong> terminal. Still failing? Raise your card</td>
   </tr>
   <tr>
     <td><code>UnrecognizedClientException</code> or <code>ExpiredToken</code></td>

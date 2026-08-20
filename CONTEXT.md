@@ -40,7 +40,7 @@ The person running the session. Performs all tenant-side provisioning before the
 so that attendees never do administrative work. Distinct from an attendee in every task
 list — a task is owned by exactly one of the two.
 
-### Prework
+### Setup
 
 Work an attendee completes *before* the session, on their own machine. Distinct from
 **owner preparation**, which is tenant-side and done by the workshop owner.
@@ -65,7 +65,7 @@ use case, entered through a local `index.html`. It must work offline with no net
 no CDN, and no build step, and must be **responsive** — legible on a phone as well as a laptop.
 
 Every page carries a **page selector**: a Back / dropdown / Next control listing every page in
-the guide, grouped by whether it is prework, mandatory, optional or reference. The lesson
+the guide, grouped by whether it is setup, mandatory, optional or reference. The lesson
 sequence has exactly one definition; the selector and the page-to-page links are both generated
 from it.
 

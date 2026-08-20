@@ -15,7 +15,7 @@ blue-on-black is the least readable combination in a big room.
 """
 
 # Keeps this file importable on Python 3.9, which is what a managed Mac already
-# has and what the prework asks for. Without it, `bool | None` in the signatures
+# has and what the setup page asks for. Without it, `bool | None` in the signatures
 # below is a TypeError the moment the module loads. See tools.py for the longer
 # version of this note.
 from __future__ import annotations

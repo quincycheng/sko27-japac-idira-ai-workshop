@@ -49,7 +49,7 @@ One line for this specific room:
 Five things. Put them all on one slide so you cannot accidentally talk for four minutes.
 
 **Arrange your screen, right now, before anything else.** Lab guide on one half, terminal on the
-other. The prework asked them to do this, so it is a reminder and not an exercise — but say it, and
+other. The setup page asked them to do this, so it is a reminder and not an exercise — but say it, and
 give it ten seconds of silence, because the alternative is sixty people alt-tabbing for three hours:
 
 > Lab guide on the left, terminal on the right, side by side. Every instruction today is "read this,

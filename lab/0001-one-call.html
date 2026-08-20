@@ -37,17 +37,17 @@
 The last one closes the script. Tick each one off as you go.</p>
 
 <div class="warn">
-  <p><span class="callout-label">🏠 Doing this at home?</span> Yes. This lesson is prework now, so you
-  run it at your own desk before the day. The room starts at
+  <p><span class="callout-label">🏠 Doing this at home?</span> Yes. You do this lesson before the
+  session now, at your own desk. The room starts at
   <a href="0003-context-engineering.html">Lesson 03</a>. Steps 1 and 2 below are the same commands as
-  <a href="0000-prework.html">prework step 7</a>. Nobody is sitting next to you, so ask in the workshop
+  <a href="0000-setup.html">setup step 7</a>. Nobody is sitting next to you, so ask in the workshop
   Slack channel <code>#cybr-japac-ts-all</code> this week if something fails.</p>
 </div>
 
 <div class="step">
   <div class="step-head"><div class="step-num">1</div><p class="step-title">Access AWS</p></div>
   <div class="step-body">
-    <p>Ask Idira for AWS credentials. Two commands, the same ones you ran in prework step 7. First
+    <p>Ask Idira for AWS credentials. Two commands, the same ones you ran in setup step 7. First
     log in:</p>
     <div class="code"><pre><code>idsec login</code></pre></div>
     <p>Sign in with your own CYBRWorld account. Then ask for the credentials. Use the
@@ -59,7 +59,7 @@ The last one closes the script. Tick each one off as you go.</p>
       <div class="code"><pre><code>idsec exec sca cloud-access elevate --csp aws --workspace-id 409556437035 --roleIds arn:aws:iam::409556437035:role/CW-SCA-AdminAccess --raw | jq -r '.response.results[0].accessCredentials | fromjson | "$env:AWS_ACCESS_KEY_ID=\"\(.aws_access_key)\"\n$env:AWS_SECRET_ACCESS_KEY=\"\(.aws_secret_access_key)\"\n$env:AWS_SESSION_TOKEN=\"\(.aws_session_token)\""' | Invoke-Expression</code></pre></div>
     </div>
     <p>Nothing prints. That is success. The credentials are in this terminal window only, and they
-    expire. Stuck? <a href="0000-prework.html">Prework step 7</a> covers every error this can give you.</p>
+    expire. Stuck? <a href="0000-setup.html">Setup step 7</a> covers every error this can give you.</p>
   </div>
 </div>
 
@@ -82,7 +82,7 @@ cd ai-harness-app</code></pre></div>
     live in.</p>
     <div class="warn">
       <p><span class="callout-label"><code>No module named anthropic</code>? Try this first.</span>
-      Run the prework script from the workshop folder. It checks everything and installs what is
+      Run the setup script from the workshop folder. It checks everything and installs what is
       missing: <code>bash check-prereqs.sh</code> on macOS, <code>.\check-prereqs.ps1</code> on
       Windows. Raise your card only if the script cannot fix it.</p>
     </div>

@@ -15,7 +15,7 @@ hardcoded secrets and obvious vulnerabilities. Everything is sandboxed to the
 """
 
 # Keeps this file importable on Python 3.9, which is what a managed Mac already
-# has and what the prework asks for. Without it, `-> str | None` below is a
+# has and what the setup page asks for. Without it, `-> str | None` below is a
 # TypeError the moment the module loads, so every lesson dies before its first
 # line of output. Nothing here reads annotations at runtime, so deferring them
 # costs nothing. Same line, same reason, in ui.py.

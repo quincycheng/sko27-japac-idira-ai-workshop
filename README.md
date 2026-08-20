@@ -52,7 +52,7 @@ that covers the whole platform, and two videos to watch afterwards.
 | You are… | Read this |
 | --- | --- |
 | **An attendee** | Double-click [`lab/index.html`](lab/index.html) |
-| **An attendee, beforehand** | [`lab/0000-prework.html`](lab/0000-prework.html), or just run `bash check-prereqs.sh` / `.\check-prereqs.ps1` |
+| **An attendee, beforehand** | [`lab/0000-setup.html`](lab/0000-setup.html), or just run `bash check-prereqs.sh` / `.\check-prereqs.ps1` |
 | **The workshop owner** | [`docs/owner-prep.md`](docs/owner-prep.md) — start 3 weeks out |
 | **A trainer** | [`docs/run-of-show.md`](docs/run-of-show.md), then [`docs/presentation-outline.md`](docs/presentation-outline.md) for the 3-minute opener |
 | **A helper** | [`docs/helper-runbook.md`](docs/helper-runbook.md) |
@@ -62,11 +62,11 @@ that covers the whole platform, and two videos to watch afterwards.
 ```
 sko27-japac-idira-ai-workshop/
 ├── CONTEXT.md          Domain glossary — the vocabulary this workshop uses
-├── check-prereqs.sh    Prework checker for macOS/Linux — checks, then offers to fix
+├── check-prereqs.sh    Setup checker for macOS/Linux — checks, then offers to fix
 ├── check-prereqs.ps1   The same for Windows PowerShell
 ├── lab/                Attendee-facing guide. Plain HTML, opened by double-click.
 │   ├── index.html          Entry point
-│   ├── 0000-prework.html   Before the session: installs, venv, access checks
+│   ├── 0000-setup.html     Before the session: installs, venv, access checks
 │   ├── 0001-one-call.html
 │   │                       Part 1 · one call to an old model, two walls
 │   ├── 0002-conversation-history.html
@@ -162,7 +162,7 @@ The scripts run on **Amazon Bedrock** by default, reading the same temporary `AW
 `ANTHROPIC_MODEL` that Claude Code uses — no second credential, no extra login. `LLM_PROVIDER`
 switches to Vertex, Gemini or a local GGUF model without touching the loop.
 
-**Part 2, mandatory (Lessons 07–10)** — prework verification, secret detection on the sandbox app,
+**Part 2, mandatory (Lessons 07–10)** — setup verification, secret detection on the sandbox app,
 zero standing privileges via `zsp-aws` and `zsp-azure`, and connecting an MCP server through the
 Identity Broker.
 
@@ -200,7 +200,7 @@ These are not incidental. Several design decisions only make sense in light of t
   pages, and its output is committed — so run `.venv/bin/python build-lab-code.py --check` before you
   push and treat a non-zero exit as a stale page.
 - **Attendees are told to tile their windows.** Lab guide on one half of the screen, terminal on
-  the other, arranged during the prework rather than during the session. The OS switch supplies the
+  the other, arranged during setup rather than during the session. The OS switch supplies the
   right instructions for each platform, and the lessons assume a terminal about 80 columns wide.
 - **The workshop ships as a git repository.** Which is what makes Claude Code's built-in
   `/security-review` usable in Lesson 08. It is oriented at *changes*, so on a fresh clone the
@@ -208,7 +208,7 @@ These are not incidental. Several design decisions only make sense in light of t
 - **Every AWS credential in the lab comes from one `idsec` command.** No web console is opened
   anywhere. `idsec exec sca cloud-access elevate --raw` is piped through `jq` and `eval`, so the keys
   land in the shell's environment without ever being printed or saved. Both binaries install into
-  `~/bin` with no admin rights. That one-liner is deliberately duplicated in prework step 7, Lesson
+  `~/bin` with no admin rights. That one-liner is deliberately duplicated in setup step 7, Lesson
   01, Lesson 07, Lesson 14, cheat sheet §2 and `skills/zsp-aws/SKILL.md` — change it in all six.
 - **One shared tenant, sixty numbered attendees.** One registered MCP server and one registered
   AI agent serve the whole room; each attendee authenticates as themselves in the browser, which
@@ -234,7 +234,7 @@ this audience will notice.
   follow-up session
 - **Authoring** an AI agent access policy — attendees consume one and learn how it is
   structured, but writing one needs the Secure AI Admin role
-- **Idira EPM** — named in the prework, Lessons 06 and 09 and the cheat sheet as the layer that
+- **Idira EPM** — named in Setup, Lessons 06 and 09 and the cheat sheet as the layer that
   governs which executables may run on a managed endpoint (`idsec` being a privileged tool), because
   it is the question a customer asks. Never demonstrated; there is no EPM task and no console tour
 - **Prism AIRS and Secure Workload Access** — named in Part 1, in the *Where Idira fits* block at the

@@ -57,7 +57,7 @@ work at all — it does not degrade gracefully.
   check for them anyway before you debug something else: `env | grep CA_BUNDLE` on macOS,
   `Get-ChildItem env: | Where-Object Name -like '*CA_BUNDLE*'` on Windows.
 
-  ℹ️ **The prework script reports this as information, not a gate** — step 9, *"How this network
+  ℹ️ **The setup script reports this as information, not a gate** — step 9, *"How this network
   treats HTTPS"*. It never fails the run. It is worth reading the replies anyway: a venue that
   re-signs certificates is something you want to know about **before** Part 2, and one corporate
   root CA path collected in advance saves ten minutes of the second session. It is *not* one of the
@@ -86,12 +86,12 @@ Do this now, not in the dry run:
    authorization** prompt they can use themselves. Tell the helpers which one, because "blocked"
    and "not on `PATH`" look nothing alike but get reported identically.
 
-The prework asks attendees to reply on the day they hit this, so watch for those replies — one is a
+The setup page asks attendees to reply on the day they hit this, so watch for those replies — one is a
 laptop, five is the fleet.
 
 **And treat it as content, not just logistics.** EPM is the answer to the question this audience
 will be asked on a customer site — *what stops anyone downloading the CLI and requesting access?* —
-so it is named in prework step 5, in [Lesson 09](../lab/0009-zsp-access.html) step 3, on the cheat
+so it is named in setup step 5, in [Lesson 09](../lab/0009-zsp-access.html) step 3, on the cheat
 sheet, and once from the front in Module 4. The wording is in the appendix of
 [presentation-outline.md](presentation-outline.md). Not demoed: it is not in the lab and there is no
 time for a second console.
@@ -99,7 +99,7 @@ time for a second console.
 ### Recruit helpers
 
 Two trainers plus **5–6 helpers**, so roughly one helper per ten attendees. Send them
-[helper-runbook.md](helper-runbook.md) and ask them to do the attendee prework themselves,
+[helper-runbook.md](helper-runbook.md) and ask them to do the attendee setup themselves,
 on their own laptop, before the session. A helper who has not hit the failure modes is not
 a helper.
 
@@ -119,7 +119,7 @@ In IAM Identity Center, on the permission set the attendees use, set **session d
 4 hours**, and 6 if you can — the two slots span 1:00pm to 4:30pm. The default is 1 hour, and the
 maximum is 12.
 
-With 1 hour, credentials expire mid-session for people who did their prework early, and you spend
+With 1 hour, credentials expire mid-session for people who did their setup early, and you spend
 Module 4 re-issuing credentials to a confused room.
 
 Do the arithmetic for *your* schedule before you pick a number. The workshop runs **1:00–2:00pm and
@@ -130,7 +130,7 @@ at the start of slot 2 to re-copy the three `AWS_*` lines**, and say why. Expire
 teaching beat when you announce them and a shambles when you do not.
 
 Attendees need working AWS credentials from **Lesson 01**, about three minutes into slot 1, rather than
-at the prework check. A room whose credentials expire takes the whole session down, not the second half
+at the setup check. A room whose credentials expire takes the whole session down, not the second half
 of it.
 
 Use a **dedicated workshop permission set** rather than editing something shared.
@@ -159,7 +159,7 @@ That is the point of Lesson 08.
 Then, two ways to distribute, in order of preference:
 
 1. **A GitHub repository attendees clone.** Best, if every attendee can reach it from the venue
-   network and has `git` installed. Add the clone command to the prework.
+   network and has `git` installed. Add the clone command to the setup page.
 2. **A zip that contains `.git/`.** No `git` binary needed on the attendee's laptop for the zip
    itself, and `/security-review` still has a repository to look at. Make sure your zip tool
    does not silently drop dot-directories — check by unzipping into a clean folder and looking
@@ -187,8 +187,8 @@ sko27-japac-idira-ai-workshop/
 │                        styles/, skills/, memory.md, and their own sandbox
 ├── sandbox-app/       ← Part 2: the deliberately leaky app
 ├── skills/            ← idsec and zsp-aws
-├── check-prereqs.sh   ← the prework script, macOS and Linux
-├── check-prereqs.ps1  ← the prework script, Windows
+├── check-prereqs.sh   ← the setup script, macOS and Linux
+├── check-prereqs.ps1  ← the setup script, Windows
 ├── README.md
 ├── CONTEXT.md
 └── idsec/             ← you add this: the platform binaries (see below)
@@ -230,10 +230,10 @@ attendees clone.
 
 **`idsec` binaries.** Point attendees at the official releases page —
 `github.com/cyberark/idsec-cli-golang/releases` — which is what
-[`lab/0000-prework.html`](../lab/0000-prework.html) step 5 links to. Also mirror both archives
+[`lab/0000-setup.html`](../lab/0000-setup.html) step 5 links to. Also mirror both archives
 on the internal share, in case the venue or a proxy blocks GitHub releases.
 
-Check the archive filenames match what the prework tells people to type, and edit the lesson if
+Check the archive filenames match what the setup page tells people to type, and edit the lesson if
 they do not. The lesson maps machine → filename substrings (`darwin`+`arm64`, `darwin`+`amd64`,
 `windows`+`amd64`), which survives version bumps, but the `tar -xzf` example uses a literal
 name. Attendees typing a filename that does not exist is an entirely avoidable ten minutes.
@@ -372,7 +372,7 @@ It is three checks:
   `idsec exec sca cloud-access list-targets --csp aws` returns at least one account and role.
 - Every attendee can **sign in to `apj-secrets.cyberark.cloud`** in a browser, which Lesson 10 needs.
   This is a second tenant and `idsec` is not involved. Anyone on the team has administrator rights
-  there and can create an account, so the prework asks attendees to check it themselves and to ask a
+  there and can create an account, so the setup page asks attendees to check it themselves and to ask a
   colleague if it fails. G5 owns the detail, including the read access those accounts need.
 
 **Email these three values a week ahead**, because `idsec configure` asks for them:
@@ -392,7 +392,7 @@ The numbered cards are still worth printing, but only as the **help signal**. Th
 and nothing else, plus optionally the Broker **Gateway URL** and **Client ID** from G5. The
 **Client Secret** never goes on a card. It goes in the Slack channel, and G5 says why.
 
-### Send the prework
+### Send the setup email
 
 Use [prework-email.md](prework-email.md). Send it a week out, and chase non-responders three
 days before. A reply saying "list-targets comes back empty" three days early is a success; the same
@@ -407,7 +407,7 @@ user with no admin rights. Not your own machine, which has years of accumulated 
 
 Work through, in order, exactly what an attendee does:
 
-1. `lab/0000-prework.html` — all seven steps, including the virtual environment and the `PATH`
+1. `lab/0000-setup.html` — all seven steps, including the virtual environment and the `PATH`
    edits. Run `check-prereqs.sh` (or `.ps1`) and read what it prints, rather than assuming it
    passed.
 2. `lab/0001-one-call.html` — `python 01_bare_call.py`. This is the first thing that needs
@@ -490,11 +490,11 @@ attendee's first `cat audit.log` should show *their* calls.
   important thing to confirm, because every AWS credential in the lab now comes from it. The
   response carries the short-lived credentials in an `accessCredentials` field, as a JSON-encoded
   string nested inside the JSON response — which is why the lab pipes it through `jq` with
-  `fromjson`. Run the exact one-liner from `lab/0000-prework.html` step 7 on your build and check
+  `fromjson`. Run the exact one-liner from `lab/0000-setup.html` step 7 on your build and check
   three things: that `--raw` gives clean JSON with nothing decorative in it, that the field names are
   still `aws_access_key` / `aws_secret_access_key` / `aws_session_token`, and that the
   `eval` (macOS) and `Invoke-Expression` (PowerShell) wrappers print nothing at all. If any of the
-  three is wrong, fix the one-liner in prework step 7, Lesson 01 step 1, Lesson 07 step 2, cheat
+  three is wrong, fix the one-liner in setup step 7, Lesson 01 step 1, Lesson 07 step 2, cheat
   sheet §2 and `skills/zsp-aws/SKILL.md` — they carry the same command deliberately.
 - **The exact `idsec configure` *and* `idsec login` prompts** → onto the cards (G4). The lab now
   says sign-in normally happens in the terminal — password, then MFA if your tenant requires it —
@@ -624,7 +624,7 @@ Say this from the front so nobody spends the session wondering:
   so to clients — but nobody vaults anything today. The Secrets Manager MCP server ships only as
   a stdio Docker container, and Docker Desktop needs admin rights on Windows, so it cannot be
   used in this room. Follow-up session.
-- **Demonstrating Idira EPM.** It is *named* — prework step 5, Lesson 09 step 3, the cheat sheet,
+- **Demonstrating Idira EPM.** It is *named* — setup step 5, Lesson 09 step 3, the cheat sheet,
   Module 4 — because it answers "what stops anyone running the CLI?", which is a customer
   question. There is no EPM exercise, no console tour and no screenshot. If you promise one you will
   owe the room ten minutes you do not have.

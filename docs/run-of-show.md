@@ -27,7 +27,7 @@ all of which you have to accept up front:
 
 The break is the full hour from 2:00 to 3:00pm, and the boundary is deliberately soft:
 
-- **Part 1 finished with 5+ minutes left in slot 1?** Run Module 2 (Lesson 07, the prework check,
+- **Part 1 finished with 5+ minutes left in slot 1?** Run Module 2 (Lesson 07, the setup check,
   5 min) *before* the break. It is the module that surfaces environment breakage, and an hour of break
   is enough for helpers to fix every broken laptop in the room. This is the preferred shape, and the
   long gap is what makes it worth protecting.
@@ -61,7 +61,7 @@ Broker, which is the part clients ask to see).
 
 | # | Module | Min | Cumulative | Who leads |
 | --- | --- | --- | --- | --- |
-| 2 | Prework check — Lesson 07 | 5 | 5 | Trainer B + all helpers |
+| 2 | Setup check — Lesson 07 | 5 | 5 | Trainer B + all helpers |
 | 3 | Vibe coding: Find the secrets — Lesson 08 | 13 | 18 | Trainer A |
 | 4 | Skills: ZSP by Idsec CLI — Lesson 09 | 12 | 30 | Trainer B |
 | 5 | MCP: AI Agent Identity Broker — Lesson 10 | 20 | 50 | Trainer B |
@@ -90,7 +90,7 @@ on a slide and leave it up.
 
 Four things to say and then stop:
 
-- **Arrange your screen now: lab guide on one half, terminal on the other.** The prework told them to
+- **Arrange your screen now: lab guide on one half, terminal on the other.** The setup page told them to
   do this, so it is a ten-second reminder rather than an exercise — but do it, because the alternative
   is sixty people alt-tabbing for three hours. The instruction is at the top of `lab/index.html` and it
   follows the OS switch.
@@ -121,7 +121,7 @@ counts and percentages differ per run. The *shape* is the lesson.
 [Page](../lab/0001-one-call.html) · `python 01_bare_call.py`
 
 Credentials and the virtual environment get set up here, which is why this lesson comes before the
-prework check rather than after it. Expect the environment problems to surface now. That is deliberate
+setup check rather than after it. Expect the environment problems to surface now. That is deliberate
 and it is why all helpers are on the floor.
 
 Two walls, in order: the model **forgets** (ask a follow-up and watch it fail), and the model **cannot
@@ -262,7 +262,7 @@ Close Part 1:
 
 ---
 
-## Module 2 · Prework check (5 min)
+## Module 2 · Setup check (5 min)
 
 **Goal:** every laptop in the room has an agent that answers a question.
 

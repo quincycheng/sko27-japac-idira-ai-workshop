@@ -50,7 +50,7 @@ you, so this is a five-minute job if you do it before the day.
 | `idsec` for Windows (mirror) | `<share link>` |
 
 The releases page is the primary source — pick the newest release and the file matching your
-machine. The prework page tells you exactly which filename to look for. The mirrors are there in
+machine. The setup page tells you exactly which filename to look for. The mirrors are there in
 case GitHub is blocked on your network.
 
 ## What we need to hear about this week 🚩
@@ -86,7 +86,7 @@ if you are offered one.
    left. Most people are done at this point. It touches nothing outside your home folder and this
    project folder, and it changes nothing without asking you first.
 3. **Anything it could not fix**, or if you would rather read what you are doing: open the folder, go
-   into `lab`, and **double-click `0000-prework.html`**. Pick macOS or Windows at the top and the
+   into `lab`, and **double-click `0000-setup.html`**. Pick macOS or Windows at the top and the
    whole page adjusts to your machine. It walks through the same nine steps by hand.
 
 4. **Arrange your screen, and leave it that way.** 🪟 Put the **lab guide on one half** of your screen
@@ -150,7 +150,7 @@ See you on `<date>`. Bring a charger. 🔋
 - [ ] `docs/` is **not** in what attendees receive
 - [ ] Share links or clone URL tested from a device that has never opened them
 - [ ] `idsec` mirrors are on a share that needs **no login**
-- [ ] The `idsec` archive filenames match what `lab/0000-prework.html` step 5 tells people to type
+- [ ] The `idsec` archive filenames match what `lab/0000-setup.html` step 5 tells people to type
 - [ ] Every attendee has a **CYBRWorld account** ending in `@cyberarklab.com`, and an AWS
       entitlement in Secure Cloud Access against it — checked before this email goes out
 - [ ] `idsec configure` has been run once by you against `demo.cyberark.cloud`, and its prompts match
@@ -158,7 +158,7 @@ See you on `<date>`. Bring a charger. 🔋
 - [ ] Every attendee can **sign in to `apj-secrets.cyberark.cloud`** in a browser, which Lesson 10
       needs. Anyone on the team can create an account there, so the email asks them to check it
       themselves. Gate G4 in [owner-prep.md](owner-prep.md) covers what to do about stragglers
-- [ ] `jq` installs cleanly on both platforms from the URLs in `lab/0000-prework.html` step 5
+- [ ] `jq` installs cleanly on both platforms from the URLs in `lab/0000-setup.html` step 5
 - [ ] **`idsec`, `jq` and Claude Code are permitted by the EPM policy on the attendees' laptop fleet** —
       confirmed with the team that owns the EPM sets, *before* this email goes out, because the fix
       has a lead time and no attendee can apply it

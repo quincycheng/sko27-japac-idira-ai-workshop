@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # SKO27 TechSummit - AI Workshop for Idira DC
-# Prework checker for macOS and Linux.  (Windows: use check-prereqs.ps1)
+# Setup checker for macOS and Linux.  (Windows: use check-prereqs.ps1)
 #
 #   bash check-prereqs.sh              check, and offer to fix what is missing
 #   bash check-prereqs.sh --check-only check only, never change anything
@@ -91,7 +91,7 @@ blocked() {  # blocked <command name>
 cat <<BANNER
 
 ${B}🚀 SKO27 TechSummit - AI Workshop for Idira DC${R}
-${DIM}   Prework checker · macOS / Linux · nothing here needs admin rights${R}
+${DIM}   Setup checker · macOS / Linux · nothing here needs admin rights${R}
 
    Project folder : $PROJECT
 BANNER
@@ -201,7 +201,7 @@ part1_ok() {  # -> 0 if Part 1 will start.  Records its own ❌ row if not.
   dim "$(printf '%s\n' "$err" | tail -1)"
   dim "this .venv runs Python ${ver:-unknown}"
   fail "Libraries" "Part 1 will not import" \
-       "Delete .venv, create it again with a newer Python (see the Prework page), then re-run this script"
+       "Delete .venv, create it again with a newer Python (see the Setup page), then re-run this script"
   return 1
 }
 
@@ -329,7 +329,7 @@ else
       bad "could not work out which release file to download"
       info "Do it by hand — the lab page walks you through it:"
       info "🔗 https://github.com/cyberark/idsec-cli-golang/releases"
-      fail "idsec CLI" "auto-download failed" "Install idsec by hand — see prework step 5 in the lab guide"
+      fail "idsec CLI" "auto-download failed" "Install idsec by hand — see setup step 5 in the lab guide"
     else
       TMP="$(mktemp -d)"
       FILE="$TMP/${URL##*/}"
@@ -367,16 +367,16 @@ else
           fixed "idsec CLI" "installed (new terminal needed)"
         else
           bad "downloaded the archive, but found no idsec binary inside it"
-          fail "idsec CLI" "unexpected archive" "Install idsec by hand — see prework step 5 in the lab guide"
+          fail "idsec CLI" "unexpected archive" "Install idsec by hand — see setup step 5 in the lab guide"
         fi
       else
         bad "the download failed"
-        fail "idsec CLI" "download failed" "Install idsec by hand — see prework step 5 in the lab guide"
+        fail "idsec CLI" "download failed" "Install idsec by hand — see setup step 5 in the lab guide"
       fi
       rm -rf "$TMP"
     fi
   else
-    fail "idsec CLI" "not installed" "Install idsec — see prework step 5 in the lab guide"
+    fail "idsec CLI" "not installed" "Install idsec — see setup step 5 in the lab guide"
   fi
 fi
 
@@ -433,7 +433,7 @@ else
     if [ -z "$URL" ]; then
       bad "could not work out which build to download"
       info "🔗 https://github.com/jqlang/jq/releases"
-      fail "jq" "auto-download failed" "Install jq by hand — see prework step 5 in the lab guide"
+      fail "jq" "auto-download failed" "Install jq by hand — see setup step 5 in the lab guide"
     else
       mkdir -p "$BINDIR"
       run "curl -fsSL -o $BINDIR/jq $URL"
@@ -446,11 +446,11 @@ else
       else
         rm -f "$BINDIR/jq"
         bad "the download failed"
-        fail "jq" "download failed" "Install jq by hand — see prework step 5 in the lab guide"
+        fail "jq" "download failed" "Install jq by hand — see setup step 5 in the lab guide"
       fi
     fi
   else
-    fail "jq" "not installed" "Install jq — see prework step 5 in the lab guide"
+    fail "jq" "not installed" "Install jq — see setup step 5 in the lab guide"
   fi
 fi
 
@@ -656,8 +656,8 @@ rehearse_aws() {
   rc=$?
   if [ "$rc" -eq 124 ]; then
     bad "the elevate call did not finish in two minutes"
-    info "It may be waiting on an approval. Run it by hand — prework step 7."
-    manual "AWS credentials" "elevate timed out — run it by hand, prework step 7"
+    info "It may be waiting on an approval. Run it by hand — setup step 7."
+    manual "AWS credentials" "elevate timed out — run it by hand, setup step 7"
     return 1
   fi
   creds="$(printf '%s' "$raw" | "$JQ" -r '.response.results[0].accessCredentials | fromjson |
@@ -682,9 +682,9 @@ print(boto3.client("sts").get_caller_identity()["Arn"])' 2>/dev/null)"
     pass "AWS credentials" "elevate and AWS both worked"
   else
     bad "the credentials came back, but AWS did not accept them"
-    info "Do the two commands by hand — prework step 7 explains every error."
+    info "Do the two commands by hand — setup step 7 explains every error."
     fail "AWS credentials" "AWS rejected them" \
-         "Run prework step 7 by hand, then 📧 reply to the workshop email"
+         "Run setup step 7 by hand, then 📧 reply to the workshop email"
   fi
 }
 
@@ -727,7 +727,7 @@ else
     if ask "Run the full rehearsal now? It gets real credentials and throws them away."; then
       rehearse_aws
     else
-      manual "AWS credentials" "run the elevate one-liner by hand — prework step 7"
+      manual "AWS credentials" "run the elevate one-liner by hand — setup step 7"
     fi
   fi
 fi
@@ -889,7 +889,7 @@ info "different tenant from the one idsec uses, and this script cannot test it."
 info "Open it now and sign in with your own account. If the console loads, you are"
 info "done. No account there? Ask your manager or a colleague: everybody on the"
 info "team has administrator rights on that tenant and can create one for you."
-manual "apj-secrets sign-in" "check it in a browser — prework step 9"
+manual "apj-secrets sign-in" "check it in a browser — setup step 9"
 
 # --------------------------------------------------------------- summary
 

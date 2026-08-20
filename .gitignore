@@ -14,7 +14,7 @@
 
 
 # ---------------------------------------------------------------------------
-# Python virtual environments  (prework step 3)
+# Python virtual environments  (setup step 3)
 # ---------------------------------------------------------------------------
 # The lab standardises on `.venv` in the repo root. The rest are here because
 # people who already know Python will use their own habit instead.
@@ -79,7 +79,7 @@ ai-harness-app/audit.log
 # ---------------------------------------------------------------------------
 # Downloaded tools and built distributions
 # ---------------------------------------------------------------------------
-# The idsec CLI is a downloaded binary (prework step 5). Never commit it —
+# The idsec CLI is a downloaded binary (setup step 5). Never commit it —
 # attendees fetch the build for their own platform from the releases page.
 #
 # These are anchored with a leading slash on purpose. Unanchored, `idsec` also

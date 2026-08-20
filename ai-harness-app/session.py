@@ -115,7 +115,7 @@ def _diagnose(error: Exception) -> None:
             "those AWS credentials are no longer good",
             text,
             "The temporary credentials in this terminal window have expired or "
-            "were never valid. Fetch a fresh set the way the prework describes, "
+            "were never valid. Fetch a fresh set the way the setup page describes, "
             "paste them into THIS window, and run the lesson again. Every new "
             "terminal tab needs its own paste.",
         )

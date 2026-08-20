@@ -19,7 +19,7 @@ native English speakers, and their AI knowledge varies from none to expert. Writ
 - **Define jargon on first use**, in five words, inline and bold. `capability record`, `context
   window`, `standing credential`. The cheat sheet is the reference page; do not add a glossary box.
 - **Sentence case headings**, except `Your Tasks`, `Knowledge Check`, `The Code (optional)` and
-  `The Fast Way (Recommended)` on the prework page.
+  `The Fast Way (Recommended)` on the setup page.
 - **No durations on attendee pages.** Times describing the trainer's clock, a customer demo, or a
   video length are fine.
 

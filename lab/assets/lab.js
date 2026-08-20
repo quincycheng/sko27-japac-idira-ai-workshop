@@ -19,7 +19,7 @@
 
   var PAGES = [
     { f: 'index.html',                            n: '',   t: 'Welcome!',                      g: 'Start' },
-    { f: '0000-prework.html',                     n: '00', t: 'Prework',                       g: 'Before the session' },
+    { f: '0000-setup.html',                       n: '00', t: 'Setup',                         g: 'Before the session' },
 
     /* Lessons 01 to 05 carry deliberately the same number as
      * ai-harness-app/0N_*.py, so a page and its script never disagree. Numbers do

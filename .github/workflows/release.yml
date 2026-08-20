@@ -1,7 +1,7 @@
 name: Build workshop package
 
 # Attaches sko27-japac-idira-ai-workshop.zip to a release.  The zip differs from
-# GitHub's automatic "Source code (zip)" in two ways that the prework page relies on:
+# GitHub's automatic "Source code (zip)" in two ways that the setup page relies on:
 #   1. it unpacks to a folder called sko27-japac-idira-ai-workshop (no version suffix),
 #      so every "cd ~/Downloads/sko27-japac-idira-ai-workshop" in the lab guide works;
 #   2. it includes .git, so Lesson 07's /security-review has a history to look at.

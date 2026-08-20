@@ -36,7 +36,7 @@
          met:      01, 02                 lessons where it is named
          hands-on: 09                     lessons where it is run  (optional)
 
-     `met` and `hands-on` are lesson numbers — 00 is the prework — and the
+     `met` and `hands-on` are lesson numbers — 00 is the setup page — and the
      generator turns them into links by reading the PAGES array out of
      assets/lab.js, so there is no second copy of the page list. Every product
      named by a lesson entry must have a record here; the build fails if one does

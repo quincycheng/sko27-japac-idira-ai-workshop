@@ -7,7 +7,7 @@ You are one of 5–6 helpers for ~60 attendees. Read this once. It is short on p
 Get people unstuck in under two minutes, and move on. You are not teaching — the lab guide
 teaches. You are removing obstacles.
 
-**Do the attendee prework yourself before the session**, on your own laptop, both the macOS
+**Do the attendee setup yourself before the session**, on your own laptop, both the macOS
 and Windows steps if you can. Ten minutes now saves you improvising in front of someone.
 
 **Run all five Part 1 scripts once**, from `ai-harness-app/`. They take about ten minutes end to
@@ -95,7 +95,7 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\.venv\Scripts\Activate.ps1
 ```
 
-**If there is no `.venv` folder at all** — they skipped prework step 3. Two minutes with you:
+**If there is no `.venv` folder at all** — they skipped setup step 3. Two minutes with you:
 
 ```
 # macOS                          # Windows
@@ -105,7 +105,7 @@ pip install -r ai-harness-app/requirements.txt -r sandbox-app/requirements.txt
 ```
 
 **Do not** `pip install --user boto3` as a shortcut. It sometimes works, it sometimes hits a
-managed-Python restriction, and it teaches the opposite of what prework step 3 exists to teach.
+managed-Python restriction, and it teaches the opposite of what setup step 3 exists to teach.
 The venv is thirty seconds.
 
 ### 3 · `command not found` 🥉
@@ -250,8 +250,8 @@ folder answers it in five seconds.
 | --- | --- | --- |
 | `AccessDeniedException` naming a model | Typo in `ANTHROPIC_MODEL` or wrong region | Re-set with the Copy button; region is `us-east-1` |
 | The elevate one-liner printed something instead of nothing | The `eval` or `Invoke-Expression` at the end was lost in the paste | Use the Copy button rather than selecting the text. If a credential did print, it is short-lived and scoped to a sandbox account, so re-run and move on. |
-| `jq: command not found` | Prework `jq` install did not stick | Prework step 5. One binary in `~/bin`, and this window has to see it on `PATH`. |
-| `idsec: command not found` | Same, for `idsec` | Prework step 5. If the shell finds it but it will not *start*, that is EPM — top-four #3. |
+| `jq: command not found` | Setup `jq` install did not stick | Setup step 5. One binary in `~/bin`, and this window has to see it on `PATH`. |
+| `idsec: command not found` | Same, for `idsec` | Setup step 5. If the shell finds it but it will not *start*, that is EPM — top-four #3. |
 | Bottom line of the agent does not say **auto** | They missed the `Shift+Tab` presses | Keep pressing `Shift+Tab`. It cycles round. Every lesson after this one assumes auto mode. |
 | `python` opens the Microsoft Store | Windows app alias | Use `py` — but inside an active `.venv`, plain `python` works |
 | `python: command not found` (mac) | Only `python3` exists on that machine | Use `python3` to create the venv. Once it is active, plain `python` works. No alias needed. |
@@ -312,7 +312,7 @@ Mostly prompt-driven, so mostly fine. Five things:
 | Signed in, but to the wrong tenant | They already used `idsec` against another tenant | `idsec login --profile-name cybrworld`. If that profile does not exist yet, `idsec configure --profile-name cybrworld` first, with the three values from the prework email. |
 | `list-targets` returns empty | No elevation policy for this user | **Escalate to a trainer.** This is a tenant config problem, not fixable at the desk. |
 | Agent invents a flag that does not exist | Old CLI build | Have them ask the agent to run `idsec exec sca cloud-access elevate --help` and use what it actually reports |
-| `jq: command not found` | The prework `jq` install did not stick | Prework step 5. It is one binary in `~/bin`, and the new terminal window has to see it on `PATH`. |
+| `jq: command not found` | The setup `jq` install did not stick | Setup step 5. It is one binary in `~/bin`, and the new terminal window has to see it on `PATH`. |
 | Agent ran the elevate command instead of printing it | It ignored the skill | Not a disaster, but the credentials are now in its transcript. Have them `/exit`, run the command themselves, and say why: what the agent reads, it keeps. |
 | Agent tries to set environment variables itself | It cannot — it runs in a subprocess | This is exactly why the lesson has the attendee run the command. Worth saying out loud. |
 | Something failed with no useful message | — | `~/.idsec/logs/idsec-cli.log` has the detail |
@@ -340,7 +340,7 @@ server is disabled, and both are tenant-side.
 | Browser opens, then the callback page will not load | The redirect goes to `http://localhost:<port>` — a VPN or proxy ate it | Try again; if it repeats, have them disconnect the VPN for that one step. 🙋 tell a trainer if several people hit it. |
 | Browser never opens | Default browser not set | Copy the URL from the terminal into a browser manually |
 | Signs in, but authentication still fails | The browser opened a **different profile**, signed into another tenant | Copy the URL from the terminal into the browser profile that has their `apj-secrets` session. The error does not say this. |
-| They have no account on `apj-secrets` at all | They skipped prework step 9 | 🙋 tell a trainer. Anyone on the team has administrator rights on that tenant and can create the account, so it is minutes, not days. Pair them with a neighbour meanwhile. |
+| They have no account on `apj-secrets` at all | They skipped setup step 9 | 🙋 tell a trainer. Anyone on the team has administrator rights on that tenant and can create the account, so it is minutes, not days. Pair them with a neighbour meanwhile. |
 | Signed in, but the tools are not listed | The connection has not refreshed | `/mcp` again. Tools appear automatically once authentication completes. |
 | Worked earlier, now says the server **needs re-authorization** | The token expired. Expected, and it is the lesson's point | `/mcp` and sign in again. Say why: the agent holds a short-lived token, not a credential. |
 | Tool count reads *Not discovered yet* in the console | No agent has connected to that server yet | Expected before the first connection. Not an attendee problem. |
@@ -396,13 +396,13 @@ for is **Self**, and the single most useful thing you can do all day is know tha
 
 | Tier | Who fixes it | How you recognise it |
 | --- | --- | --- |
-| **Self** 🧑 | The attendee, usually by running the prework script | Something is missing or not on `PATH`. Nothing is broken; a step was skipped. |
+| **Self** 🧑 | The attendee, usually by running the setup script | Something is missing or not on `PATH`. Nothing is broken; a step was skipped. |
 | **Helper** 🙋 | You, at the desk, in under two minutes | Wrong window, wrong shell, wrong folder, partial paste. The machine is fine and the account is fine. |
 | **Tenant** 🚩 | The workshop owner, tenant-side, before or during | Policy, registration, network or endpoint. Nobody in the room can fix it, and it usually affects more than one person. |
 
 ### Tier 1 · Self — point at the script, do not debug
 
-**The prework script is the answer to most of the day's questions.** From the workshop folder:
+**The setup script is the answer to most of the day's questions.** From the workshop folder:
 
 ```
 # macOS
@@ -419,19 +419,19 @@ typing anything yourself:
 
 | Symptom | Almost always | What you say |
 | --- | --- | --- |
-| `idsec: command not found` | Prework step 5 skipped, or `PATH` edited without a new terminal | Run the script. It downloads `idsec` and fixes `PATH`. Then **new terminal**. |
+| `idsec: command not found` | Setup step 5 skipped, or `PATH` edited without a new terminal | Run the script. It downloads `idsec` and fixes `PATH`. Then **new terminal**. |
 | `claude: command not found` | Same shape: installed under `~/.local/bin`, not on `PATH` | Run the script, then **new terminal**. |
 | `No module named boto3` / `anthropic` / `rich` | No `.venv`, or libraries never installed | Run the script. It builds the venv and installs both requirements files. |
 | A CA bundle variable pointing at a file that is gone | Set by policy on a laptop that has moved networks | Harmless for this workshop now — nothing here reads it. Only chase it if something *else* on the laptop is failing; step 9 of the script names the variable and prints the `unset` line. |
-| No `.venv` folder at all | Prework step 3 skipped | Run the script. Do **not** `pip install --user`. |
-| `idsec configure` never run | Prework step 6 skipped | Their card has the tenant subdomain and username. Two minutes. |
+| No `.venv` folder at all | Setup step 3 skipped | Run the script. Do **not** `pip install --user`. |
+| `idsec configure` never run | Setup step 6 skipped | Their card has the tenant subdomain and username. Two minutes. |
 
 ⚠️ **The new-terminal cost.** Any `PATH` fix needs a fresh window, and a fresh window has no AWS
 credentials in it. Tell them that in the same breath, or they will fix `idsec` and immediately break
 Bedrock. Cheat sheet §1 puts it back.
 
 **The most common misdiagnosis of the day:** `idsec version` failing in Lesson 09 gets reported as
-"the CLI is broken". It is not. It is prework step 5, and the lesson now says so before it mentions
+"the CLI is broken". It is not. It is setup step 5, and the lesson now says so before it mentions
 your card.
 
 **And the most common misdiagnosis of Part 1:** the lesson working, reported as the lesson broken.
@@ -462,22 +462,22 @@ gate failures from [owner-prep.md](owner-prep.md) that will hit everybody within
 | Any **refused** MCP tool call in Lesson 10 | Server disabled, or no policy matches user + agent + tool | G5 |
 | `localhost` callback fails for more than one person | The venue network is intercepting the Broker sign-in redirect | — |
 | `idsec` or `claude` **blocked** by endpoint application control 🖥️ | Needs an EPM policy change. Nobody in the room has the rights. One person → loaner laptop. Several → the fleet will do it to everybody. | — |
-| Claude Code failing on certificates for more than one person | The venue network inspects HTTPS. **Part 2 only** — Part 1 does not verify, so this surfaces for the first time at Lesson 07 and can look like a new problem when it is not. What the trainer needs is one corporate root CA path for `NODE_EXTRA_CA_CERTS`; failing that, tell the room to set `NODE_TLS_REJECT_UNAUTHORIZED=0` from the front, once, with the caveat said out loud. The prework script reports this a week early under *"How this network treats HTTPS"* — worth knowing whether the replies mentioned it. | — |
+| Claude Code failing on certificates for more than one person | The venue network inspects HTTPS. **Part 2 only** — Part 1 does not verify, so this surfaces for the first time at Lesson 07 and can look like a new problem when it is not. What the trainer needs is one corporate root CA path for `NODE_EXTRA_CA_CERTS`; failing that, tell the room to set `NODE_TLS_REJECT_UNAUTHORIZED=0` from the front, once, with the caveat said out loud. The setup script reports this a week early under *"How this network treats HTTPS"* — worth knowing whether the replies mentioned it. | — |
 | `--remote` in lesson 05 blocked for more than one person | Egress filtering on the venue network. Harmless — the local MCP server covers the lesson — but the trainer should stop offering the flag from the front. | — |
 | The share link or clone URL not loading | Everyone downstream is blocked | G3 / G6 |
 | `/security-review` behaving differently for different people | The repo shipped without a first commit | G6 |
 
 **Blocked is not missing.** 🖥️ If the shell finds the program and it still will not start — a message
 about a policy, an administrator, "this application is blocked", or **Idira EPM** — that is
-application control, not `PATH`, and the prework script cannot help. If a **Request authorization**
+application control, not `PATH`, and the setup script cannot help. If a **Request authorization**
 option is offered, have them use it. Otherwise escalate and move them to a loaner laptop. Say the
 useful sentence while you walk them over:
 
 > This is Idira EPM deciding which tools may run on a managed endpoint. Same idea as Lesson 09, one
 > layer lower down.
 
-### What the prework was supposed to catch
+### What setup was supposed to catch
 
-Every Tier 1 row above is a prework step. When you see a cluster of them, that is worth telling a
-trainer even though each one is individually trivial: it means the prework did not land, and the
+Every Tier 1 row above is a setup step. When you see a cluster of them, that is worth telling a
+trainer even though each one is individually trivial: it means setup did not land, and the
 whole room is about ten minutes behind where the run of show assumes it is.

@@ -1,6 +1,6 @@
 <#
     SKO27 TechSummit - AI Workshop for Idira DC
-    Prework checker for Windows PowerShell.  (macOS/Linux: use check-prereqs.sh)
+    Setup checker for Windows PowerShell.  (macOS/Linux: use check-prereqs.sh)
 
         .\check-prereqs.ps1              check, and offer to fix what is missing
         .\check-prereqs.ps1 -CheckOnly   check only, never change anything
@@ -95,7 +95,7 @@ function Write-Blocked ($Name) {
 
 Write-Host ''
 Write-Host '🚀 SKO27 TechSummit - AI Workshop for Idira DC' -ForegroundColor White
-Write-Host '   Prework checker · Windows · nothing here needs admin rights' -ForegroundColor DarkGray
+Write-Host '   Setup checker · Windows · nothing here needs admin rights' -ForegroundColor DarkGray
 Write-Host ''
 Write-Host "   Project folder : $Project"
 
@@ -212,7 +212,7 @@ function Test-Part1 {  # -> $true if Part 1 will start.  Records its own ❌ row
     Write-Bad 'the libraries are installed, but the Part 1 lesson code will not import'
     if ($out) { Write-Dim ([string](@($out)[-1])) }
     Write-Dim "this .venv runs Python $ver"
-    Add-Fail 'Libraries' 'Part 1 will not import' 'Delete .venv, create it again with a newer Python (see the Prework page), then re-run this script'
+    Add-Fail 'Libraries' 'Part 1 will not import' 'Delete .venv, create it again with a newer Python (see the Setup page), then re-run this script'
     return $false
 }
 
@@ -297,7 +297,7 @@ function Get-IdsecUrl {
     # Newest release, the asset for 64-bit Windows.
     try {
         $rel = Invoke-RestMethod 'https://api.github.com/repos/cyberark/idsec-cli-golang/releases/latest' `
-                                 -Headers @{ 'User-Agent' = 'idira-workshop-prework' }
+                                 -Headers @{ 'User-Agent' = 'idira-workshop-setup' }
     } catch { return $null }
     $asset = $rel.assets |
         Where-Object { $_.name -match 'windows' -and $_.name -match 'amd64|x86_64|x64' } |
@@ -344,7 +344,7 @@ if ((Have-Command 'idsec') -and (Test-Runs 'idsec' @('version'))) {
             Write-Bad 'could not work out which release file to download'
             Write-Info 'Do it by hand — the lab page walks you through it:'
             Write-Info '🔗 https://github.com/cyberark/idsec-cli-golang/releases'
-            Add-Fail 'idsec CLI' 'auto-download failed' 'Install idsec by hand — see prework step 5 in the lab guide'
+            Add-Fail 'idsec CLI' 'auto-download failed' 'Install idsec by hand — see setup step 5 in the lab guide'
         } else {
             $tmp = Join-Path ([IO.Path]::GetTempPath()) ("idsec-" + [guid]::NewGuid().ToString('N'))
             New-Item -ItemType Directory -Force -Path $tmp, $BinDir | Out-Null
@@ -377,17 +377,17 @@ if ((Have-Command 'idsec') -and (Test-Runs 'idsec' @('version'))) {
                     Add-Fixed 'idsec CLI' 'installed (new window needed)'
                 } else {
                     Write-Bad 'downloaded the archive, but found no idsec binary inside it'
-                    Add-Fail 'idsec CLI' 'unexpected archive' 'Install idsec by hand — see prework step 5 in the lab guide'
+                    Add-Fail 'idsec CLI' 'unexpected archive' 'Install idsec by hand — see setup step 5 in the lab guide'
                 }
             } catch {
                 Write-Bad "the download failed: $($_.Exception.Message)"
-                Add-Fail 'idsec CLI' 'download failed' 'Install idsec by hand — see prework step 5 in the lab guide'
+                Add-Fail 'idsec CLI' 'download failed' 'Install idsec by hand — see setup step 5 in the lab guide'
             } finally {
                 Remove-Item $tmp -Recurse -Force -ErrorAction SilentlyContinue
             }
         }
     } else {
-        Add-Fail 'idsec CLI' 'not installed' 'Install idsec — see prework step 5 in the lab guide'
+        Add-Fail 'idsec CLI' 'not installed' 'Install idsec — see setup step 5 in the lab guide'
     }
 }
 
@@ -434,10 +434,10 @@ if ((Have-Command 'jq') -and (Test-Runs 'jq' @('--version'))) {
         } catch {
             Remove-Item $jqExe -Force -ErrorAction SilentlyContinue
             Write-Bad "the download failed: $($_.Exception.Message)"
-            Add-Fail 'jq' 'download failed' 'Install jq by hand — see prework step 5 in the lab guide'
+            Add-Fail 'jq' 'download failed' 'Install jq by hand — see setup step 5 in the lab guide'
         }
     } else {
-        Add-Fail 'jq' 'not installed' 'Install jq — see prework step 5 in the lab guide'
+        Add-Fail 'jq' 'not installed' 'Install jq — see setup step 5 in the lab guide'
     }
 }
 
@@ -638,8 +638,8 @@ function Invoke-AwsRehearsal {
     ) 120
     if ($null -eq $raw) {
         Write-Bad 'the elevate call did not finish in two minutes'
-        Write-Info 'It may be waiting on an approval. Run it by hand — prework step 7.'
-        Add-Manual 'AWS credentials' 'elevate timed out — run it by hand, prework step 7'
+        Write-Info 'It may be waiting on an approval. Run it by hand — setup step 7.'
+        Add-Manual 'AWS credentials' 'elevate timed out — run it by hand, setup step 7'
         return
     }
     $filter = '.response.results[0].accessCredentials | fromjson | "$env:AWS_ACCESS_KEY_ID=\"\(.aws_access_key)\"\n$env:AWS_SECRET_ACCESS_KEY=\"\(.aws_secret_access_key)\"\n$env:AWS_SESSION_TOKEN=\"\(.aws_session_token)\""'
@@ -663,8 +663,8 @@ print(boto3.client("sts").get_caller_identity()["Arn"])' 2>$null
             Add-Pass 'AWS credentials' 'elevate and AWS both worked'
         } else {
             Write-Bad 'the credentials came back, but AWS did not accept them'
-            Write-Info 'Do the two commands by hand — prework step 7 explains every error.'
-            Add-Fail 'AWS credentials' 'AWS rejected them' 'Run prework step 7 by hand, then 📧 reply to the workshop email'
+            Write-Info 'Do the two commands by hand — setup step 7 explains every error.'
+            Add-Fail 'AWS credentials' 'AWS rejected them' 'Run setup step 7 by hand, then 📧 reply to the workshop email'
         }
     } finally {
         Remove-Item Env:AWS_ACCESS_KEY_ID, Env:AWS_SECRET_ACCESS_KEY, Env:AWS_SESSION_TOKEN -ErrorAction SilentlyContinue
@@ -705,7 +705,7 @@ if (-not $Idsec) {
         } elseif (Confirm-Action 'Run the full rehearsal now? It gets real credentials and throws them away.') {
             Invoke-AwsRehearsal
         } else {
-            Add-Manual 'AWS credentials' 'run the elevate one-liner by hand — prework step 7'
+            Add-Manual 'AWS credentials' 'run the elevate one-liner by hand — setup step 7'
         }
     }
 }
@@ -864,7 +864,7 @@ Write-Info 'different tenant from the one idsec uses, and this script cannot tes
 Write-Info 'Open it now and sign in with your own account. If the console loads, you are'
 Write-Info 'done. No account there? Ask your manager or a colleague: everybody on the'
 Write-Info 'team has administrator rights on that tenant and can create one for you.'
-Add-Manual 'apj-secrets sign-in' 'check it in a browser — prework step 9'
+Add-Manual 'apj-secrets sign-in' 'check it in a browser — setup step 9'
 
 # --------------------------------------------------------------- summary
 
