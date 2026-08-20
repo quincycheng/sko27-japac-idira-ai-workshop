@@ -14,6 +14,13 @@ hardcoded secrets and obvious vulnerabilities. Everything is sandboxed to the
 `sandbox/` directory so a wrong path can't escape onto your laptop.
 """
 
+# Keeps this file importable on Python 3.9, which is what a managed Mac already
+# has and what the prework asks for. Without it, `-> str | None` below is a
+# TypeError the moment the module loads, so every lesson dies before its first
+# line of output. Nothing here reads annotations at runtime, so deferring them
+# costs nothing. Same line, same reason, in ui.py.
+from __future__ import annotations
+
 import os
 import re
 import subprocess

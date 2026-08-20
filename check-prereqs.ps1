@@ -191,6 +191,31 @@ function Test-Import ($Module) {
     return ($LASTEXITCODE -eq 0)
 }
 
+# Every library can be installed and Part 1 still not start. The lesson modules
+# are Python source too, and an interpreter that is too old for their syntax
+# parses them and then refuses to run them. That shows up as one error message
+# on the first lesson, in the room. So import what the lessons import.
+# Library modules only: importing 01_bare_call.py would fire a real model call.
+function Test-Part1 {  # -> $true if Part 1 will start.  Records its own ❌ row if not.
+    Push-Location (Join-Path $Project 'ai-harness-app')
+    try {
+        $out = & $VPy -c 'import ui, tools, session, agent, harness' 2>&1
+        $ok = ($LASTEXITCODE -eq 0)
+    } finally {
+        Pop-Location
+    }
+    if ($ok) {
+        Write-Good 'the Part 1 lesson code imports cleanly'
+        return $true
+    }
+    $ver = & $VPy -c 'import platform; print(platform.python_version())' 2>$null
+    Write-Bad 'the libraries are installed, but the Part 1 lesson code will not import'
+    if ($out) { Write-Dim ([string](@($out)[-1])) }
+    Write-Dim "this .venv runs Python $ver"
+    Add-Fail 'Libraries' 'Part 1 will not import' 'Delete .venv, create it again with a newer Python (see the Prework page), then re-run this script'
+    return $false
+}
+
 if (-not (Test-Path $VPy)) {
     Write-Bad 'skipped — no virtual environment yet'
     Add-Fail 'Libraries' 'blocked by .venv' 'Create the virtual environment, then re-run this script'
@@ -208,7 +233,9 @@ if (-not (Test-Path $VPy)) {
         Write-Good 'boto3 is ready (the sandbox app)'
         Write-Good 'anthropic is ready (the harness lessons in Part 1)'
         Write-Good 'rich is ready (the terminal UI)'
-        Add-Pass 'Libraries' 'boto3 + anthropic + rich'
+        if (Test-Part1) {
+            Add-Pass 'Libraries' 'boto3 + anthropic + rich'
+        }
     } else {
         Write-Bad ("missing libraries from: " + ($need -join ', '))
         if (Confirm-Action 'Install them into .venv now? (needs internet, ~1 minute)') {
@@ -219,7 +246,9 @@ if (-not (Test-Path $VPy)) {
             }
             if ((Test-Import 'boto3') -and (Test-Import 'anthropic') -and (Test-Import 'rich')) {
                 Write-Good 'boto3, anthropic and rich all import cleanly'
-                Add-Fixed 'Libraries' 'installed'
+                if (Test-Part1) {
+                    Add-Fixed 'Libraries' 'installed'
+                }
             } else {
                 Write-Bad 'the install did not finish cleanly'
                 Add-Fail 'Libraries' 'install failed' 'Re-run: .venv\Scripts\python.exe -m pip install -r ai-harness-app\requirements.txt -r sandbox-app\requirements.txt'

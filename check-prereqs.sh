@@ -185,6 +185,26 @@ check_import() {  # check_import <module> -> 0 if importable in the venv
   [ -x "$VPY" ] && "$VPY" -c "import $1" >/dev/null 2>&1
 }
 
+# Every library can be installed and Part 1 still not start. The lesson modules
+# are Python source too, and an interpreter that is too old for their syntax
+# parses them and then refuses to run them. That shows up as one error message
+# on the first lesson, in the room. So import what the lessons import.
+# Library modules only: importing 01_bare_call.py would fire a real model call.
+part1_ok() {  # -> 0 if Part 1 will start.  Records its own ❌ row if not.
+  local err ver
+  if err="$(cd "$PROJECT/ai-harness-app" && "$VPY" -c 'import ui, tools, session, agent, harness' 2>&1)"; then
+    good "the Part 1 lesson code imports cleanly"
+    return 0
+  fi
+  ver="$("$VPY" -c 'import platform; print(platform.python_version())' 2>/dev/null)"
+  bad "the libraries are installed, but the Part 1 lesson code will not import"
+  dim "$(printf '%s\n' "$err" | tail -1)"
+  dim "this .venv runs Python ${ver:-unknown}"
+  fail "Libraries" "Part 1 will not import" \
+       "Delete .venv, create it again with a newer Python (see the Prework page), then re-run this script"
+  return 1
+}
+
 if [ ! -x "$VPY" ]; then
   bad "skipped — no virtual environment yet"
   fail "Libraries" "blocked by .venv" "Create the virtual environment, then re-run this script"
@@ -200,7 +220,9 @@ else
     good "boto3 is ready (the sandbox app)"
     good "anthropic is ready (the harness lessons in Part 1)"
     good "rich is ready (the terminal UI)"
-    pass "Libraries" "boto3 + anthropic + rich"
+    if part1_ok; then
+      pass "Libraries" "boto3 + anthropic + rich"
+    fi
   else
     bad "missing libraries from: ${NEED[*]}"
     if ask "Install them into .venv now? (needs internet, ~1 minute)"; then
@@ -212,7 +234,9 @@ else
       done
       if [ "$OK" = 1 ] && check_import boto3 && check_import anthropic && check_import rich; then
         good "boto3, anthropic and rich all import cleanly"
-        fixed "Libraries" "installed"
+        if part1_ok; then
+          fixed "Libraries" "installed"
+        fi
       else
         bad "the install did not finish cleanly"
         fail "Libraries" "install failed" \
