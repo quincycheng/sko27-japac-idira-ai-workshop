@@ -18,9 +18,8 @@
   <p class="kicker">Part 1 · Build your own AI harness</p>
   <h1>Tools and agents 🔧</h1>
   <p class="standfirst">
-    You will see what “agentic” means: one loop and thirty lines of Python. You will race the agent at
-    finding hardcoded secrets, watch the old model drop out because it cannot use tools, and see where
-    the agent's reach is decided.
+    You will see what “agentic” means: one loop and thirty lines of Python. You will race the agent
+    at finding hardcoded secrets. You will also see where the agent's reach is decided.
   </p>
   <ul class="meta">
     <li class="tag-must">Everyone</li>
@@ -71,9 +70,6 @@
 
 <h2>Your Tasks</h2>
 
-<p class="section-intro">Seven steps. You hunt for secrets first, then the agent does. That way you can
-judge its work instead of being impressed by it.</p>
-
 <div class="note">
   <p><span class="callout-label">🧪 The rules of the sandbox.</span> Everything the agent can see lives
   in <code>ai-harness-app/sandbox/</code>: six files, none longer than 40 lines. Every secret in there
@@ -92,7 +88,7 @@ grep -rn "KEY\|SECRET\|TOKEN\|PASSWORD" sandbox</code></pre></div>
       <div class="code"><pre><code>Get-ChildItem sandbox -Force
 Select-String -Path sandbox\* -Pattern "KEY|SECRET|TOKEN|PASSWORD"</code></pre></div>
     </div>
-    <p>Or open the files in an editor and read them. Either is fine, because reading is the point. Then
+    <p>Or open the files in an editor and read them. Then
     <strong>write down two numbers</strong> before you go on: how many <em>files</em> hold a secret, and
     how many <em>secret values</em> you found. No peeking below.</p>
     <div class="warn">
@@ -152,11 +148,10 @@ Select-String -Path sandbox\* -Pattern "KEY|SECRET|TOKEN|PASSWORD"</code></pre><
 <span style="color: #e8c07a; text-decoration-color: #e8c07a; font-weight: bold">  · 4 tools, sent on every single turn whether used or not.</span></code></pre></div>
 <!-- END GENERATED: terminal 04-refusal -->
     <p>That error is from Bedrock, not from us. No prompt, no retry and no budget changes it.
-    <strong>Tools are a capability, not a setting.</strong> Reuse that sentence the next time somebody
-    proposes to fix an agent problem by rewording the instructions.</p>
+    <strong>Tools are a capability, not a setting.</strong></p>
     <div class="note">
-      <p><span class="callout-label">📇 Why capabilities are printed in the footer.</span> Format is a
-      replaceable part. Capability is not. An adapter can make two models answer the same call. It
+      <p><span class="callout-label">📇 Why capabilities are printed in the footer.</span> An adapter can
+      make two models answer the same call. It
       cannot make last year's model grow tool support. Every model in <code>config.py</code> carries four
       facts, and the app prints them: tools, system role, window and vintage. That is the honest answer
       to “can we bring our own model?”</p>
@@ -206,8 +201,7 @@ Select-String -Path sandbox\* -Pattern "KEY|SECRET|TOKEN|PASSWORD"</code></pre><
       </tbody>
     </table>
     <p>Those line numbers are not decoration. They are why the agent can cite <code>config.py:4</code>
-    instead of “somewhere in the config”. How a tool shapes its output is a real lever on answer
-    quality. And <code>run_command</code> takes a <strong>name</strong>, not a command, so the model
+    instead of “somewhere in the config”. And <code>run_command</code> takes a <strong>name</strong>, not a command, so the model
     cannot write a shell string at all. Making the dangerous thing impossible to express beats checking
     a dangerous input.</p>
     <div class="note">
@@ -259,15 +253,13 @@ Select-String -Path sandbox\* -Pattern "KEY|SECRET|TOKEN|PASSWORD"</code></pre><
   <div class="step-head"><div class="step-num">7</div><p class="step-title">Quit the script</p></div>
   <div class="step-body">
     <div class="code"><pre><code>/exit</code></pre></div>
-    <p>You are back at your own terminal prompt. Every run of the script leaves the same way. Keep this
-    window open for the next lesson.</p>
+    <p>You are back at your own terminal prompt. Keep this window open for the next lesson.</p>
   </div>
 </div>
 
 <h2>Knowledge Check</h2>
 
-<p class="section-intro">Three questions on what the loop actually did. Pick an answer to see why it is
-right or wrong.</p>
+<p class="section-intro">Pick an answer to see why it is right or wrong.</p>
 
 <div class="check" data-answer="b">
   <p class="check-q">The model “used a tool”. What actually happened?</p>
@@ -310,9 +302,8 @@ right or wrong.</p>
 <details>
   <summary>Show the annotated code</summary>
 
-<p class="section-intro">Skip this if code is not your thing. If it is, learn to describe
-<code>agent.py</code> from memory. It is thirty lines, and five of them are the whole of agent
-security.</p>
+<p class="section-intro">Learn to describe <code>agent.py</code> from memory. It is thirty lines, and
+five of them are the whole of agent security.</p>
 
 <!-- annotated-source: 04_tools_and_agents.py -->
 <!-- BEGIN GENERATED: 04_tools_and_agents.py — build-lab-code.py owns this block -->
@@ -339,22 +330,18 @@ security.</p>
   <div class="step-body">
     <p>In <code>agent.py</code>, set <code>MAX_ITERATIONS = 2</code> and run the lesson again.</p>
     <div class="code"><pre><code>(stopped at the iteration cap of 2)</code></pre></div>
-    <p>Cut off mid-investigation, with a confident partial answer. That is the trade. <strong>Every
-    limit you add costs capability.</strong> No setting is both safest and most useful, which is why
-    this is a design conversation and not a checkbox. Put it back to 20.</p>
+    <p>Cut off mid-investigation, with a confident partial answer. <strong>Every limit you add costs
+    capability.</strong> No setting is both safest and most useful. Put it back to 20.</p>
   </div>
 </div>
 
 <div class="ask">
   🗣️ <strong>Ask your agent:</strong> “Read <code>ai-harness-app/tools.py</code> and tell me which tool
   you would attack first, and what you would add to <code>run_command</code>'s allowlist to make it
-  dangerous.” A five-line answer that will serve you well in a customer's architecture review.
+  dangerous.”
 </div>
 
 <h2>What you have built so far</h2>
-
-<p class="section-intro">Three rows move at once today, and they are the three that turn a chatbot into
-something with reach.</p>
 
 <!-- scorecard: 04 -->
 <!-- BEGIN GENERATED: scorecard 04 — build-lab-code.py owns this block -->
@@ -388,8 +375,6 @@ something with reach.</p>
 
 <h2>Where Idira fits</h2>
 
-<p class="section-intro">Each lesson names the risk it just demonstrated and the Palo Alto Networks
-product that answers it.</p>
 
 <!-- idira: 04 -->
 <!-- BEGIN GENERATED: idira 04 — build-lab-code.py owns this block -->

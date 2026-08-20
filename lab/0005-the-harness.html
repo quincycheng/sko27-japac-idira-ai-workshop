@@ -49,8 +49,8 @@ is the last one.</p>
 
 <h2>Your Tasks</h2>
 
-<p class="section-intro">Four tasks, then three optional ones. They all happen inside the session you
-start in task 1. Each prompt is one line, so each one is a single Enter in the chatbox.</p>
+<p class="section-intro">Every task happens inside the session you start in task 1. Each prompt is one line, so each one is
+a single Enter in the chatbox.</p>
 
 <div class="note">
   <p><span class="callout-label">⏱️ Three of these are optional.</span> The model takes a while to
@@ -63,7 +63,7 @@ start in task 1. Each prompt is one line, so each one is a single Enter in the c
   <div class="step-body">
     <div class="code"><pre><code>python 05_harness.py</code></pre></div>
     <p>First a panel drawn from what is <em>actually wired up</em>. It is not a hand-typed list, so it
-    cannot go stale when somebody adds a skill. This is the screen to photograph.</p>
+    cannot go stale when somebody adds a skill.</p>
 <!-- terminal: 05-harness -->
 <!-- BEGIN GENERATED: terminal 05-harness — build-lab-code.py owns this block -->
 <div class="code code-term"><pre><code><span style="color: #265bff; text-decoration-color: #265bff">╭─ </span><span style="color: #265bff; text-decoration-color: #265bff; font-weight: bold">the harness — seven parts, one loop</span><span style="color: #265bff; text-decoration-color: #265bff"> ────────────────────────────────────────────────╮</span>
@@ -95,7 +95,7 @@ start in task 1. Each prompt is one line, so each one is a single Enter in the c
     </div>
     <p>Now read the last line of the panel again. Every tool schema is sent on every turn, before anybody
     has said anything. Lesson 02's <code>in=</code> problem has not gone away. It has been spent on
-    purpose. That is the difference between a harness and a mess.</p>
+    purpose.</p>
   </div>
 </div>
 
@@ -109,8 +109,8 @@ start in task 1. Each prompt is one line, so each one is a single Enter in the c
     <code>skills/vuln-report/SKILL.md</code> arrives, and only that one file. Then ask for the same thing
     the other way:</p>
     <div class="code"><pre><code>Now write the same report without using the skill.</code></pre></div>
-    <p>Same model, same question, a different shape of answer. That is Lesson 03's trade, spent on
-    purpose. You pay for the catalogue, not for the library.</p>
+    <p>Same model, same question, a different shape of answer. You pay for the catalogue, not for the
+    library.</p>
   </div>
 </div>
 
@@ -190,8 +190,8 @@ start in task 1. Each prompt is one line, so each one is a single Enter in the c
     dozen tool results were billed inside its own fresh context. What came back to your conversation is ten
     lines. <strong>That trade is the whole reason subagents exist.</strong></p>
     <p>Asking for it is not a cheat. Left alone the model does the audit inline, which is reasonable for
-    six files. Naming the delegation is also how it happens in practice. You hand off the half of a job
-    whose <em>reading</em> you do not want in your own window.</p>
+    six files. You hand off the half of a job whose <em>reading</em> you do not want in your own
+    window.</p>
     <div class="warn">
       <p><span class="callout-label">⚠️ What the subagent does not get.</span> Your conversation. It
       starts from nothing but the brief. That is a feature and a trap. A badly written brief produces a
@@ -232,8 +232,7 @@ start in task 1. Each prompt is one line, so each one is a single Enter in the c
 
 <h2>Knowledge Check</h2>
 
-<p class="section-intro">Three questions on the parts you just wired up. Pick an answer to see why it is
-right or wrong.</p>
+<p class="section-intro">Pick an answer to see why it is right or wrong.</p>
 
 <div class="check" data-answer="b">
   <p class="check-q">Which one of the following components is a security control?</p>
@@ -276,9 +275,8 @@ right or wrong.</p>
 <details>
   <summary>Show the annotated code</summary>
 
-<p class="section-intro">Skip this if code is not your thing. If it is, <code>harness.py</code> is long
-and organised by component, so the ◂ ▸ buttons in each header walk you through the highlights in
-order.</p>
+<p class="section-intro"><code>harness.py</code> is long and organised by component. The ◂ ▸ buttons in
+each header walk you through the highlights in order.</p>
 
 <!-- annotated-source: 05_harness.py -->
 <!-- BEGIN GENERATED: 05_harness.py — build-lab-code.py owns this block -->
@@ -351,8 +349,6 @@ now a line you have built yourself.</p>
 
 <h2>Where Idira fits</h2>
 
-<p class="section-intro">Each lesson names the risk it just showed, and the Palo Alto Networks product
-that answers it.</p>
 
 <!-- idira: 05 -->
 <!-- BEGIN GENERATED: idira 05 — build-lab-code.py owns this block -->
