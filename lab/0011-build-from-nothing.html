@@ -18,9 +18,8 @@
   <p class="kicker">Part 3 · Optional Deep Dives</p>
   <h1>Build something from nothing 🎸</h1>
   <p class="standfirst">
-    By the end of this lesson you will have a working tool you asked for in one sentence, in a folder
-    that was empty when you started. You will also watch the agent make a credential decision you never
-    asked it to make, and compare it with the person sitting next to you.
+    You will build a working tool you asked for in one sentence, in a folder that was empty when you
+    started. You will watch the agent make a credential decision you never asked it to make.
   </p>
   <ul class="meta">
     <li class="tag-opt">Optional deep dive</li>
@@ -39,14 +38,10 @@
 
 <h2>Your Tasks</h2>
 
-<p class="section-intro">Four steps. The first two are the fun part and the last two are the security
-lesson hiding inside it. Tick each one off as you go.</p>
-
 <div class="step">
   <div class="step-head"><div class="step-num">1</div><p class="step-title">Start in an empty folder</p></div>
   <div class="step-body">
-    <p>Working somewhere new matters: the agent reads the folder it starts in, so a fresh folder
-    means a blank slate with none of the sandbox app's baggage.</p>
+    <p>The agent reads the folder it starts in, so a fresh folder means a blank slate.</p>
     <div class="os os-mac">
       <div class="code"><pre><code>mkdir ~/my-first-app
 cd ~/my-first-app
@@ -69,8 +64,8 @@ claude</code></pre></div>
 <div class="step">
   <div class="step-head"><div class="step-num">2</div><p class="step-title">Ask for one small, genuinely useful thing</p></div>
   <div class="step-body">
-    <p>The trick is to pick something you would actually use, and to keep it to one job. Good first
-    asks, all from real security work:</p>
+    <p>Pick something you would actually use, and keep it to one job. Good first asks, all from real
+    security work:</p>
     <ul>
       <li>“Write a Python script that reads a CSV of failed logins and prints the top 10 source
       IPs.”</li>
@@ -112,8 +107,7 @@ claude</code></pre></div>
   <div class="step-body">
     <p>Finish with the habit worth taking to work:</p>
     <div class="code"><pre><code>Now review your own script for hardcoded secrets and insecure defaults. Be harsh.</code></pre></div>
-    <p>Agents are much better at criticising code than at getting it right first time. That
-    asymmetry is free, and it costs you one sentence.</p>
+    <p>Agents are much better at criticising code than at getting it right first time.</p>
     <p>If your project is in git, <code>/security-review</code> does the same job with a proper
     security-focused prompt behind it. Try both.</p>
     <p>Now leave the agent. Type <code>/exit</code>, or press <code>Ctrl-C</code> twice. You are back at
@@ -123,8 +117,7 @@ claude</code></pre></div>
 
 <h2>Knowledge Check</h2>
 
-<p class="section-intro">One question, on the only conclusion that survives this experiment. Pick an
-answer to see why it is right or wrong. A wrong one is worth reading.</p>
+<p class="section-intro">Pick an answer to see why it is right or wrong.</p>
 
 <div class="check" data-answer="c">
   <p class="check-q">Two people run the same prompt and get different credential handling. Why does that matter?</p>
@@ -146,8 +139,6 @@ answer to see why it is right or wrong. A wrong one is worth reading.</p>
 
 <h2>Where Idira fits</h2>
 
-<p class="section-intro">Each lesson names the risk it just demonstrated and the Palo Alto Networks
-product that answers it.</p>
 
 <!-- idira: 11 -->
 <!-- BEGIN GENERATED: idira 11 — build-lab-code.py owns this block -->

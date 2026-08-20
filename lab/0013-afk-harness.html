@@ -18,9 +18,8 @@
   <p class="kicker">Part 3 · Optional Deep Dives</p>
   <h1>Build something AFK 🛋️</h1>
   <p class="standfirst">
-    By the end of this lesson you will have been interviewed by an agent, approved a spec and a set of
-    tickets, and then left the room while it built the thing and reviewed its own work. The last phase
-    runs without you, which is the whole point.
+    You will be interviewed by an agent, approve a spec and a set of tickets, then leave the room
+    while it builds and reviews its own work. The last phase runs without you.
   </p>
   <ul class="meta">
     <li class="tag-opt">Optional deep dive</li>
@@ -140,8 +139,7 @@ when it is done, rather than being a layer that only makes sense once three more
 
 <h2>Your Tasks</h2>
 
-<p class="section-intro">Six steps, and the shape of them matters: steps 2 to 4 need all of your
-attention, step 5 needs none of it. Tick each one off as you go.</p>
+<p class="section-intro">Steps 2 to 4 need all of your attention. Step 5 needs none of it.</p>
 
 <div class="step">
   <div class="step-head"><div class="step-num">1</div><p class="step-title">Install the harness</p></div>
@@ -154,8 +152,7 @@ attention, step 5 needs none of it. Tick each one off as you go.</p>
     <div class="note">
       <p><span class="callout-label">⌨️ Type these as slash commands.</span> Several of these skills
       are deliberately <em>not</em> auto-selectable. The agent will not decide on its own to start
-      writing tickets. You invoke each phase explicitly. That is a safety property, not an
-      inconvenience.</p>
+      writing tickets. You invoke each phase explicitly.</p>
       <p>Type <code>/</code> and start typing the name, then pick it from the menu. If your terminal
       shows it with the plugin in front, as
       <code>/mattpocock-skills:grill-with-docs</code>, that is the same thing.</p>
@@ -169,16 +166,14 @@ attention, step 5 needs none of it. Tick each one off as you go.</p>
     <p>Pick something you actually want, and keep it to one sitting: <em>“a small tool that
     reads our incident CSV export and produces a weekly summary in Markdown.”</em></p>
     <div class="code"><pre><code>/grill-with-docs</code></pre></div>
-    <p>Then describe what you want in a sentence or two, and brace yourself. It will interview you
-    in rounds, several numbered questions at a time, each with a recommended answer. It will not
-    start building.</p>
+    <p>Then describe what you want in a sentence or two. It will interview you in rounds, several
+    numbered questions at a time, each with a recommended answer. It will not start building.</p>
     <p>Answer honestly, including “I don't know, you pick”. Every question you answer now is a
     correction you do not have to make later, when you are not in the room.</p>
     <div class="win">
       <p><span class="callout-label">💡 The bit that surprises everyone.</span> This is the phase
       that feels slow and looks like it is not producing anything. It is the phase doing the real
-      work. You are watching your own requirements get sharper in real time, and half the questions
-      are ones you had not thought about.</p>
+      work. Half the questions are ones you had not thought about.</p>
     </div>
   </div>
 </div>
@@ -188,9 +183,8 @@ attention, step 5 needs none of it. Tick each one off as you go.</p>
   <div class="step-body">
     <p>When the questions run out:</p>
     <div class="code"><pre><code>/to-spec</code></pre></div>
-    <p>You get a written specification. <strong>Read it properly.</strong> This is your real
-    checkpoint. It is the last place where a misunderstanding costs you a sentence instead of a
-    rebuild.</p>
+    <p>You get a written specification. <strong>Read it properly.</strong> It is the last place where
+    a misunderstanding costs you a sentence instead of a rebuild.</p>
     <p>Wrong? Say so in plain English and have it revised. Cheap now.</p>
   </div>
 </div>
@@ -201,9 +195,8 @@ attention, step 5 needs none of it. Tick each one off as you go.</p>
     <div class="code"><pre><code>/to-tickets</code></pre></div>
     <p>The spec becomes an ordered list of tickets, each a vertical slice, with the dependencies
     between them made explicit, so you can see which ones block which.</p>
-    <p>Now do the thing this lesson is really about: <strong>look at how small they are.</strong>
-    Your instinct will say this is too granular. That instinct is calibrated for humans, who carry
-    context between tasks for free. An agent does not.</p>
+    <p><strong>Look at how small they are.</strong> Your instinct will say this is too granular. That
+    instinct is calibrated for humans, who carry context between tasks for free. An agent does not.</p>
     <div class="ask">
       🗣️ Try asking: “Why is ticket 3 separate from ticket 4?” The answer is usually about keeping
       each one inside a single fresh context, which is exactly the point.
@@ -218,9 +211,8 @@ attention, step 5 needs none of it. Tick each one off as you go.</p>
     <p>Now leave it alone. It works through the tickets, writing tests as it goes, running them and
     any type check the project has, committing to the current branch, and reviewing its own work at
     the end.</p>
-    <p>Go and get a coffee, or talk to the person next to you about Lesson 10. The point of the
-    exercise is to <em>not</em> watch. If you sit there supervising, you have rebuilt the thing this
-    replaces.</p>
+    <p>Go and get a coffee. The point of the exercise is to <em>not</em> watch. If you sit there
+    supervising, you have rebuilt the thing this replaces.</p>
     <div class="warn">
       <p><span class="callout-label">📌 It commits as it goes,</span> to whatever branch you are
       currently on. If that matters to you, make a branch before you start, or ask the agent to make
@@ -238,12 +230,12 @@ attention, step 5 needs none of it. Tick each one off as you go.</p>
     <p>Then it reviews along two independent axes at the same time: does the code meet a general
     quality baseline, and does it do what the <em>spec</em> said. Both run as separate reviewers, so
     neither one's opinion contaminates the other's.</p>
-    <p>Two axes matters. Code can be well written and answer the wrong question, and a review that
-    only looks at style will sign it off.</p>
+    <p>Code can be well written and answer the wrong question, and a review that only looks at style
+    will sign it off.</p>
     <div class="note">
       <p><span class="callout-label">🔐 And add the one from today.</span> Follow up with
-      <code>/security-review</code>. You just generated a pile of code you did not read while you
-      were not in the room. Lesson 08's habit applies most exactly here.</p>
+      <code>/security-review</code>. You just generated code you did not read. Lesson 08's habit
+      applies here.</p>
     </div>
     <p>Now leave the agent. Type <code>/exit</code>, or press <code>Ctrl-C</code> twice. You are back at
     your normal terminal prompt.</p>
@@ -252,8 +244,7 @@ attention, step 5 needs none of it. Tick each one off as you go.</p>
 
 <h2>Knowledge Check</h2>
 
-<p class="section-intro">Two questions on ticket size and on where your attention belongs. Pick an answer
-to see why it is right or wrong. A wrong one is worth reading.</p>
+<p class="section-intro">Pick an answer to see why it is right or wrong.</p>
 
 <div class="check" data-answer="b">
   <p class="check-q">Why does this workflow break work into deliberately small tickets?</p>
@@ -287,8 +278,6 @@ to see why it is right or wrong. A wrong one is worth reading.</p>
 
 <h2>Where Idira fits</h2>
 
-<p class="section-intro">Each lesson names the risk it just demonstrated and the Palo Alto Networks
-product that answers it.</p>
 
 <!-- idira: 13 -->
 <!-- BEGIN GENERATED: idira 13 — build-lab-code.py owns this block -->

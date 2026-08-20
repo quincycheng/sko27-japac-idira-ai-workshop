@@ -18,10 +18,9 @@
   <p class="kicker">Part 3 · Optional Deep Dives</p>
   <h1>Bring your own MCP server 🔗</h1>
   <p class="standfirst">
-    This lesson follows <a href="0010-identity-broker.html">Lesson 10</a>. There you used an MCP server
+    This lesson follows <a href="0010-identity-broker.html">Lesson 10</a>, where you used an MCP server
     somebody else had registered. Here you register one yourself, in front of <strong>Microsoft Entra
-    ID</strong>. Most of your clients run Entra ID, so this is the demo they will ask you for. It needs
-    your own tenants and your own admin rights, so it is a runbook to work through after the day.
+    ID</strong>. It needs your own tenants and your own admin rights, so work through it after the day.
   </p>
   <ul class="meta">
     <li class="tag-opt">Optional deep dive</li>
@@ -101,9 +100,8 @@ the same way <code>analyze_domain</code> became <code>mcp__idira-broker__analyze
 
 <h2>Your Tasks</h2>
 
-<p class="section-intro">Twelve steps in three places. Steps 1 to 6 are yours as the Entra
-administrator, 7 to 10 as the Idira administrator, and 11 and 12 as the user. Do them in order. Tick
-each one off as you go.</p>
+<p class="section-intro">Steps 1 to 6 are yours as the Entra administrator, 7 to 10 as the Idira administrator, 11 and 12
+as the user. Do them in order.</p>
 
 <h3>In Entra ID</h3>
 
@@ -112,9 +110,9 @@ each one off as you go.</p>
   <div class="step-body">
     <p>Sign in to <a href="https://entra.microsoft.com/">entra.microsoft.com</a> as your Global
     Administrator account.</p>
-    <p>Use the <strong>search bar at the top</strong> of the page rather than the sidebar. Type
-    <code>App registrations</code> and pick it under <strong>Services</strong>. Microsoft rearranges the
-    sidebar; the search bar stays where it is.</p>
+    <p>Use the <strong>search bar at the top</strong> rather than the sidebar, because Microsoft
+    rearranges the sidebar. Type <code>App registrations</code> and pick it under
+    <strong>Services</strong>.</p>
     <p>Click <strong>+ New registration</strong> and fill in three fields:</p>
     <table>
       <tr><th>Field</th><th>Set it to</th></tr>
@@ -209,10 +207,9 @@ each one off as you go.</p>
       <figcaption>Nine amber warnings and “Could not grant admin consent”. The cause is not your
       permissions.</figcaption>
     </figure>
-    <p>The API has no <strong>service principal</strong> in your tenant yet. A service principal is the
-    local record of an application. The portal button cannot consent to something that has no local
-    record, so you create the record first. Any one of these three does it. Pick whichever you already
-    have open.</p>
+    <p>The API has no <strong>service principal</strong> in your tenant yet, which is the local record of
+    an application. The portal button cannot consent without one, so create it first. Any one of these
+    three does it.</p>
     <p><strong>Option 1, Cloud Shell.</strong> Click the Cloud Shell icon <code>&gt;_</code> at the top
     of the portal, choose Bash or PowerShell, and run this with your own client ID:</p>
     <div class="code"><pre><code>az ad app permission admin-consent --id &lt;YOUR_CLIENT_ID&gt;</code></pre></div>
@@ -261,7 +258,7 @@ each one off as you go.</p>
     <p>Skip this and the demo still works. Create the two users in <strong>Idira Cloud Directory</strong>
     instead, and use those in the policies in steps 9 and 10.</p>
     <p>Do it if you want the same Entra accounts to sign in to Idira, which is what a client will have.
-    It is a SAML 2.0 trust with Entra ID as the identity provider and Idira as the service provider.</p>
+    It is a SAML 2.0 trust: Entra ID is the identity provider, Idira the service provider.</p>
     <p><strong>In Entra ID.</strong> Go to <strong>Enterprise applications &gt; New application &gt;
     Create your own application</strong>. Name it, and choose <strong>Integrate any other application
     you don't find in the gallery</strong>. Under <strong>Manage</strong>, open <strong>Single
@@ -305,8 +302,7 @@ each one off as you go.</p>
       authenticated.</figcaption>
     </figure>
     <p>It comes back as <strong>OAuth 2.1</strong>. Keep the recommended option, <strong>Keep the MCP
-    server's OAuth app in Idira</strong>. That is the option where Idira holds the secret and your agent
-    never sees it.</p>
+    server's OAuth app in Idira</strong>: Idira holds the secret, and your agent never sees it.</p>
     <figure class="shot">
       <img src="assets/0015/10-oauth-and-redirect-url.png" alt="The OAuth section of the form, with a redacted redirect URL and empty client ID and secret fields.">
       <figcaption>Copy the <strong>Redirect URL</strong> now. Then paste the client ID from step 1 and
@@ -353,8 +349,8 @@ each one off as you go.</p>
 <div class="step">
   <div class="step-head"><div class="step-num">9</div><p class="step-title">Write the full-privilege policy</p></div>
   <div class="step-body">
-    <p>Go to <strong>Manage &gt; Policies &gt; AI agents access</strong> and add a policy. This is the
-    screen you could only read in Lesson 10. It has the same four parts.</p>
+    <p>Go to <strong>Manage &gt; Policies &gt; AI agents access</strong> and add a policy. It has the same
+    four parts you could only read in Lesson 10.</p>
     <p><strong>1 · General details.</strong> Name it after what it allows, and own it yourself.</p>
     <p><strong>2 · MCP servers and tools.</strong> Add the server from step 7:</p>
     <figure class="shot">
@@ -460,18 +456,17 @@ each one off as you go.</p>
 <div class="step">
   <div class="step-head"><div class="step-num">12</div><p class="step-title">Get refused as the limited user, then read the log</p></div>
   <div class="step-body">
-    <p>Now change who you are. Sign out of both your Idira tenant and your Entra tenant, in the browser.
-    Then clear the agent's authentication. In Claude Code, run <code>/mcp</code>, select
-    <code>entra-mcp</code>, and clear its authentication. If you cannot see that option, remove the
-    server and add it again:</p>
+    <p>Now change who you are. Sign out of both your Idira tenant and your Entra tenant in the browser.
+    In Claude Code, run <code>/mcp</code>, select <code>entra-mcp</code>, and clear its authentication. If
+    you cannot see that option, remove the server and add it again:</p>
     <div class="code"><pre><code>claude mcp remove entra-mcp</code></pre></div>
     <p>Authenticate again, this time as the <strong>limited-privilege</strong> user. Then run the same
     questions:</p>
     <div class="code"><pre><code>List all users in Entra ID.</code></pre></div>
     <div class="code"><pre><code>What properties are available on the Entra ID group entity?</code></pre></div>
-    <p>The first one works, because <code>microsoft_graph_get</code> is the tool you allowed. The second
-    needs <code>microsoft_graph_list_properties</code>, which this user has no policy for, so it is
-    refused. The agent may try another tool instead. That is normal, and each attempt is logged.</p>
+    <p>The first works, because <code>microsoft_graph_get</code> is the tool you allowed. The second needs
+    <code>microsoft_graph_list_properties</code>, which this user has no policy for, so it is refused. The
+    agent may try another tool instead, and each attempt is logged.</p>
     <p>Now go to the <strong>Audit and Reports</strong> space in Idira. Set the time range to the last
     24 hours and the service name to <strong>Secure AI Agents</strong>.</p>
     <figure class="shot">
@@ -493,8 +488,7 @@ each one off as you go.</p>
 
 <h2>Your five-minute demo</h2>
 
-<p class="section-intro">The client version of what you just built. Six beats, in their own directory,
-which is why it lands harder than Lesson 10.</p>
+<p class="section-intro">The client version of what you just built. Six beats, in their own directory.</p>
 
 <ol>
   <li><strong>Show the app registration</strong> and its nine read scopes. “This is all the agent can
@@ -519,8 +513,7 @@ which is why it lands harder than Lesson 10.</p>
 
 <h2>Knowledge Check</h2>
 
-<p class="section-intro">Two questions on where the limits live. Pick an answer to see why it is right
-or wrong.</p>
+<p class="section-intro">Pick an answer to see why it is right or wrong.</p>
 
 <div class="check" data-answer="b">
   <p class="check-q">Both test users are Global Reader in Entra ID, yet one gets refused. Who refused it?</p>
@@ -548,8 +541,6 @@ or wrong.</p>
 
 <h2>Where Idira fits</h2>
 
-<p class="section-intro">Each lesson names the risk it just demonstrated and the Palo Alto Networks
-product that answers it.</p>
 
 <!-- idira: 15 -->
 <!-- BEGIN GENERATED: idira 15 — build-lab-code.py owns this block -->
