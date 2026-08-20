@@ -19,8 +19,7 @@
   <h1>One call to a model ⚛️</h1>
   <p class="standfirst">
     You will run one call to a model, with no harness around it. You will see the two things it cannot
-    do: remember you, and act. You will also read the numbers it prints: context window, tokens sent
-    and received, and stop reason.
+    do: remember you, and act.
   </p>
   <ul class="meta">
     <li class="tag-must">Everyone</li>
@@ -33,9 +32,6 @@
 
 <h2>Your Tasks</h2>
 
-<p class="section-intro">Five steps. The first two set up your terminal. The next two are the lesson.
-The last one closes the script. Tick each one off as you go.</p>
-
 <div class="warn">
   <p><span class="callout-label">🏠 Doing this at home?</span> Yes. You do this lesson before the
   session now, at your own desk. The room starts at
@@ -47,10 +43,9 @@ The last one closes the script. Tick each one off as you go.</p>
 <div class="step">
   <div class="step-head"><div class="step-num">1</div><p class="step-title">Access AWS</p></div>
   <div class="step-body">
-    <p>Ask Idira for AWS credentials. Two commands, the same ones you ran in setup step 7. First
-    log in:</p>
+    <p>Ask Idira for AWS credentials. First log in:</p>
     <div class="code"><pre><code>idsec login</code></pre></div>
-    <p>Sign in with your own CYBRWorld account. Then ask for the credentials. Use the
+    <p>Sign in with your own CYBRWorld account. Then ask for the credentials, using the
     <strong>Copy</strong> button:</p>
     <div class="os os-mac">
       <div class="code"><pre><code>eval "$(idsec exec sca cloud-access elevate --csp aws --workspace-id 409556437035 --roleIds arn:aws:iam::409556437035:role/CW-SCA-AdminAccess --raw | jq -r '.response.results[0].accessCredentials | fromjson | "export AWS_ACCESS_KEY_ID=\(.aws_access_key)\nexport AWS_SECRET_ACCESS_KEY=\(.aws_secret_access_key)\nexport AWS_SESSION_TOKEN=\(.aws_session_token)"')"</code></pre></div>
@@ -59,7 +54,7 @@ The last one closes the script. Tick each one off as you go.</p>
       <div class="code"><pre><code>idsec exec sca cloud-access elevate --csp aws --workspace-id 409556437035 --roleIds arn:aws:iam::409556437035:role/CW-SCA-AdminAccess --raw | jq -r '.response.results[0].accessCredentials | fromjson | "$env:AWS_ACCESS_KEY_ID=\"\(.aws_access_key)\"\n$env:AWS_SECRET_ACCESS_KEY=\"\(.aws_secret_access_key)\"\n$env:AWS_SESSION_TOKEN=\"\(.aws_session_token)\""' | Invoke-Expression</code></pre></div>
     </div>
     <p>Nothing prints. That is success. The credentials are in this terminal window only, and they
-    expire. Stuck? <a href="0000-setup.html">Setup step 7</a> covers every error this can give you.</p>
+    expire. Stuck? <a href="0000-setup.html">Setup step 7</a> covers every error.</p>
   </div>
 </div>
 
@@ -78,8 +73,7 @@ cd ai-harness-app</code></pre></div>
 $env:AWS_REGION="us-east-1"
 cd ai-harness-app</code></pre></div>
     </div>
-    <p>Your prompt should now start with <code>(.venv)</code>. You are in the folder these six lessons
-    live in.</p>
+    <p>Your prompt should now start with <code>(.venv)</code>.</p>
     <div class="warn">
       <p><span class="callout-label"><code>No module named anthropic</code>? Try this first.</span>
       Run the setup script from the workshop folder. It checks everything and installs what is
@@ -93,7 +87,7 @@ cd ai-harness-app</code></pre></div>
   <div class="step-head"><div class="step-num">3</div><p class="step-title">Make one call to a model</p></div>
   <div class="step-body">
     <div class="code"><pre><code>python 01_bare_call.py</code></pre></div>
-    <p>You get a banner, an answer in a panel, and a four-line footer. Learn to read that footer. It
+    <p>You get a banner, an answer in a panel, and a four-line footer. Learn to read that footer: it
     appears after every call in Part 1.</p>
     <!-- terminal: 01 -->
 <!-- BEGIN GENERATED: terminal 01 — build-lab-code.py owns this block -->
@@ -119,9 +113,9 @@ cd ai-harness-app</code></pre></div>
 <span style="color: #6c6c6c; text-decoration-color: #6c6c6c">  ░░░░░░░░░░░░░░░░░░░░░░░░</span><span style="color: #265bff; text-decoration-color: #265bff; font-weight: bold">    0.3% of the window</span>
 <span style="color: #6c6c6c; text-decoration-color: #6c6c6c">  history: dropped</span></code></pre></div>
 <!-- END GENERATED: terminal 01 -->
-    <p>The panel title shows the name of the LLM model: <code>llama3-8b-instruct</code>, not Claude.
-    The line above the panel is the <strong>capability record</strong>, a list of what this model can
-    do. Two entries matter:</p>
+    <p>The panel title names the model: <code>llama3-8b-instruct</code>, not Claude. The line above the
+    panel is the <strong>capability record</strong>, a list of what this model can do. Two entries
+    matter:</p>
     <ul>
       <li><strong><code>tools=no</code></strong>: this model cannot call anything. Lesson 04 switches
         to a model that can.</li>
@@ -147,11 +141,11 @@ cd ai-harness-app</code></pre></div>
     <div class="code"><pre><code>Now say that again, but shorter.</code></pre></div>
     <p>The model has never seen your first question. It does not know what “that” means, because the
     first exchange was not sent with the second one.</p>
-    <p>Check the last line of the footer: <code>history: dropped</code>. Check <code>in=</code> too. It
+    <p>The last line of the footer reads <code>history: dropped</code>. Check <code>in=</code> too. It
     stays small however long you type, because nothing is kept.</p>
     <div class="code"><pre><code>/context</code></pre></div>
-    <p>That shows everything the model is about to be sent: your last message, and nothing else. Type
-    <code>/help</code> for the other commands. They use Claude Code's names, so you will reuse them in
+    <p>That shows everything the model is about to be sent: your last message, and nothing else.
+    <code>/help</code> lists the other commands. They use Claude Code's names, so you reuse them in
     Part 2.</p>
     <div class="stop">
       <p><span class="callout-label">🧱 This is the wall, and there are two of them.</span> This model
@@ -165,15 +159,14 @@ cd ai-harness-app</code></pre></div>
   <div class="step-head"><div class="step-num">5</div><p class="step-title">Quit the script</p></div>
   <div class="step-body">
     <div class="code"><pre><code>/exit</code></pre></div>
-    <p>You are back at your own terminal prompt, with <code>(.venv)</code> still on. Every script in
-    Part 1 quits the same way. Keep this window open for the next lesson.</p>
+    <p>Your own prompt returns, with <code>(.venv)</code> still on. Every script in Part 1 quits the
+    same way. Keep this window open for the next lesson.</p>
   </div>
 </div>
 
 <h2>Knowledge Check</h2>
 
-<p class="section-intro">Three questions on what you just ran. Pick an answer to see why it is right or
-wrong.</p>
+<p class="section-intro">Pick an answer to see why it is right or wrong.</p>
 
 <div class="check" data-answer="c">
   <p class="check-q">You typed <em>“Now say that again, but shorter.”</em> and the model had no idea what “that” meant. Why?</p>
@@ -216,8 +209,7 @@ wrong.</p>
 <details>
   <summary>Show the annotated code</summary>
 
-<p class="section-intro">Optional. Here is the whole file, fifteen lines. Click a highlighted block to
-read why it is there.</p>
+<p class="section-intro">The whole file, fifteen lines. Click a highlighted block to read why it is there.</p>
 
 <!-- annotated-source: 01_bare_call.py -->
 <!-- BEGIN GENERATED: 01_bare_call.py — build-lab-code.py owns this block -->
@@ -248,8 +240,7 @@ read why it is there.</p>
 
 <h2>What you have built so far</h2>
 
-<p class="section-intro">This board reappears at the end of every Part 1 lesson. Today it is almost
-empty. You have a model, and nothing around it.</p>
+<p class="section-intro">This board reappears at the end of every Part 1 lesson. You have a model, and nothing around it.</p>
 
 <!-- scorecard: 01 -->
 <!-- BEGIN GENERATED: scorecard 01 — build-lab-code.py owns this block -->

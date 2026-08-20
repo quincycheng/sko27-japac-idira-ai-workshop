@@ -19,9 +19,8 @@
   <h1>Setup 🧰</h1>
   <p class="standfirst">
     By the end of this page your laptop is ready: the workshop folder, a Python environment, Claude Code,
-    <code>idsec</code> and <code>jq</code>, each proven with a command that prints something back. Do it at
-    your own desk, at your own pace. Everything installs into your own home folder, so <strong>nothing needs
-    administrator rights</strong> and nothing changes how your laptop is managed.
+    <code>idsec</code> and <code>jq</code>. Everything installs into your own home folder, so
+    <strong>nothing needs administrator rights</strong> and nothing changes how your laptop is managed.
   </p>
   <ul class="meta">
     <li class="tag-must">Everyone, beforehand</li>
@@ -42,8 +41,7 @@
 
 <h2>The Fast Way (Recommended)</h2>
 
-<p class="section-intro">One script checks everything below. Most people are done in a couple of
-minutes.</p>
+<p class="section-intro">One script checks everything below.</p>
 
 <ol>
   <li><strong>Download the workshop package.</strong> Go to the
@@ -97,8 +95,7 @@ to rehearse step 7, your AWS access, for real: say yes to that one.</p>
 
 <h2>What you will end up with</h2>
 
-<p class="section-intro">Nine things, and a way to prove each of them. If every row on the right already
-works, you are done.</p>
+<p class="section-intro">If every row on the right already works, you are done.</p>
 
 <table>
   <tr><th>#</th><th>Thing</th><th>How you know it worked</th></tr>
@@ -115,15 +112,13 @@ works, you are done.</p>
 
 <h2>The manual way (optional)</h2>
 
-<p class="section-intro">Did the script finish with eight ticks? Then only step 9 is left. It is a browser
-sign-in and takes a minute. Everything before it is done.</p>
+<p class="section-intro">Did the script finish with eight ticks? Then only step 9 is left, and it is a browser sign-in.</p>
 
 <details>
   <summary>Show the same nine steps by hand</summary>
 
-<p>Come here if the script would not run on your laptop, if it reported a cross it could not fix, or if
-you would simply rather see what you are agreeing to before you agree to it. Tick each step off as you
-go; nobody is checking which route you took.</p>
+<p>Come here if the script would not run, if it reported a cross it could not fix, or if you would rather
+see what you are agreeing to before you agree to it.</p>
 
 <div class="warn">
   <p><span class="callout-label">⚠️ Two steps nobody gets to skip.</span> <strong>Step 7</strong> is your
@@ -190,20 +185,19 @@ go; nobody is checking which route you took.</p>
     <div class="os os-mac">
       <p>If it said <em>command not found</em>, try:</p>
       <div class="code"><pre><code>python3 --version</code></pre></div>
-      <p>If that works, you have Python. It is just called <code>python3</code> on your machine.
-      That is normal on a Mac. Nothing needs fixing.</p>
-      <p>Use <code>python3</code> for step 3 only. Step 3 builds a virtual environment, and that
-      environment supplies its own <code>python</code>. Once it is switched on, every instruction in
-      the lab that says <code>python</code> works.</p>
+      <p>If that works, you have Python. It is just called <code>python3</code> on a Mac, and nothing
+      needs fixing.</p>
+      <p>Use <code>python3</code> for step 3 only. Step 3 builds a virtual environment that supplies its
+      own <code>python</code>, so every later instruction saying <code>python</code> works.</p>
     </div>
 
     <div class="os os-win">
       <p>If it opened the Microsoft Store, or said the term is not recognised, try the Python
       launcher:</p>
       <div class="code"><pre><code>py --version</code></pre></div>
-      <p>If that works, you have Python. Use <code>py</code> for step 3 only. Step 3 builds a
-      virtual environment, and that environment supplies its own <code>python</code>. Once it is
-      switched on, every instruction in the lab that says <code>python</code> works.</p>
+      <p>If that works, you have Python. Use <code>py</code> for step 3 only. Step 3 builds a virtual
+      environment that supplies its own <code>python</code>, so every later instruction saying
+      <code>python</code> works.</p>
     </div>
 
     <div class="warn">
@@ -218,8 +212,7 @@ go; nobody is checking which route you took.</p>
   <div class="step-head"><div class="step-num">3</div><p class="step-title">Make a virtual environment</p></div>
   <div class="step-body">
     <p>A <strong>virtual environment</strong> is a private folder holding this project's Python
-    libraries. It is the standard way to work in Python, for three reasons that matter to you
-    today:</p>
+    libraries. Three reasons it matters to you today:</p>
     <ul>
       <li>Nothing is installed system-wide, so nothing needs admin rights.</li>
       <li>The workshop cannot break some other tool on your laptop that also uses Python.</li>
@@ -251,13 +244,13 @@ go; nobody is checking which route you took.</p>
 
     <p>Your prompt now starts with <code>(.venv)</code>. That is how you know it is on.</p>
 
-    <p>Install what the two apps need. That is the sandbox app you will fix in Part 2, and the
-    harness lessons you will build in Part 1:</p>
+    <p>Install what the two apps need, the sandbox app you fix in Part 2 and the harness lessons you
+    build in Part 1:</p>
     <div class="code"><pre><code>pip install -r sandbox-app/requirements.txt
 pip install -r ai-harness-app/requirements.txt</code></pre></div>
     <p>And check them both:</p>
     <div class="code"><pre><code>python -c "import boto3, anthropic; print('libraries ready')"</code></pre></div>
-    <p>Two small libraries, about a minute. Neither needs admin rights. They land inside
+    <p>It prints <code>libraries ready</code>. Neither library needs admin rights, and both land inside
     <code>.venv</code>.</p>
 
     <div class="stop">
@@ -305,8 +298,7 @@ source .venv/bin/activate</code></pre></div>
   <div class="step-head"><div class="step-num">5</div><p class="step-title">Install the idsec CLI and jq</p></div>
   <div class="step-body">
     <p>Two command-line tools. <code>idsec</code> is Idira's, and <code>jq</code> reads the answers it
-    gives back. Both are a <strong>single file</strong>. There is no installer, and nothing is
-    registered with your operating system.</p>
+    gives back. Both are a <strong>single file</strong>, with no installer.</p>
 
     <h3>idsec</h3>
 
@@ -334,15 +326,15 @@ source .venv/bin/activate</code></pre></div>
     </div>
 
     <div class="os os-mac">
-      <p>Make a folder for personal tools, unpack just the program into it under the name the rest of
-      the guide uses, and tell your shell where to look:</p>
+      <p>Make a folder for personal tools, unpack the program into it under the name the guide uses, and
+      tell your shell where to look:</p>
       <div class="code"><pre><code>mkdir -p ~/bin
 tar -xzf ~/Downloads/idsec_*.tar.gz -C ~/bin idsec-darwin
 mv ~/bin/idsec-darwin ~/bin/idsec
 chmod +x ~/bin/idsec
 echo 'export PATH="$HOME/bin:$PATH"' &gt;&gt; ~/.zshrc</code></pre></div>
-      <p>If you downloaded more than one archive while working out which Mac you have, put the exact
-      file name in place of <code>idsec_*.tar.gz</code> so it is unambiguous.</p>
+      <p>Downloaded more than one archive? Put the exact file name in place of
+      <code>idsec_*.tar.gz</code>.</p>
       <p>Close the terminal, open a new one, then check:</p>
       <div class="code"><pre><code>idsec version</code></pre></div>
       <p>If macOS refuses to run it (“cannot be opened because the developer cannot be verified”),
@@ -350,18 +342,18 @@ echo 'export PATH="$HOME/bin:$PATH"' &gt;&gt; ~/.zshrc</code></pre></div>
     </div>
 
     <div class="os os-win">
-      <p>Make a folder for personal tools, unpack just the program into it under the name the rest of
-      the guide uses, and add that folder to your own <code>PATH</code>. This is the user-level
-      setting, so no admin rights are needed:</p>
+      <p>Make a folder for personal tools, unpack the program into it under the name the guide uses, and
+      add that folder to your own <code>PATH</code>. That is a user-level setting, so no admin rights are
+      needed:</p>
       <div class="code"><pre><code>New-Item -ItemType Directory -Force $HOME\bin | Out-Null
 $archive = (Get-ChildItem $HOME\Downloads\idsec_*windows*.tar.gz)[0].FullName
 tar -xzf $archive -C $HOME\bin idsec-windows.exe
 Move-Item $HOME\bin\idsec-windows.exe $HOME\bin\idsec.exe -Force
 $user = [Environment]::GetEnvironmentVariable("Path", "User")
 [Environment]::SetEnvironmentVariable("Path", "$user;$HOME\bin", "User")</code></pre></div>
-      <p>The second line finds the archive you downloaded so you do not have to type a version
-      number. Then <strong>close PowerShell and open a new window</strong>, because the
-      <code>PATH</code> change only applies to new windows, and check:</p>
+      <p>The second line finds the archive, so you do not type a version number. Then <strong>close
+      PowerShell and open a new window</strong>, because the <code>PATH</code> change only applies to new
+      windows:</p>
       <div class="code"><pre><code>idsec version</code></pre></div>
       <p>If Windows blocks the file, right-click <code>$HOME\bin\idsec.exe</code> →
       <strong>Properties</strong> → tick <strong>Unblock</strong> → <strong>OK</strong>.</p>
@@ -370,16 +362,16 @@ $user = [Environment]::GetEnvironmentVariable("Path", "User")
     <h3>jq</h3>
 
     <p><code>jq</code> reads one value out of a block of JSON. Idira returns your AWS credentials as
-    JSON, so this is what puts them into your terminal. It goes in the same <code>~/bin</code> folder,
-    which is already on your <code>PATH</code> from the lines above.</p>
+    JSON, so <code>jq</code> is what puts them into your terminal. It goes in the same <code>~/bin</code>
+    folder, already on your <code>PATH</code>.</p>
 
     <div class="os os-mac">
       <div class="code"><pre><code>mkdir -p ~/bin
 curl -fsSL -o ~/bin/jq "https://github.com/jqlang/jq/releases/latest/download/jq-macos-$(uname -m | sed 's/x86_64/amd64/')"
 chmod +x ~/bin/jq
 xattr -d com.apple.quarantine ~/bin/jq 2>/dev/null; jq --version</code></pre></div>
-      <p>The second line picks the build for your chip on its own. You should get something like
-      <code>jq-1.7.1</code>.</p>
+      <p>You should get something like <code>jq-1.7.1</code>. The second line picks the build for your
+      chip on its own.</p>
     </div>
 
     <div class="os os-win">
@@ -423,10 +415,9 @@ jq --version</code></pre></div>
     to accept it.</p>
     <p>Then log in:</p>
     <div class="code"><pre><code>idsec login</code></pre></div>
-    <p>Follow the prompts. Usually the sign-in happens <strong>in the terminal</strong>: it asks for
-    your password, then for a multi-factor check. Sometimes it opens a browser window instead. If that
-    happens, sign in there and come back. Either way you end up with a success message in the
-    terminal.</p>
+    <p>Follow the prompts. Usually the sign-in happens <strong>in the terminal</strong>: your password,
+    then a multi-factor check. Sometimes a browser window opens instead, so sign in there and come back.
+    Either way you end up with a success message.</p>
     <div class="note">
       <p><span class="callout-label">🔑 Which password?</span> Your own CYBRWorld password. Nothing is
       echoed as you type it, which is normal.</p>
@@ -453,8 +444,7 @@ jq --version</code></pre></div>
     <div class="warn">
       <p><span class="callout-label">⚠️ Once only.</span> Do this now and then leave it alone. On the day
       you will only need <code>idsec login</code>. Running <code>idsec configure</code> again overwrites
-      the default profile, and that is a five-minute detour in a session with about fifty
-      minutes of hands-on time.</p>
+      the default profile, and that is a detour you do not want on the day.</p>
     </div>
     <div class="note">
       <p><span class="callout-label">📖 The full CLI documentation.</span>
@@ -467,8 +457,8 @@ jq --version</code></pre></div>
 <div class="step">
   <div class="step-head"><div class="step-num">7</div><p class="step-title">Get your AWS credentials, once</p></div>
   <div class="step-body">
-    <p>Here a problem stays <em>invisible</em> until the session starts. So do the whole thing now,
-    with nobody waiting for you. You will run these same three commands on the day.</p>
+    <p>A problem here stays <em>invisible</em> until the session starts, so do the whole thing now. You
+    will run these same three commands on the day.</p>
 
     <p><strong>First, see what you are allowed.</strong> You must be logged in from step 6:</p>
     <div class="code"><pre><code>idsec exec sca cloud-access list-targets --csp aws</code></pre></div>
@@ -489,9 +479,8 @@ jq --version</code></pre></div>
       <div class="code"><pre><code>idsec exec sca cloud-access elevate --csp aws --workspace-id 409556437035 --roleIds arn:aws:iam::409556437035:role/CW-SCA-AdminAccess --raw | jq -r '.response.results[0].accessCredentials | fromjson | "$env:AWS_ACCESS_KEY_ID=\"\(.aws_access_key)\"\n$env:AWS_SECRET_ACCESS_KEY=\"\(.aws_secret_access_key)\"\n$env:AWS_SESSION_TOKEN=\"\(.aws_session_token)\""' | Invoke-Expression</code></pre></div>
       <p>Nothing prints. That is success.</p>
     </div>
-    <p>Idira just granted you an AWS role and handed back credentials that expire. <code>jq</code> read
-    them out of the answer and put them into this terminal window. They were never written to a file
-    and never shown on screen.</p>
+    <p>Idira just granted you an AWS role and handed back credentials that expire. <code>jq</code> put
+    them into this terminal window. They were never written to a file, and never shown on screen.</p>
 
     <p><strong>Third, prove it worked.</strong> With the virtual environment switched on from step 3:</p>
     <div class="code"><pre><code>python -c "import boto3; print(boto3.client('sts').get_caller_identity()['Arn'])"</code></pre></div>
@@ -517,16 +506,15 @@ jq --version</code></pre></div>
 <div class="step">
   <div class="step-head"><div class="step-num">8</div><p class="step-title">Check you can reach AWS</p></div>
   <div class="step-body">
-    <p>Everything you run today talks to AWS over HTTPS. That covers the Python lessons in the
-    first half and the AI agent in the second. Ten seconds now confirms there is a route. With the
-    virtual environment switched on:</p>
+    <p>Everything you run today talks to AWS over HTTPS. This confirms there is a route. With the virtual
+    environment switched on:</p>
     <div class="os os-mac">
       <div class="code"><pre><code>python -c "import socket,ssl; h='bedrock-runtime.us-east-1.amazonaws.com'; ssl._create_unverified_context().wrap_socket(socket.create_connection((h,443),10),server_hostname=h); print('AWS reachable')"</code></pre></div>
     </div>
     <div class="os os-win">
       <div class="code"><pre><code>python -c "import socket,ssl; h='bedrock-runtime.us-east-1.amazonaws.com'; ssl._create_unverified_context().wrap_socket(socket.create_connection((h,443),10),server_hostname=h); print('AWS reachable')"</code></pre></div>
     </div>
-    <p><code>AWS reachable</code> is the whole answer. You are done, move on.</p>
+    <p><code>AWS reachable</code> is the whole answer.</p>
     <div class="stop">
       <p><span class="callout-label">🚩 A timeout or <code>Connection refused</code> instead?</span>
       There is no route to AWS from this network. The cause is usually a VPN, a firewall, or egress
@@ -550,12 +538,12 @@ jq --version</code></pre></div>
 <div class="step">
   <div class="step-head"><div class="step-num">9</div><p class="step-title">Check you can sign in to the apj-secrets tenant</p></div>
   <div class="step-body">
-    <p>Lesson 10 uses a second Idira tenant, <code>apj-secrets</code>. It is not the tenant you set up
-    in step 6. You sign in to it <strong>in a browser</strong>, not with <code>idsec</code>, so there is
-    nothing to install and nothing to configure here.</p>
+    <p>Lesson 10 uses a second Idira tenant, <code>apj-secrets</code>, not the one you set up in step 6.
+    You sign in to it <strong>in a browser</strong>, not with <code>idsec</code>, so there is nothing to
+    install here.</p>
     <p>Open it now and sign in with your own account:</p>
     <p><a href="https://apj-secrets.cyberark.cloud/"><code>apj-secrets.cyberark.cloud</code></a></p>
-    <p>If the console loads, step 9 is done. Sign out again or leave the tab open, either is fine.</p>
+    <p>If the console loads, step 9 is done.</p>
     <div class="warn">
       <p><span class="callout-label">🙋 No account on this tenant?</span> Ask your manager or a
       colleague to create one for you. Everybody on the team has administrator rights on
@@ -575,7 +563,7 @@ jq --version</code></pre></div>
 
 <h2 id="bring-with-you">Bring with you</h2>
 
-<p class="section-intro">Four things. The first one is the one people get wrong.</p>
+<p class="section-intro">The first one is the one people get wrong.</p>
 
 <ul>
   <li>Your corporate laptop with the setup done on it, not a different one, and a charger</li>
@@ -587,8 +575,7 @@ jq --version</code></pre></div>
 
 <h2>Knowledge Check</h2>
 
-<p class="section-intro">Two questions, and both save you time on the day. Pick an answer to see
-why it is right or wrong.</p>
+<p class="section-intro">Pick an answer to see why it is right or wrong.</p>
 
 <div class="check" data-answer="a">
   <p class="check-q">Which of these setup steps needs administrator rights on your laptop?</p>

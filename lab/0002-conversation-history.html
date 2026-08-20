@@ -18,9 +18,8 @@
   <p class="kicker">Before the session</p>
   <h1>Conversation history 🔁</h1>
   <p class="standfirst">
-    You will see where an agent's memory lives. It is not in the model. One word of code changes, the
-    follow-up that failed in Lesson 01 lands, and the token count starts climbing. You will also make
-    the agent forget again on command.
+    You will see where an agent's memory lives, and it is not in the model. One word of code
+    changes, and the follow-up that failed in Lesson 01 lands.
   </p>
   <ul class="meta">
     <li class="tag-must">Everyone</li>
@@ -33,8 +32,8 @@
 
 <h2>Your Tasks</h2>
 
-<p class="section-intro">Six steps, in the same terminal window as Lesson 01. Same credentials, same
-<code>.venv</code>, same model. Tick each one off as you go.</p>
+<p class="section-intro">Use the same terminal window as Lesson 01: same credentials, same
+<code>.venv</code>, same model.</p>
 
 <div class="warn">
   <p><span class="callout-label">🏠 Doing this at home?</span> Yes. You do this lesson before the session now, and the
@@ -87,16 +86,15 @@ cd ai-harness-app</code></pre></div>
 <span style="color: #6c6c6c; text-decoration-color: #6c6c6c">  history: 2 re-sent</span></code></pre></div>
 <!-- END GENERATED: terminal 02-opener -->
     <p><code>history: 2 re-sent</code>, where Lesson 01 said <code>history: dropped</code>. Nothing
-    useful has been re-sent yet, because there was nothing to re-send. But the list is being kept now,
-    and that is the whole change.</p>
+    useful has been re-sent yet, because there was nothing to re-send. The list is being kept now, and
+    that is the whole change.</p>
   </div>
 </div>
 
 <div class="step">
   <div class="step-head"><div class="step-num">2</div><p class="step-title">Watch the follow-up land</p></div>
   <div class="step-body">
-    <p>The script asks Lesson 01's exact follow-up for you, so both outcomes happen within a minute of
-    each other:</p>
+    <p>The script asks Lesson 01's exact follow-up for you:</p>
 <!-- terminal: 02-followup -->
 <!-- BEGIN GENERATED: terminal 02-followup — build-lab-code.py owns this block -->
 <div class="code code-term"><pre><code><span class="term-prompt" data-copy="Now say that again, but shorter."><span style="color: #265bff; text-decoration-color: #265bff; font-weight: bold">› </span><span style="color: #d4d4d4; text-decoration-color: #d4d4d4; font-weight: bold">Now say that again, but shorter.</span></span>
@@ -113,9 +111,8 @@ cd ai-harness-app</code></pre></div>
 
 <span style="color: #e8c07a; text-decoration-color: #e8c07a; font-weight: bold">  · Same follow-up as lesson 01. This time it landed.</span></code></pre></div>
 <!-- END GENERATED: terminal 02-followup -->
-    <p>“Say that again, but shorter” worked. Be precise about why, because this is where most people
-    get it wrong: <strong>the model did not learn anything.</strong> Same weights, same 2024 snapshot.
-    Our code handed it the earlier exchange as part of the new request.</p>
+    <p>“Say that again, but shorter” worked. <strong>The model did not learn anything.</strong> Same
+    weights, same 2024 snapshot. Our code handed it the earlier exchange as part of the new request.</p>
   </div>
 </div>
 
@@ -148,7 +145,7 @@ cd ai-harness-app</code></pre></div>
     <div class="code"><pre><code>/reset</code></pre></div>
     <p>Now ask the follow-up again. It has forgotten, completely. That is Lesson 01 behaviour, with no
     code change and no model change.</p>
-    <p>That is the whole point. <strong>What looks like memory is a design decision made on your side
+    <p><strong>What looks like memory is a design decision made on your side
     of the API call.</strong> Which makes it a security decision too: what an agent keeps, how long it
     keeps it, and whose data ends up in it are all your choices, made in your code, and auditable by
     you.</p>
@@ -183,8 +180,7 @@ cd ai-harness-app</code></pre></div>
 
 <h2>Knowledge Check</h2>
 
-<p class="section-intro">Three questions on what you just ran. Pick an answer to see why it is right
-or wrong.</p>
+<p class="section-intro">Pick an answer to see why it is right or wrong.</p>
 
 <div class="check" data-answer="b">
   <p class="check-q">The follow-up worked this time. What changed?</p>
@@ -227,9 +223,8 @@ or wrong.</p>
 <details>
   <summary>Show the annotated code</summary>
 
-<p class="section-intro">Skip this if code is not your thing. You have already done the lesson. If it
-is, here are two files, and the change is one line of each. Click a highlighted block to read why it
-is there. Use ◂ ▸ in the header to walk through them.</p>
+<p class="section-intro">Two files, and the change is one line of each. Click a highlighted block to read why it is there.
+Use ◂ ▸ in the header to walk through them.</p>
 
 <!-- annotated-source: 02_conversation.py -->
 <!-- BEGIN GENERATED: 02_conversation.py — build-lab-code.py owns this block -->
@@ -262,8 +257,7 @@ matter:</p>
 
 <h2>What you have built so far</h2>
 
-<p class="section-intro">The same rows every lesson, so you can see what one word bought you. One line
-moved today, and it is the line that starts costing money.</p>
+<p class="section-intro">One line moved today, and it is the line that starts costing money.</p>
 
 <!-- scorecard: 02 -->
 <!-- BEGIN GENERATED: scorecard 02 — build-lab-code.py owns this block -->
@@ -297,8 +291,6 @@ moved today, and it is the line that starts costing money.</p>
 
 <h2>Where Idira fits</h2>
 
-<p class="section-intro">Each lesson names the risk it just demonstrated and the Palo Alto Networks
-product that answers it.</p>
 
 <!-- idira: 02 -->
 <!-- BEGIN GENERATED: idira 02 — build-lab-code.py owns this block -->
