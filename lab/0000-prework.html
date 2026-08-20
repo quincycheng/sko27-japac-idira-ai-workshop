@@ -107,7 +107,7 @@ works, you are done.</p>
   <tr><td>3</td><td>A virtual environment with <code>boto3</code> and <code>anthropic</code></td><td><code>libraries ready</code> prints</td></tr>
   <tr><td>4</td><td>Claude Code</td><td><code>claude --version</code> prints a number</td></tr>
   <tr><td>5</td><td>The <code>idsec</code> CLI and <code>jq</code></td><td><code>idsec version</code> and <code>jq --version</code> both print a number</td></tr>
-  <tr><td>6</td><td>An <code>idsec</code> profile you can log in with</td><td><code>idsec login</code> succeeds</td></tr>
+  <tr><td>6</td><td>CYBRWorld on the default <code>idsec</code> profile</td><td><code>idsec login</code> succeeds</td></tr>
   <tr><td>7</td><td>Short-lived AWS credentials from <code>idsec</code></td><td>An <code>assumed-role</code> line prints with your name in it</td></tr>
   <tr><td>8</td><td>A network that can reach AWS</td><td>The connection check prints <code>AWS reachable</code></td></tr>
   <tr><td>9</td><td>An account on the <code>apj-secrets</code> tenant</td><td>You can sign in to <code>apj-secrets.cyberark.cloud</code> in a browser</td></tr>
@@ -432,21 +432,28 @@ jq --version</code></pre></div>
       echoed as you type it, which is normal.</p>
     </div>
     <div class="note">
-      <p><span class="callout-label">👥 Already logged in to a different tenant?</span> Then you have a
-      profile already, and <code>idsec configure</code> would overwrite it. Make a second profile
-      instead and give it a name:</p>
-      <div class="code"><pre><code>idsec configure --profile-name cybrworld</code></pre></div>
-      <p>See what you have, then log in with the one you want:</p>
-      <div class="code"><pre><code>idsec profiles list
-idsec login --profile-name cybrworld</code></pre></div>
-      <p>Every <code>idsec</code> command takes <code>--profile-name</code>. Leave it off and it uses
-      the profile called <code>idsec</code>. The commands on the lab pages leave it off, so add it
-      yourself if your CYBRWorld profile has a name.</p>
+      <p><span class="callout-label">👥 Already using idsec for another tenant?</span> Then you already
+      have a <strong>default profile</strong>, the one called <code>idsec</code>. CYBRWorld has to go
+      there. Every command in this guide leaves <code>--profile-name</code> off, so every command uses
+      that one profile. Keep your old tenant first, under a name of its own.</p>
+      <p>Copy the folder, so you can put it back afterwards:</p>
+      <div class="os os-mac">
+        <div class="code"><pre><code>cp -R ~/.idsec/profiles ~/idsec-profiles-backup</code></pre></div>
+      </div>
+      <div class="os os-win">
+        <div class="code"><pre><code>Copy-Item -Recurse $HOME\.idsec\profiles $HOME\idsec-profiles-backup</code></pre></div>
+      </div>
+      <p>Now save the old tenant under its own name. It asks the same questions again, so have that
+      tenant's values to hand:</p>
+      <div class="code"><pre><code>idsec configure --profile-name &lt;that-tenant&gt;</code></pre></div>
+      <p>Then run <code>idsec configure</code> with no name, and give it the three CYBRWorld answers
+      above. That writes the default profile. Check the names with:</p>
+      <div class="code"><pre><code>idsec profiles list</code></pre></div>
     </div>
     <div class="warn">
       <p><span class="callout-label">⚠️ Once only.</span> Do this now and then leave it alone. On the day
-      you will only need <code>idsec login</code>. Running <code>idsec configure</code> a second time
-      overwrites that profile, and that is a five-minute detour in a session with about fifty
+      you will only need <code>idsec login</code>. Running <code>idsec configure</code> again overwrites
+      the default profile, and that is a five-minute detour in a session with about fifty
       minutes of hands-on time.</p>
     </div>
     <div class="note">
@@ -623,10 +630,11 @@ why it is right or wrong.</p>
 </ul>
 
 <div class="win">
-  <p><span class="callout-label">🎉 All nine done?</span> You are ready. Nothing else to do until
-  the day. When you arrive, start at
-  <a href="0001-one-call.html">Lesson 01: one call to a model</a>. Going straight to the Claude Code
-  half? That is <a href="0007-setup.html">Lesson 07</a>.</p>
+  <p><span class="callout-label">🎉 All nine done?</span> Two more pages to do at home.
+  <a href="0001-one-call.html">Lesson 01</a> and <a href="0002-conversation-history.html">Lesson 02</a>
+  are now prework as well. Do both, then the room starts at
+  <a href="0003-context-engineering.html">Lesson 03</a>. Going straight to the Claude Code half? That
+  is <a href="0007-setup.html">Lesson 07</a>.</p>
 </div>
 
 <div id="page-pager"></div>

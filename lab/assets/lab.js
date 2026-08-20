@@ -21,12 +21,14 @@
     { f: 'index.html',                            n: '',   t: 'Welcome!',                      g: 'Start' },
     { f: '0000-prework.html',                     n: '00', t: 'Prework',                       g: 'Before the session' },
 
-    /* Part 1, build your own AI harness. Lessons 01 to 05 carry deliberately the
-     * same number as ai-harness-app/0N_*.py, so a page and its script never
-     * disagree. Lesson 06 has no script: it is the break time activity that
+    /* Lessons 01 to 05 carry deliberately the same number as
+     * ai-harness-app/0N_*.py, so a page and its script never disagree. Numbers do
+     * not move when a lesson changes group, so 01 and 02 keep theirs while being
+     * done at home. Lesson 06 has no script: it is the break time activity that
      * follows Part 1, and its own group says so. */
-    { f: '0001-one-call.html',                    n: '01', t: 'One call to a model',           g: 'Part 1 · Build your own AI harness' },
-    { f: '0002-conversation-history.html',        n: '02', t: 'Conversation history',          g: 'Part 1 · Build your own AI harness' },
+    { f: '0001-one-call.html',                    n: '01', t: 'One call to a model',           g: 'Before the session' },
+    { f: '0002-conversation-history.html',        n: '02', t: 'Conversation history',          g: 'Before the session' },
+
     { f: '0003-context-engineering.html',         n: '03', t: 'Context engineering',           g: 'Part 1 · Build your own AI harness' },
     { f: '0004-tools-and-agents.html',            n: '04', t: 'Tools and agents',              g: 'Part 1 · Build your own AI harness' },
     { f: '0005-the-harness.html',                 n: '05', t: 'The harness',                   g: 'Part 1 · Build your own AI harness' },
@@ -41,6 +43,7 @@
     { f: '0012-write-a-skill.html',               n: '12', t: 'Write your own skill',          g: 'Part 3 · Optional Deep Dives' },
     { f: '0013-afk-harness.html',                 n: '13', t: 'Build something AFK',           g: 'Part 3 · Optional Deep Dives' },
     { f: '0014-fix-the-app.html',                 n: '14', t: 'Delete the key',                g: 'Part 3 · Optional Deep Dives' },
+    { f: '0015-external-mcp-server.html',         n: '15', t: 'Bring your own MCP server',     g: 'Part 3 · Optional Deep Dives' },
     { f: 'reference/securing-agentic-ai.html',    n: '',   t: 'Post-Workshop Resources',       g: 'Reference' },
     { f: 'reference/cheatsheet.html',             n: '',   t: 'Cheat sheet',                   g: 'Reference' }
   ];

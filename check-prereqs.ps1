@@ -431,20 +431,44 @@ function Show-CybrWorldValues {
     Write-Dim 'That is your own CYBRWorld account. Nobody issues you a workshop login.'
 }
 
-# Ask the CLI what profiles it has. If this build has no 'profiles' command, fall
-# back to looking for the settings files. A bare ~\.idsec directory is not enough
-# on its own: it also holds the logs, so it exists after any command has run.
-function Test-IdsecProfile {
-    if (-not $Idsec) { return $false }
+# Every command in the lab guide, on the cheat sheet and in this script is a bare
+# 'idsec ...' with no --profile-name, so they all use the default profile, the one
+# called 'idsec'. A profile called something else is invisible to all of them.
+# Printed whenever the profiles on this laptop do not include 'idsec'.
+function Show-DefaultProfileAdvice {
+    Write-Info "The lab needs CYBRWorld on the DEFAULT profile, the one called 'idsec'."
+    Write-Info 'Every command in the guide leaves --profile-name off, so it uses that one.'
+    Write-Info ''
+    Write-Info "Using 'idsec' for another tenant already? Keep it, under a name of its own:"
+    Write-Cmd 'Copy-Item -Recurse $HOME\.idsec\profiles $HOME\idsec-profiles-backup'
+    Write-Cmd 'idsec configure --profile-name <that-tenant>   # re-enter its values'
+    Write-Cmd 'idsec configure                                # now CYBRWorld, as default'
+    Write-Dim 'Your profiles are files in $HOME\.idsec\profiles. Copy the folder back'
+    Write-Dim 'afterwards if you want your old default returned.'
+}
+
+# Which profiles exist. 'profiles list' first, because it is what this build
+# actually believes: 0.8.0 answers with a JSON array of names, so the brackets,
+# commas and quotes come off here rather than through jq, which may not be
+# installed yet at this point in the script.
+#
+# The fallback is $HOME\.idsec\profiles, a DIRECTORY holding one file per profile,
+# named after the profile. Its dotfiles are bookkeeping, not profiles.
+function Get-IdsecProfileNames {
+    if (-not $Idsec) { return @() }
     $out = & $Idsec profiles list 2>$null
-    if ($LASTEXITCODE -eq 0 -and ($out -join '').Trim()) { return $true }
-    $found = @(
-        (Join-Path $HOME '.idsec\profile*'),
-        (Join-Path $HOME '.idsec\*.json'),
-        (Join-Path $HOME '.idsec_profiles*'),
-        (Join-Path $HOME '.ark_profiles*')
-    ) | Where-Object { Test-Path $_ }
-    return ($found.Count -gt 0)
+    if ($LASTEXITCODE -eq 0 -and ($out -join '').Trim()) {
+        return @($out |
+            ForEach-Object { ($_ -replace '[\[\]",]', '').Trim() } |
+            Where-Object { $_ })
+    }
+    $dir = Join-Path $HOME '.idsec\profiles'
+    if (Test-Path $dir) {
+        return @(Get-ChildItem -File $dir |
+            Where-Object { $_.Name -notlike '.*' } |
+            ForEach-Object { $_.Name })
+    }
+    return @()
 }
 
 # Runs a real login, because a profile with one wrong answer in it looks perfect
@@ -461,16 +485,29 @@ function Invoke-IdsecLogin {
     Write-Cmd "$Idsec profiles show"
     Write-Cmd "$Idsec configure"
     Show-CybrWorldValues
+    Write-Info ''
+    Show-DefaultProfileAdvice
     Write-Info 'Still failing? Ask in the workshop Slack channel, or 📧 reply to the'
     Write-Info 'workshop email. Do it this week, not on the day.'
     return $false
 }
 
+# The check that matters. Not "is anything configured?" but "is CYBRWorld on the
+# profile the lab commands will actually use?" The old version accepted any
+# profile, so an attendee with one named profile for another tenant was told
+# everything was fine and then watched the login fail for no stated reason.
+$Profiles = @()
+$HasDefaultProfile = $false
+if ($Idsec) {
+    $Profiles = Get-IdsecProfileNames
+    $HasDefaultProfile = [bool]($Profiles -contains 'idsec')
+}
+
 if (-not $Idsec) {
     Write-Bad 'skipped — idsec does not run in this window yet'
     Add-Fail 'idsec login' 'blocked by idsec' 'Finish step 6, open a new PowerShell window, then re-run this script'
-} elseif (Test-IdsecProfile) {
-    Write-Good 'an idsec profile exists'
+} elseif ($HasDefaultProfile) {
+    Write-Good "the default profile, 'idsec', exists"
     if (Confirm-Action 'Log in now, to prove the profile actually works?') {
         if (Invoke-IdsecLogin) {
             Add-Pass 'idsec login' 'signed in to CYBRWorld'
@@ -480,11 +517,36 @@ if (-not $Idsec) {
     } else {
         Add-Manual 'idsec login' 'run it by hand: idsec login'
     }
+} elseif ($Profiles.Count -gt 0) {
+    # The case this whole step exists for: profiles are configured, but none of
+    # them is the one the lab commands use.
+    Write-Bad "you have idsec profiles, but none of them is called 'idsec'"
+    Write-Info ("Found: " + ($Profiles -join ' '))
+    Write-Info ''
+    Show-DefaultProfileAdvice
+    Write-Info ''
+    Show-CybrWorldValues
+    if (Confirm-Action "Run 'idsec configure' now, to add CYBRWorld as the default profile?") {
+        & $Idsec configure
+        if ($LASTEXITCODE -eq 0) {
+            Write-Good 'configured'
+            if (Invoke-IdsecLogin) {
+                Add-Fixed 'idsec login' 'CYBRWorld on the default profile, signed in'
+            } else {
+                Add-Fail 'idsec login' 'configured, login failed' 'Fix the values: idsec configure — then: idsec login'
+            }
+        } else {
+            Write-Bad 'configure did not complete'
+            Add-Fail 'idsec login' 'no default profile' 'Run: idsec configure (CYBRWorld, as the default profile)'
+        }
+    } else {
+        Add-Fail 'idsec login' 'no default profile' "Run: idsec configure — CYBRWorld must be the default profile, 'idsec'"
+    }
 } else {
     Write-Bad 'no idsec profile found'
     Show-CybrWorldValues
-    Write-Dim 'Already using idsec against a different tenant? Do not overwrite it. Make a'
-    Write-Dim 'second profile instead: idsec configure --profile-name cybrworld'
+    Write-Dim 'Leave --profile-name off when it asks. CYBRWorld belongs on the default'
+    Write-Dim 'profile, because every command in the lab guide leaves it off too.'
     if (Confirm-Action "Run 'idsec configure' now? (it will ask you questions)") {
         & $Idsec configure
         if ($LASTEXITCODE -eq 0) {
@@ -591,9 +653,18 @@ if (-not $Idsec) {
     $targetCount = ([regex]::Matches($targets, 'arn:aws:iam::')).Count
     if ($targetCount -lt 1) {
         Write-Bad 'no AWS role came back'
-        Write-Dim 'This is an access entitlement. It cannot be fixed from your seat, and'
-        Write-Dim 'it takes days. 📧 Reply to the workshop email TODAY.'
-        Add-Fail 'AWS credentials' 'no entitlement' '📧 Reply to the workshop email today — you have no AWS role yet'
+        # Two very different causes print the same empty list. Rule the cheap one
+        # out first, or an attendee emails about an entitlement they already have.
+        if (-not $HasDefaultProfile) {
+            Write-Warn 'the default profile is not CYBRWorld, so this asked the wrong tenant'
+            Show-DefaultProfileAdvice
+            Add-Fail 'AWS credentials' 'wrong tenant' 'Put CYBRWorld on the default profile: idsec configure — then re-run this script'
+        } else {
+            Write-Dim 'This is an access entitlement. It cannot be fixed from your seat, and'
+            Write-Dim 'it takes days. 📧 Reply to the workshop email TODAY.'
+            Write-Dim 'Logged in to a tenant other than CYBRWorld? Check with: idsec profiles show'
+            Add-Fail 'AWS credentials' 'no entitlement' '📧 Reply to the workshop email today — you have no AWS role yet'
+        }
     } else {
         Write-Good "$targetCount AWS role(s) available to you"
         if (-not $Jq) {

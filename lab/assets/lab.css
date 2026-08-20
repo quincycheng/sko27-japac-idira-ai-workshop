@@ -909,6 +909,13 @@ figure {
 figure svg { display: block; width: 100%; height: auto; }
 figure img { display: block; width: 100%; height: auto; border-radius: 6px; }
 
+/* Screenshots, lesson 15. A portal screenshot is mostly white, so it needs its own
+   outline to separate from the panel behind it. Its caption is an instruction, so
+   it reads left-aligned like prose rather than centred like a diagram label. */
+figure.shot { padding: 12px; }
+figure.shot img { border: 1px solid var(--line); border-radius: 4px; }
+figure.shot figcaption { text-align: left; margin-top: 10px; }
+
 /* ---------- embedded slides and video ---------- */
 /* Lesson 06 only, and optional there. Everything else in lab/ works from file://
    with no network; these two frames are hosted by Google and will show a sign-in

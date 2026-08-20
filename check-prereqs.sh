@@ -449,20 +449,63 @@ cybrworld_values() {
   dim "That is your own CYBRWorld account. Nobody issues you a workshop login."
 }
 
-# Ask the CLI what profiles it has. If this build has no 'profiles' command, fall
-# back to looking for the settings files. A bare ~/.idsec directory is not enough
-# on its own: it also holds the logs, so it exists after any command has run.
-profile_exists() {
+# Every command in the lab guide, on the cheat sheet and in this script is a bare
+# 'idsec ...' with no --profile-name, so they all use the default profile, the one
+# called 'idsec'. A profile called something else is invisible to all of them.
+# Printed whenever the profiles on this laptop do not include 'idsec'.
+default_profile_advice() {
+  info "The lab needs CYBRWorld on the DEFAULT profile, the one called 'idsec'."
+  info "Every command in the guide leaves --profile-name off, so it uses that one."
+  info ""
+  info "Using 'idsec' for another tenant already? Keep it, under a name of its own:"
+  run "cp -R ~/.idsec/profiles ~/idsec-profiles-backup   # keep a copy first"
+  run "idsec configure --profile-name <that-tenant>      # re-enter its values"
+  run "idsec configure                                   # now CYBRWorld, as default"
+  dim "Your profiles are files in ~/.idsec/profiles. Copy the folder back afterwards"
+  dim "if you want your old default returned."
+}
+
+# Which profiles exist, one per line. 'profiles list' first, because it is what
+# this build actually believes: 0.8.0 answers with a JSON array of names, so the
+# brackets, commas and quotes come off here rather than through jq, which may not
+# be installed yet at this point in the script.
+#
+# The fallback is ~/.idsec/profiles, a DIRECTORY holding one file per profile,
+# named after the profile. Its dotfiles are bookkeeping, not profiles.
+profile_names() {
   local out p
-  [ -n "$IDSEC" ] || return 1
+  [ -n "$IDSEC" ] || return 0
   if out="$("$IDSEC" profiles list 2>/dev/null)" && [ -n "$(printf '%s' "$out" | tr -d '[:space:]')" ]; then
+    printf '%s\n' "$out" \
+      | tr -d '[]",' \
+      | sed 's/^[[:space:]]*[-*•][[:space:]]*//; s/^[[:space:]]*//; s/[[:space:]]*$//' \
+      | grep -v '^$'
     return 0
   fi
-  for p in "$HOME"/.idsec/profile* "$HOME"/.idsec/*.json "$HOME"/.idsec_profiles* "$HOME"/.ark_profiles*; do
-    [ -e "$p" ] && return 0
+  if [ -d "$HOME/.idsec/profiles" ]; then
+    for p in "$HOME"/.idsec/profiles/*; do
+      [ -f "$p" ] && printf '%s\n' "$(basename "$p")"
+    done
+    return 0
+  fi
+  for p in "$HOME"/.idsec_profiles* "$HOME"/.ark_profiles*; do
+    # Something is configured, but this build will not name it. Treat that as the
+    # default profile: it is the only one the lab commands could reach anyway.
+    [ -e "$p" ] && { echo idsec; return 0; }
   done
-  return 1
+  return 0
 }
+
+# The check that matters. Not "is anything configured?" but "is CYBRWorld on the
+# profile the lab commands will actually use?" The old version accepted any
+# profile, so an attendee with one named profile for another tenant was told
+# everything was fine and then watched the login fail for no stated reason.
+PROFILES=''
+HAS_DEFAULT=0
+if [ -n "$IDSEC" ]; then
+  PROFILES="$(profile_names)"
+  printf '%s\n' "$PROFILES" | grep -qx 'idsec' && HAS_DEFAULT=1
+fi
 
 # Runs a real login, because a profile with one wrong answer in it looks perfect
 # until the day. </dev/tty so the password and MFA prompts reach the user even
@@ -478,6 +521,8 @@ verify_login() {
   run "$IDSEC profiles show"
   run "$IDSEC configure"
   cybrworld_values
+  info ""
+  default_profile_advice
   info "Still failing? Ask in the workshop Slack channel, or 📧 reply to the"
   info "workshop email. Do it this week, not on the day."
   return 1
@@ -486,8 +531,8 @@ verify_login() {
 if [ -z "$IDSEC" ]; then
   bad "skipped — idsec does not run in this window yet"
   fail "idsec login" "blocked by idsec" "Finish step 6, open a new terminal, then re-run this script"
-elif profile_exists; then
-  good "an idsec profile exists"
+elif [ "$HAS_DEFAULT" = 1 ]; then
+  good "the default profile, 'idsec', exists"
   if ask "Log in now, to prove the profile actually works?"; then
     if verify_login; then
       pass "idsec login" "signed in to CYBRWorld"
@@ -497,11 +542,36 @@ elif profile_exists; then
   else
     manual "idsec login" "run it by hand: idsec login"
   fi
+elif [ -n "$(printf '%s' "$PROFILES" | tr -d '[:space:]')" ]; then
+  # The case this whole step exists for: profiles are configured, but none of them
+  # is the one the lab commands use.
+  bad "you have idsec profiles, but none of them is called 'idsec'"
+  info "Found: $(printf '%s' "$PROFILES" | tr '\n' ' ')"
+  info ""
+  default_profile_advice
+  info ""
+  cybrworld_values
+  if ask "Run 'idsec configure' now, to add CYBRWorld as the default profile?"; then
+    if "$IDSEC" configure </dev/tty; then
+      good "configured"
+      if verify_login; then
+        fixed "idsec login" "CYBRWorld on the default profile, signed in"
+      else
+        fail "idsec login" "configured, login failed" "Fix the values: idsec configure — then: idsec login"
+      fi
+    else
+      bad "configure did not complete"
+      fail "idsec login" "no default profile" "Run: idsec configure (CYBRWorld, as the default profile)"
+    fi
+  else
+    fail "idsec login" "no default profile" \
+         "Run: idsec configure — CYBRWorld must be the default profile, 'idsec'"
+  fi
 else
   bad "no idsec profile found"
   cybrworld_values
-  dim "Already using idsec against a different tenant? Do not overwrite it. Make a"
-  dim "second profile instead: idsec configure --profile-name cybrworld"
+  dim "Leave --profile-name off when it asks. CYBRWorld belongs on the default"
+  dim "profile, because every command in the lab guide leaves it off too."
   if ask "Run 'idsec configure' now? (it will ask you questions)"; then
     if "$IDSEC" configure </dev/tty; then
       good "configured"
@@ -606,10 +676,20 @@ else
   TARGETS_N="$(printf '%s\n' "$TARGETS" | grep -c 'arn:aws:iam::')"
   if [ "${TARGETS_N:-0}" -lt 1 ]; then
     bad "no AWS role came back"
-    dim "This is an access entitlement. It cannot be fixed from your seat, and"
-    dim "it takes days. 📧 Reply to the workshop email TODAY."
-    fail "AWS credentials" "no entitlement" \
-         "📧 Reply to the workshop email today — you have no AWS role yet"
+    # Two very different causes print the same empty list. Rule the cheap one out
+    # first, or an attendee emails about an entitlement they already have.
+    if [ "$HAS_DEFAULT" != 1 ]; then
+      warn "the default profile is not CYBRWorld, so this asked the wrong tenant"
+      default_profile_advice
+      fail "AWS credentials" "wrong tenant" \
+           "Put CYBRWorld on the default profile: idsec configure — then re-run this script"
+    else
+      dim "This is an access entitlement. It cannot be fixed from your seat, and"
+      dim "it takes days. 📧 Reply to the workshop email TODAY."
+      dim "Logged in to a tenant other than CYBRWorld? Check with: idsec profiles show"
+      fail "AWS credentials" "no entitlement" \
+           "📧 Reply to the workshop email today — you have no AWS role yet"
+    fi
   elif [ -z "$JQ" ]; then
     good "$TARGETS_N AWS role(s) available to you"
     warn "jq does not run in this window, so the rest of this step is skipped"

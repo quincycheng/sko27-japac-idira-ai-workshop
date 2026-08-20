@@ -31,10 +31,13 @@
   </ul>
 </header>
 
+<p>Pick your machine once. The whole page will follow your choice.</p>
+<div class="os-switch" data-os-switch></div>
+
 <h2>Before you start</h2>
 
-<p class="section-intro">Four things, in this order. The first one happens at your own desk beforehand;
-the other three take a couple of minutes once you sit down.</p>
+<p class="section-intro">Three things, in this order. The first one happens at your own desk beforehand;
+the other two take a couple of minutes once you sit down.</p>
 
 <div class="step">
   <div class="step-head"><div class="step-num">1</div><p class="step-title">Do the prework, before the day</p></div>
@@ -42,19 +45,17 @@ the other three take a couple of minutes once you sit down.</p>
     <p>One page, done at your desk. It puts the workshop folder, a Python environment, Claude Code and
     <code>idsec</code> on your laptop and proves each one works. A script checks and fixes most of it for
     you, so this is shorter than it looks.</p>
-    <ul class="cards">
-      <li><a href="0000-prework.html">
-        <div class="card-top"><span class="card-n">00</span><span class="card-title">Prework 🧰</span></div>
-        <p class="card-desc">Get the folder, the virtual environment, Claude Code and <code>idsec</code> in place, and prove each one works. <strong>Before the session</strong></p>
-      </a></li>
-    </ul>
+    <p>Then do <strong>Lessons 01 and 02</strong> at home as well. They need nothing but your laptop, and
+    the room starts at Lesson 03. All three pages are in <a href="#before">Before the session</a>
+    below.</p>
   </div>
 </div>
 
 <div class="step">
-  <div class="step-head"><div class="step-num">2</div><p class="step-title">Confirm the seven ticks</p></div>
+  <div class="step-head"><div class="step-num">2</div><p class="step-title">Confirm the eight ticks</p></div>
   <div class="step-body">
-    <p>All seven come from the prework. Check them now rather than halfway through lesson 01:</p>
+    <p>Seven come from the prework. The eighth is the two lessons you do at home. Check them now rather
+    than halfway through Lesson 03:</p>
     <ul>
       <li>The <strong>workshop folder</strong> unzipped somewhere you can find again</li>
       <li>A <strong>virtual environment</strong> in that folder, with <code>boto3</code> and
@@ -68,18 +69,20 @@ the other three take a couple of minutes once you sit down.</p>
       <li>Your own <strong>CYBRWorld login</strong>, the one ending in <code>@cyberarklab.com</code></li>
       <li>A sign-in for the <strong><code>apj-secrets</code></strong> tenant, which Lesson 10 opens in
       a browser</li>
+      <li><strong>Lessons 01 and 02</strong> done at home, so you arrive knowing what a harness is</li>
     </ul>
     <div class="warn">
       <p><span class="callout-label">🙋 Missing something?</span> Run the prework script first. It checks
-      every item on that list except the browser sign-in, fixes most of them, and tells you plainly which
-      ones it cannot:</p>
-      <div class="code"><pre><code># macOS
-cd ~/Downloads/sko27-japac-idira-ai-workshop
-bash check-prereqs.sh
-
-# Windows PowerShell
-cd $HOME\Downloads\sko27-japac-idira-ai-workshop
+      every item on that list except the browser sign-in and the two lessons, fixes most of them, and
+      tells you plainly which ones it cannot:</p>
+      <div class="os os-mac">
+        <div class="code"><pre><code>cd ~/Downloads/sko27-japac-idira-ai-workshop
+bash check-prereqs.sh</code></pre></div>
+      </div>
+      <div class="os os-win">
+        <div class="code"><pre><code>cd $HOME\Downloads\sko27-japac-idira-ai-workshop
 .\check-prereqs.ps1</code></pre></div>
+      </div>
       <p>Then don't sit quietly about whatever is left. Hold up your numbered card and a helper will come
       to you.</p>
     </div>
@@ -89,61 +92,53 @@ cd $HOME\Downloads\sko27-japac-idira-ai-workshop
 <div class="step">
   <div class="step-head"><div class="step-num">3</div><p class="step-title">Put the terminal and this guide side by side</p></div>
   <div class="step-body">
-    <p>Every lesson is “read a paragraph, run a command, look at the numbers”, and alt-tabbing between two
-    full-screen windows is the single biggest source of lost time in this room. Terminal on the
-    <strong>left</strong>, this guide in the browser on the <strong>right</strong>.</p>
-    <div class="os-switch" data-os-switch></div>
+    <p>Terminal on the <strong>left</strong>, this guide in the browser on the <strong>right</strong>.</p>
     <div class="os os-mac">
-      <p>Hover the green ● of the terminal window → <strong>Tile Window to Left of Screen</strong>, then
-      click the browser to fill the right. Dragging a window to a screen edge does the same thing.</p>
+      <p>Hover the green ● of the terminal window, then pick <strong>Tile Window to Left of
+      Screen</strong>.</p>
     </div>
     <div class="os os-win">
       <p>Click the terminal and press <kbd>Win</kbd> + <kbd>←</kbd>, then click the browser and press
       <kbd>Win</kbd> + <kbd>→</kbd>.</p>
     </div>
-    <p>Give the terminal about two-thirds if your screen is small. Part 1 prints a context gauge that
-    wants roughly 80 columns. If the tables and boxes come out wrapped and unreadable, widen the
-    terminal or shrink its font. Two screens? Even better: guide on the laptop, terminal on the
-    external display. Everything you are meant to notice in Part 1 is a number that changes, and you
-    cannot notice it behind another window.</p>
+    <p>Part 1 prints a gauge that wants about 80 columns. If it comes out wrapped, widen the terminal or
+    shrink its font.</p>
   </div>
 </div>
 
-<div class="step">
-  <div class="step-head"><div class="step-num">4</div><p class="step-title">Open these two tabs and leave them open</p></div>
-  <div class="step-body">
-    <p>Alongside whichever lesson you are on. One is for commands, one is for the customer
-    conversation.</p>
-    <ul>
-      <li><a href="reference/cheatsheet.html">The cheat sheet</a>: every command from the lab on one
-        page.</li>
-      <li><a href="reference/securing-agentic-ai.html">Post-Workshop Resources</a>: the deck behind the
-        workshop, and two videos to take home.</li>
-    </ul>
-  </div>
-</div>
+<p>Keep two more tabs open all day: <a href="reference/cheatsheet.html">the cheat sheet</a> for every
+command in the lab, and <a href="reference/securing-agentic-ai.html">Post-Workshop Resources</a> for the
+deck and the videos.</p>
 
-<h2>Part 1 · Build your own AI harness</h2>
+<h2 id="before">Before the session</h2>
 
-<p class="section-intro">The first slot, 1:00–2:00pm. Five lessons. Each one runs a small Python file
-in <code>ai-harness-app/</code>. Run it, read what it does, then break it on purpose.</p>
-
-<p>Lesson N goes with the script called <code>NN_something.py</code>, so a page and its script never
-disagree about which step you are on. All five scripts run the same app, so the model, the system
-prompt, the output style, the context gauge and the token counts are on screen the whole way
-through.</p>
+<p class="section-intro">Three pages to do at your own desk. The prework puts the tools on your laptop.
+The two lessons after it are the first half of Part 1, moved home to buy time in the room.</p>
 
 <ul class="cards">
+  <li><a href="0000-prework.html">
+    <div class="card-top"><span class="card-n">00</span><span class="card-title">Prework 🧰</span></div>
+    <p class="card-desc">Get the folder, the virtual environment, Claude Code and <code>idsec</code> in place, and prove each one works. <strong>Before the session</strong></p>
+  </a></li>
+
   <li><a href="0001-one-call.html">
     <div class="card-top"><span class="card-n">01</span><span class="card-title">One call to a model ⚛️</span></div>
-    <p class="card-desc">Fifteen lines and a genuinely old model. It cannot remember you and cannot act. Find both walls. <strong>Everyone</strong></p>
+    <p class="card-desc">Fifteen lines and a genuinely old model. It cannot remember you and cannot act. Find both walls. <strong>Before the session</strong></p>
   </a></li>
 
   <li><a href="0002-conversation-history.html">
     <div class="card-top"><span class="card-n">02</span><span class="card-title">Conversation history 🔁</span></div>
-    <p class="card-desc">One word changes and the model appears to remember you. It did not. The harness re-sends the whole transcript, and the bill only goes up. <strong>Everyone</strong></p>
+    <p class="card-desc">One word changes and the model appears to remember you. It did not. The harness re-sends the whole transcript, and the bill only goes up. <strong>Before the session</strong></p>
   </a></li>
+</ul>
 
+<h2>Part 1 · Build your own AI harness</h2>
+
+<p class="section-intro">The first slot, 1:00–2:00pm. Three lessons, carrying on from the two you did at
+home. Each one runs a small Python file in <code>ai-harness-app/</code>. Run it, read what it does, then
+break it on purpose.</p>
+
+<ul class="cards">
   <li><a href="0003-context-engineering.html">
     <div class="card-top"><span class="card-n">03</span><span class="card-title">Context engineering 🧠</span></div>
     <p class="card-desc">Rules and an output style, then fill the window on purpose: the dumb zone, the wall, and what <code>/compact</code> throws away. <strong>Everyone</strong></p>
@@ -228,6 +223,11 @@ depends on these.</p>
     <div class="card-top"><span class="card-n">14</span><span class="card-title">Delete the key ✂️</span></div>
     <p class="card-desc">The follow-up to Lesson 09. Make the app work with <em>no</em> credentials in it, then say out loud what is still unfixed. <strong>Optional deep dive</strong></p>
   </a></li>
+
+  <li><a href="0015-external-mcp-server.html">
+    <div class="card-top"><span class="card-n">15</span><span class="card-title">Bring your own MCP server 🔗</span></div>
+    <p class="card-desc">The follow-up to Lesson 10. Register your own MCP server in front of Microsoft Entra ID, then refuse one user and prove it in the log. <strong>Optional deep dive</strong></p>
+  </a></li>
 </ul>
 
 <h2>Who is who today</h2>
@@ -273,8 +273,8 @@ it runs on.</p>
     <td>Your laptop</td>
   </tr>
   <tr>
-    <td><strong>The Part 1 lessons</strong></td>
-    <td>Five short Python files in <code>ai-harness-app/</code>. The agent you build yourself in Part 1, with its own tiny repo to investigate.</td>
+    <td><strong>The harness lessons</strong></td>
+    <td>Five short Python files in <code>ai-harness-app/</code>. The agent you build yourself: 01 and 02 at home, 03 to 05 in the room.</td>
     <td>Your laptop</td>
   </tr>
   <tr>

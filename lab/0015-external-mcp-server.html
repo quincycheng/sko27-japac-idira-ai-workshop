@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>15 · Bring your own MCP server · SKO27 TechSummit - AI Workshop for Idira DC</title>
+<link rel="icon" type="image/svg+xml" href="assets/idira-icon.svg">
+<link rel="stylesheet" href="assets/lab.css">
+</head>
+<body>
+<div id="progress-rail"><div id="progress-fill"></div></div>
+
+<div class="wrap">
+
+<nav id="page-nav"></nav>
+
+<header class="lesson">
+  <p class="kicker">Part 3 · Optional Deep Dives</p>
+  <h1>Bring your own MCP server 🔗</h1>
+  <p class="standfirst">
+    This lesson follows <a href="0010-identity-broker.html">Lesson 10</a>. There you used an MCP server
+    somebody else had registered. Here you register one yourself, in front of <strong>Microsoft Entra
+    ID</strong>. Most of your clients run Entra ID, so this is the demo they will ask you for. It needs
+    your own tenants and your own admin rights, so it is a runbook to work through after the day.
+  </p>
+  <ul class="meta">
+    <li class="tag-opt">Optional deep dive</li>
+    <li>A runbook for your own tenant</li>
+    <li id="step-counter">&nbsp;</li>
+  </ul>
+</header>
+
+<div class="warn">
+  <p><span class="callout-label">🚧 Draft.</span> This page is a first transcription of a runbook that
+  worked in one tenant. Names, URLs and menu labels will differ in yours, and Microsoft moves its portal
+  menus often. Anything still unconfirmed is marked below. Tell the workshop team what breaks and this
+  page gets corrected.</p>
+</div>
+
+<div class="note">
+  <p><span class="callout-label">🔑 What you need before you start.</span> Four things, and you cannot
+  borrow any of them from the workshop:</p>
+  <ul>
+    <li>An <strong>Entra ID tenant</strong> where you are <strong>Global Administrator</strong>. A
+    personal Microsoft 365 developer tenant is enough.</li>
+    <li>An <strong>Idira tenant</strong> where you hold the <strong>Secure AI Admin</strong> role. That
+    is the role that lets you author policies, which you could only read in Lesson 10.</li>
+    <li>Two spare Entra user accounts you can set passwords on.</li>
+    <li><strong>Claude Code</strong>, working, from <a href="0007-setup.html">Lesson 07</a>.</li>
+  </ul>
+</div>
+
+<p><strong>The gap this closes.</strong> In Lesson 10 the MCP server was already registered, the policy
+already existed, and the tool looked up public information about a domain. In front of a client, all
+three of those are your job. Their directory is Entra ID. Microsoft publishes an MCP server over that
+directory, so an agent can read users, groups and policies through it. A directory is exactly the kind
+of system a security team wants brokered rather than handed to an agent.</p>
+
+<p>Five moving parts. Get them straight before you start clicking, because four of them have similar
+names:</p>
+
+<table>
+  <tr><th>Part</th><th>What it is</th><th>Where it lives</th></tr>
+  <tr>
+    <td><strong>App registration</strong></td>
+    <td>An OAuth client that is allowed to read the Entra MCP server. It has a client ID and a secret.</td>
+    <td>Entra ID</td>
+  </tr>
+  <tr>
+    <td><strong>Microsoft MCP Server for Enterprise</strong></td>
+    <td>Microsoft's own MCP server over your tenant data. You do not install it. You point at it.</td>
+    <td>Microsoft</td>
+  </tr>
+  <tr>
+    <td><strong>Custom MCP server</strong></td>
+    <td>Idira's record of that server. This is where the app registration's secret is held.</td>
+    <td>Idira</td>
+  </tr>
+  <tr>
+    <td><strong>Managed AI agent</strong></td>
+    <td>The identity your agent presents to the Broker. Its own client ID and secret.</td>
+    <td>Idira</td>
+  </tr>
+  <tr>
+    <td><strong>Access policy</strong></td>
+    <td>Decides which user, through which agent, may run which tool.</td>
+    <td>Idira</td>
+  </tr>
+</table>
+
+<p>The Entra MCP server exposes three tools. Idira renames them with the server's own name on the end,
+the same way <code>analyze_domain</code> became <code>mcp__idira-broker__analyze_domain</code> in Lesson
+10:</p>
+
+<table>
+  <tr><th>Tool</th><th>What it does</th></tr>
+  <tr><td><code>microsoft_graph_get</code></td><td>Runs a read against Microsoft Graph. This is the one that fetches data.</td></tr>
+  <tr><td><code>microsoft_graph_list_properties</code></td><td>Lists the properties available on an entity, such as a user or a group.</td></tr>
+  <tr><td><code>microsoft_graph_suggest_queries</code></td><td>Suggests the query to run for a question.</td></tr>
+</table>
+
+<h2>Your Tasks</h2>
+
+<p class="section-intro">Twelve steps in three places. Steps 1 to 6 are yours as the Entra
+administrator, 7 to 10 as the Idira administrator, and 11 and 12 as the user. Do them in order. Tick
+each one off as you go.</p>
+
+<h3>In Entra ID</h3>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">1</div><p class="step-title">Register an app for your MCP client</p></div>
+  <div class="step-body">
+    <p>Sign in to <a href="https://entra.microsoft.com/">entra.microsoft.com</a> as your Global
+    Administrator account.</p>
+    <p>Use the <strong>search bar at the top</strong> of the page rather than the sidebar. Type
+    <code>App registrations</code> and pick it under <strong>Services</strong>. Microsoft rearranges the
+    sidebar; the search bar stays where it is.</p>
+    <p>Click <strong>+ New registration</strong> and fill in three fields:</p>
+    <table>
+      <tr><th>Field</th><th>Set it to</th></tr>
+      <tr><td>Name</td><td>Anything readable, for example <code>My-MCP-Client-App</code></td></tr>
+      <tr><td>Supported account types</td><td>Accounts in this organizational directory only (Single tenant)</td></tr>
+      <tr><td>Redirect URI</td><td><strong>Web</strong>, then <code>http://localhost</code></td></tr>
+    </table>
+    <p>Click <strong>Register</strong>. On the <strong>Overview</strong> page, copy two values into a
+    scratch file:</p>
+    <ul>
+      <li><strong>Application (client) ID</strong></li>
+      <li><strong>Directory (tenant) ID</strong></li>
+    </ul>
+    <p>The real redirect URI comes from Idira in step 7. <code>http://localhost</code> is a placeholder
+    so the form saves.</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">2</div><p class="step-title">Create an OAuth client secret</p></div>
+  <div class="step-body">
+    <p>In the app's left menu, click <strong>Certificates &amp; secrets</strong>, then <strong>+ New
+    client secret</strong>. Give it a description and an expiry, and click <strong>Add</strong>.</p>
+    <p>Copy the <strong>Value</strong> column now. It hides for good once you leave or refresh the
+    page.</p>
+    <div class="stop">
+      <p><span class="callout-label">🚨 This secret can read your whole directory.</span> It goes into
+      Idira in step 7 and nowhere else. Do not paste it into a chat window, a command line, or a
+      screenshot you share. If you lose it, delete it and make another one.</p>
+    </div>
+    <p>You now have three values: the tenant ID, the client ID and this secret.</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">3</div><p class="step-title">Add the nine read scopes</p></div>
+  <div class="step-body">
+    <p>In the app's left menu, click <strong>API permissions</strong>, then <strong>+ Add a
+    permission</strong>. Open the <strong>APIs my organization uses</strong> tab and search for
+    <strong>Microsoft MCP Server for Enterprise</strong>.</p>
+    <figure class="shot">
+      <img src="assets/0015/01-find-the-mcp-api.png" alt="The Request API permissions panel, with the Microsoft MCP Server for Enterprise tile selected.">
+      <figcaption>It is on the <strong>APIs my organization uses</strong> tab, not the first one. Its
+      description reads “Let AI Agents access and act on Entra tenant data”.</figcaption>
+    </figure>
+    <p>Choose <strong>Delegated permissions</strong>. A person signs in in step 11, so the agent acts as
+    that person.</p>
+    <figure class="shot">
+      <img src="assets/0015/02-delegated-permissions.png" alt="The choice between Delegated permissions and Application permissions.">
+      <figcaption>Pick <strong>Delegated permissions</strong>. <strong>Application permissions</strong>
+      is for an agent that runs unattended, with nobody to sign in.</figcaption>
+    </figure>
+    <p>Tick these nine, all under the <strong>MCP</strong> group. They are enough for the queries in
+    step 11:</p>
+    <ul>
+      <li><code>MCP.Domain.Read.All</code></li>
+      <li><code>MCP.Group.Read.All</code></li>
+      <li><code>MCP.GroupMember.Read.All</code></li>
+      <li><code>MCP.Organization.Read.All</code></li>
+      <li><code>MCP.OrgContact.Read.All</code></li>
+      <li><code>MCP.Policy.Read.All</code></li>
+      <li><code>MCP.Reports.Read.All</code></li>
+      <li><code>MCP.User.Read.All</code></li>
+      <li><code>MCP.UserAuthenticationMethod.Read.All</code></li>
+    </ul>
+    <figure class="shot">
+      <img src="assets/0015/03-scopes-part-1.png" alt="The first part of the MCP permission list, with Domain, Group and GroupMember read scopes ticked.">
+      <figcaption>The list is long and alphabetical. Three of the nine are in this part.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="assets/0015/04-scopes-part-2.png" alt="The second part of the MCP permission list, with Organization, OrgContact, Policy, Reports, User and UserAuthenticationMethod read scopes ticked.">
+      <figcaption>Scroll for the other six, then click <strong>Add permissions</strong> at the
+      bottom.</figcaption>
+    </figure>
+    <div class="note">
+      <p><span class="callout-label">📖 Every one of them ends in <code>Read</code>.</span> The Entra
+      MCP server is read-only. Say that early in a client conversation, because the first question is
+      always whether the agent can change the directory.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">4</div><p class="step-title">Grant admin consent</p></div>
+  <div class="step-body">
+    <p>Still on <strong>API permissions</strong>, click <strong>Grant admin consent for [your
+    tenant]</strong> and confirm with <strong>Yes</strong>. Every row in the <strong>Status</strong>
+    column should turn into a green tick.</p>
+    <p>It often fails the first time:</p>
+    <figure class="shot">
+      <img src="assets/0015/05-consent-not-granted.png" alt="A red banner saying admin consent could not be granted, above nine permissions marked with amber warning icons.">
+      <figcaption>Nine amber warnings and “Could not grant admin consent”. The cause is not your
+      permissions.</figcaption>
+    </figure>
+    <p>The API has no <strong>service principal</strong> in your tenant yet. A service principal is the
+    local record of an application. The portal button cannot consent to something that has no local
+    record, so you create the record first. Any one of these three does it. Pick whichever you already
+    have open.</p>
+    <p><strong>Option 1, Cloud Shell.</strong> Click the Cloud Shell icon <code>&gt;_</code> at the top
+    of the portal, choose Bash or PowerShell, and run this with your own client ID:</p>
+    <div class="code"><pre><code>az ad app permission admin-consent --id &lt;YOUR_CLIENT_ID&gt;</code></pre></div>
+    <p><strong>Option 2, a consent URL.</strong> Put your tenant ID and client ID into this address and
+    open it in a new tab, then sign in and click <strong>Accept</strong>:</p>
+    <div class="code"><pre><code>https://login.microsoftonline.com/&lt;TENANT_ID&gt;/adminconsent?client_id=&lt;CLIENT_ID&gt;</code></pre></div>
+    <p><strong>Option 3, Entra PowerShell.</strong> Two commands. The second one creates the service
+    principal and grants the permissions in one go:</p>
+    <div class="code"><pre><code>Connect-Entra -Scopes 'Application.ReadWrite.All', 'Directory.Read.All', 'DelegatedPermissionGrant.ReadWrite.All'</code></pre></div>
+    <div class="code"><pre><code>Grant-EntraBetaMCPServerPermission -ApplicationName 'My-MCP-Client-App'</code></pre></div>
+    <p>Refresh the API permissions page afterwards. The amber warnings become green ticks.</p>
+    <div class="warn">
+      <p><span class="callout-label">🚧 To be confirmed.</span> Whether the Entra MCP server needs a
+      particular Microsoft licence, or preview enrolment, in your tenant: <code>&lt;TBD&gt;</code>. One
+      run also needed Azure Resource Manager permissions added to the admin account before consent
+      worked. If all three options above still fail, register the MCP application in your tenant
+      directly and try again.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">5</div><p class="step-title">Create two test users, both Global Reader</p></div>
+  <div class="step-body">
+    <p>Create two ordinary users in Entra ID. Name them for what they are about to prove, for example a
+    full privilege user and a limited privilege user.</p>
+    <figure class="shot">
+      <img src="assets/0015/08-two-test-users.png" alt="Two user rows in Entra ID, one named for full privilege and one for limited privilege.">
+      <figcaption>Two users, one directory. The whole difference between them will come from an Idira
+      policy.</figcaption>
+    </figure>
+    <p>Assign <strong>Global Reader</strong> to <strong>both</strong> of them. Then sign in as each one
+    once, in a private browser window, to clear the first-time password prompt.</p>
+    <div class="win">
+      <p><span class="callout-label">✅ Give both of them the same Entra role on purpose.</span> In step
+      12 one of them gets refused. Because their directory permissions are identical, the refusal can
+      only have come from the Idira policy. That is the demo. If you give them different Entra roles, you
+      have proved nothing about Idira.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step step-opt">
+  <div class="step-head"><div class="step-num">6</div><p class="step-title">Federate Entra ID to Idira (optional)</p></div>
+  <div class="step-body">
+    <p>Skip this and the demo still works. Create the two users in <strong>Idira Cloud Directory</strong>
+    instead, and use those in the policies in steps 9 and 10.</p>
+    <p>Do it if you want the same Entra accounts to sign in to Idira, which is what a client will have.
+    It is a SAML 2.0 trust with Entra ID as the identity provider and Idira as the service provider.</p>
+    <p><strong>In Entra ID.</strong> Go to <strong>Enterprise applications &gt; New application &gt;
+    Create your own application</strong>. Name it, and choose <strong>Integrate any other application
+    you don't find in the gallery</strong>. Under <strong>Manage</strong>, open <strong>Single
+    sign-on</strong> and choose <strong>SAML</strong>. Download the <strong>Federation Metadata
+    XML</strong>.</p>
+    <p><strong>In Idira.</strong> Go to <strong>Settings &gt; Users &gt; Identity Providers</strong> and
+    click <strong>Add</strong>. Name it, then upload that XML under <strong>Inbound Metadata</strong>.
+    Switch to <strong>Outbound Metadata</strong> and copy Idira's <strong>SP Entity ID</strong> and
+    <strong>Assertion Consumer Service (ACS) URL</strong>.</p>
+    <p><strong>Back in Entra ID.</strong> Edit the basic SAML configuration. Paste the SP Entity ID into
+    <strong>Identifier</strong> and the ACS URL into <strong>Reply URL</strong>. Then check the name
+    identifier:</p>
+    <figure class="shot">
+      <img src="assets/0015/07-attributes-and-claims.png" alt="The Attributes and Claims screen in Entra ID, showing the unique user identifier claim.">
+      <figcaption>The <strong>Unique User Identifier (Name ID)</strong> must be
+      <code>user.userprincipalname</code> or <code>user.mail</code>, whichever matches the login
+      attribute in Idira. A mismatch here is the usual cause of a failed sign-in.</figcaption>
+    </figure>
+    <p>Assign your two users to the application. Then back in Idira, open <strong>Federation
+    Rules</strong> to map the incoming claims, and <strong>Settings &gt; Users &gt; Identity Providers
+    &gt; Routing Rules</strong> to send your domain to Entra ID.</p>
+    <p>Test it in a private browser window: open your Idira tenant URL and sign in as one of the two
+    users.</p>
+  </div>
+</div>
+
+<h3>In Idira</h3>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">7</div><p class="step-title">Register the Entra MCP server</p></div>
+  <div class="step-body">
+    <p>Sign in to your own Idira tenant. Go to <strong>Manage &gt; Inventory &gt; AI &gt; MCP
+    Servers</strong> and add a <strong>custom MCP server</strong>.</p>
+    <p>Give it a readable name. The <strong>Server URL</strong> is Microsoft's, the same for every
+    tenant:</p>
+    <div class="code"><pre><code>https://mcp.svc.cloud.microsoft/enterprise</code></pre></div>
+    <p>Click <strong>Discover</strong>.</p>
+    <figure class="shot">
+      <img src="assets/0015/09-register-mcp-server.png" alt="The Register MCP server form, with a server name and Microsoft's enterprise MCP URL filled in.">
+      <figcaption>Two fields, then <strong>Discover</strong>. Idira asks the server how it wants to be
+      authenticated.</figcaption>
+    </figure>
+    <p>It comes back as <strong>OAuth 2.1</strong>. Keep the recommended option, <strong>Keep the MCP
+    server's OAuth app in Idira</strong>. That is the option where Idira holds the secret and your agent
+    never sees it.</p>
+    <figure class="shot">
+      <img src="assets/0015/10-oauth-and-redirect-url.png" alt="The OAuth section of the form, with a redacted redirect URL and empty client ID and secret fields.">
+      <figcaption>Copy the <strong>Redirect URL</strong> now. Then paste the client ID from step 1 and
+      the secret from step 2 into the two fields below it.</figcaption>
+    </figure>
+    <p>Set a category, add yourself as owner, and click <strong>Register</strong>.</p>
+    <p>The redirect URL Idira gave you looks like this. The tenant and the server name are yours:</p>
+    <div class="code"><pre><code>https://&lt;your-tenant&gt;.data.aigw.cyberark.cloud/mcp/&lt;server-name&gt;/OAuth2/Callback</code></pre></div>
+    <p>Now go back to Entra ID. Open your app registration, then
+    <strong>Authentication</strong>, and add that URL as a <strong>Web</strong> redirect URI:</p>
+    <figure class="shot">
+      <img src="assets/0015/06-add-redirect-uri.png" alt="The Authentication page of an Entra app registration, with a redacted redirect URI added.">
+      <figcaption>Add it next to the <code>http://localhost</code> from step 1. You can delete the
+      localhost one.</figcaption>
+    </figure>
+    <div class="warn">
+      <p><span class="callout-label">🧭 Skip this and step 11 fails.</span> The browser will say the
+      redirect URI does not match. That error comes from Entra ID, not from Idira, so people spend a
+      long time looking in the wrong console.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">8</div><p class="step-title">Register a managed AI agent</p></div>
+  <div class="step-body">
+    <p>Go to <strong>Manage &gt; Inventory &gt; AI &gt; Managed AI Agents</strong> and register one.
+    This is the same kind of record you read in Lesson 10, step 5.</p>
+    <figure class="shot">
+      <img src="assets/0015/11-register-ai-agent.png" alt="The register AI agent form, with a name, a type and a redacted owner email.">
+      <figcaption>Name it for the agent, not the person. Add yourself as owner, then <strong>Save and
+      Continue</strong>.</figcaption>
+    </figure>
+    <p>It issues a <strong>Client ID</strong> and a <strong>Client secret</strong>. Save both. The secret
+    is shown once.</p>
+    <div class="note">
+      <p><span class="callout-label">🪪 This pair is an identity, not a key to the directory.</span>
+      Exactly as in Lesson 10. It says which agent is calling. It grants nothing on its own, which is
+      why the audit log can name the agent and the user separately.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">9</div><p class="step-title">Write the full-privilege policy</p></div>
+  <div class="step-body">
+    <p>Go to <strong>Manage &gt; Policies &gt; AI agents access</strong> and add a policy. This is the
+    screen you could only read in Lesson 10. It has the same four parts.</p>
+    <p><strong>1 · General details.</strong> Name it after what it allows, and own it yourself.</p>
+    <p><strong>2 · MCP servers and tools.</strong> Add the server from step 7:</p>
+    <figure class="shot">
+      <img src="assets/0015/12-policy-add-server.png" alt="The policy step for selecting an MCP server, with one server listed.">
+      <figcaption>One server. A policy can cover several, and the list is the blast radius.</figcaption>
+    </figure>
+    <p>Turn on <strong>Allow all current and future tools</strong> for this one:</p>
+    <figure class="shot">
+      <img src="assets/0015/13-policy-all-tools.png" alt="The tool permissions dialog with the allow all current and future tools switch turned on.">
+      <figcaption>Convenient, and a standing grant. A tool Microsoft adds next month is allowed with
+      nobody approving it. Say that out loud when you demo it.</figcaption>
+    </figure>
+    <div class="warn">
+      <p><span class="callout-label">🧭 Empty tool list?</span> Idira discovers the tools the first time
+      an agent connects. If the three tools are not there yet, finish step 11, then come back and
+      finish this policy.</p>
+    </div>
+    <p><strong>3 · AI agents.</strong> Select the agent from step 8:</p>
+    <figure class="shot">
+      <img src="assets/0015/14-policy-select-agent.png" alt="The policy step for selecting an AI agent, with one agent row and a redacted agent ID.">
+      <figcaption>One agent. Everyone who connects through it is still logged as themselves.</figcaption>
+    </figure>
+    <p><strong>4 · Users and roles.</strong> Add the full-privilege user only:</p>
+    <figure class="shot">
+      <img src="assets/0015/15-policy-select-user.png" alt="The policy step for selecting users, with one redacted user principal name.">
+      <figcaption>One user. Not a role, and not <strong>Everyone</strong>, because step 12 depends on
+      the other user not being here.</figcaption>
+    </figure>
+    <p>Save the policy.</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">10</div><p class="step-title">Write the limited-privilege policy</p></div>
+  <div class="step-body">
+    <p>Add a second policy. Same server, same agent, two differences.</p>
+    <p><strong>Difference one.</strong> Leave <strong>Allow all current and future tools</strong> off,
+    and tick <code>microsoft_graph_get</code> only:</p>
+    <figure class="shot">
+      <img src="assets/0015/16-limited-policy-one-tool.png" alt="The tool permissions dialog listing three tools, with only microsoft_graph_get ticked.">
+      <figcaption>One of three. The banner says it: newly discovered tools are denied by
+      default.</figcaption>
+    </figure>
+    <p><strong>Difference two.</strong> Under users, add the limited-privilege user instead.</p>
+    <p>Save it. The summary should read <strong>1 of 3 tools allowed</strong>:</p>
+    <figure class="shot">
+      <img src="assets/0015/17-limited-policy-summary.png" alt="A policy summary row reading one of three tools allowed.">
+      <figcaption>Check this line before you demo. It is the difference the audit log will show in step
+      12.</figcaption>
+    </figure>
+  </div>
+</div>
+
+<h3>In your agent</h3>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">11</div><p class="step-title">Connect your agent, as the full-privilege user</p></div>
+  <div class="step-body">
+    <p>In Idira, open your MCP server and go to <strong>Connection Details</strong>. Pick the agent from
+    step 8 in the dropdown, and its client ID appears:</p>
+    <figure class="shot">
+      <img src="assets/0015/18-connection-details.png" alt="The connection details page for an MCP server, with a redacted broker URL and client ID, and the agent selected.">
+      <figcaption>Copy the <strong>Identity broker MCP server URL</strong> and the
+      <strong>Client ID</strong>. The client secret is the one you saved in step 8.</figcaption>
+    </figure>
+    <p>That broker URL has the same shape as the one in Lesson 10:</p>
+    <div class="code"><pre><code>https://&lt;your-tenant&gt;.data.aigw.cyberark.cloud/mcp/&lt;server-name&gt;</code></pre></div>
+    <p>Add it to Claude Code. One line, with your own URL and client ID:</p>
+    <div class="code"><pre><code>claude mcp add --transport http --scope user entra-mcp https://&lt;your-tenant&gt;.data.aigw.cyberark.cloud/mcp/&lt;server-name&gt; --client-id &lt;agent-client-id&gt; --client-secret</code></pre></div>
+    <p><code>--client-secret</code> takes no value on the line. It prompts you, so the secret stays out
+    of your shell history.</p>
+    <p>Start the agent and open the MCP panel:</p>
+    <div class="code"><pre><code>claude</code></pre></div>
+    <div class="code"><pre><code>/mcp</code></pre></div>
+    <p>Select <code>entra-mcp</code> and authenticate. Your browser opens. Sign in as the
+    <strong>full-privilege</strong> Entra user and approve. Back in the terminal, <code>/mcp</code> now
+    lists the three tools.</p>
+    <p>Ask it something. One line each:</p>
+    <div class="code"><pre><code>List all users in Entra ID.</code></pre></div>
+    <div class="code"><pre><code>Which user am I connected to Entra ID as?</code></pre></div>
+    <div class="code"><pre><code>Get the employee hire date and the on-premises distinguished name for the full privilege user.</code></pre></div>
+    <div class="code"><pre><code>What properties are available on the Entra ID group entity?</code></pre></div>
+    <p>All four work. You typed no directory credential, and the app registration's secret never left
+    Idira.</p>
+    <div class="note">
+      <p><span class="callout-label">🖥️ Claude desktop or Claude web instead.</span> This needs a Claude
+      account of your own, which the workshop does not give you. Go to <strong>Settings &gt; Connectors
+      &gt; Add custom connector</strong>. The name is yours, the <strong>Remote MCP server URL</strong>
+      is the broker URL, and the client ID and secret go under <strong>Advanced settings</strong>.</p>
+      <figure class="shot">
+        <img src="assets/0015/22-claude-custom-connector.png" alt="The Add custom connector dialog in Claude, with fields for a name, a remote MCP server URL, and an OAuth client ID and secret.">
+        <figcaption>Then click <strong>Connect</strong> and sign in as the same Entra user.</figcaption>
+      </figure>
+      <figure class="shot">
+        <img src="assets/0015/19-connector-tool-permissions.png" alt="A connected connector in Claude, listing its tools, with the broker URL redacted.">
+        <figcaption>Connected, with its tools listed. The address it points at is the Broker, not
+        Microsoft.</figcaption>
+      </figure>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">12</div><p class="step-title">Get refused as the limited user, then read the log</p></div>
+  <div class="step-body">
+    <p>Now change who you are. Sign out of both your Idira tenant and your Entra tenant, in the browser.
+    Then clear the agent's authentication. In Claude Code, run <code>/mcp</code>, select
+    <code>entra-mcp</code>, and clear its authentication. If you cannot see that option, remove the
+    server and add it again:</p>
+    <div class="code"><pre><code>claude mcp remove entra-mcp</code></pre></div>
+    <p>Authenticate again, this time as the <strong>limited-privilege</strong> user. Then run the same
+    questions:</p>
+    <div class="code"><pre><code>List all users in Entra ID.</code></pre></div>
+    <div class="code"><pre><code>What properties are available on the Entra ID group entity?</code></pre></div>
+    <p>The first one works, because <code>microsoft_graph_get</code> is the tool you allowed. The second
+    needs <code>microsoft_graph_list_properties</code>, which this user has no policy for, so it is
+    refused. The agent may try another tool instead. That is normal, and each attempt is logged.</p>
+    <p>Now go to the <strong>Audit and Reports</strong> space in Idira. Set the time range to the last
+    24 hours and the service name to <strong>Secure AI Agents</strong>.</p>
+    <figure class="shot">
+      <img src="assets/0015/20-audit-allow-and-deny.png" alt="Audit rows for MCP tool calls, with a redacted identity column, showing Deny, Execute and Approve results.">
+      <figcaption>Approve, Execute and <strong>Deny</strong> in one list. Open the Deny row.</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="assets/0015/21-audit-denied-detail.png" alt="The service data tab of a denied MCP tool call, showing the agent name, no policy, and the reason: no matching policy.">
+      <figcaption>Policy ID and name are <strong>N/A</strong>, and the reason is <strong>No matching
+      policy</strong>. Deny-by-default, written down.</figcaption>
+    </figure>
+    <div class="win">
+      <p><span class="callout-label">✅ Two users, one agent, one server.</span> Identical Entra roles,
+      and one of them was refused. The only difference was a tick in an Idira policy, and the log says
+      so in words a client can read.</p>
+    </div>
+  </div>
+</div>
+
+<h2>Your five-minute demo</h2>
+
+<p class="section-intro">The client version of what you just built. Six beats, in their own directory,
+which is why it lands harder than Lesson 10.</p>
+
+<ol>
+  <li><strong>Show the app registration</strong> and its nine read scopes. “This is all the agent can
+  ever ask Microsoft for.”</li>
+  <li><strong>Show where the secret is.</strong> It is in Idira, on the server record. It is not on the
+  laptop, and it is not in the agent's configuration.</li>
+  <li><strong>Connect and ask a directory question</strong> as the full-privilege user. Point out that
+  you typed no directory credential.</li>
+  <li><strong>Reconnect as the second user</strong> and ask a question that needs the other tool. Let it
+  be refused while they watch. Both users are Global Reader in their directory.</li>
+  <li><strong>Open the audit log</strong> and show the allow and the deny next to each other, with the
+  reason on the deny.</li>
+  <li><strong>Close with the question:</strong> “Your directory is the crown jewels. When an agent reads
+  it, who decided that, and where is it written down?”</li>
+</ol>
+
+<div class="ask">
+  🗣️ <strong>Ask your agent:</strong> “You have nine read scopes on the Entra MCP server, but the policy
+  allowed you one tool. Explain in two sentences which of those two limits stopped my last request, and
+  who controls each one.”
+</div>
+
+<h2>Knowledge Check</h2>
+
+<p class="section-intro">Two questions on where the limits live. Pick an answer to see why it is right
+or wrong.</p>
+
+<div class="check" data-answer="b">
+  <p class="check-q">Both test users are Global Reader in Entra ID, yet one gets refused. Who refused it?</p>
+  <ul class="opts">
+    <li><button data-opt="a">Entra ID, because Global Reader cannot read that part of the directory</button></li>
+    <li><button data-opt="b">Idira, because that user's policy allows one of the three tools</button></li>
+    <li><button data-opt="c">Microsoft's MCP server, because the second question was too expensive to run</button></li>
+  </ul>
+  <p class="why" data-for="a">Global Reader can read all of it, and both users have it. That is why you gave them the same role in step 5. Try again.</p>
+  <p class="why" data-for="b">✅ Correct. The two users are identical in Entra ID, so the only thing left is the Idira policy. The audit record says <code>No matching policy</code>, which is deny-by-default in one line.</p>
+  <p class="why" data-for="c">Nothing was refused for cost. The refusal happened at the Broker, before the call reached Microsoft. Try again.</p>
+</div>
+
+<div class="check" data-answer="c">
+  <p class="check-q">Where does the app registration's client secret from step 2 end up?</p>
+  <ul class="opts">
+    <li><button data-opt="a">In your agent's configuration file, next to the broker URL</button></li>
+    <li><button data-opt="b">In an environment variable on your laptop, set before you start the agent</button></li>
+    <li><button data-opt="c">In Idira, on the MCP server record, and nowhere else</button></li>
+  </ul>
+  <p class="why" data-for="a">Your agent's configuration holds the <em>agent's</em> client ID and secret, which grant nothing on their own. The directory secret is not there. Try again.</p>
+  <p class="why" data-for="b">That is the pattern the runbook replaces. An environment variable on a laptop is a long-lived directory credential in a place nobody audits. Try again.</p>
+  <p class="why" data-for="c">✅ Correct. You pasted it into Idira in step 7 and never used it again. The Broker holds it and adds it to each call, so your agent can reach the directory while holding nothing that reads the directory.</p>
+</div>
+
+<h2>Where Idira fits</h2>
+
+<p class="section-intro">Each lesson names the risk it just demonstrated and the Palo Alto Networks
+product that answers it.</p>
+
+<!-- idira: 15 -->
+<!-- BEGIN GENERATED: idira 15 — build-lab-code.py owns this block -->
+<div class="idira">
+  <p class="idira-risk"><span class="callout-label">🧨 The risk you just saw.</span> An agent read the corporate directory. Two users with the same directory role got different answers, and nothing in the directory decided that.</p>
+  <p class="idira-kicker">What answers it</p>
+  <dl>
+    <dt>Securing AI Agents</dt>
+    <dd>Registers the external MCP server, holds its OAuth secret, and authorises each user per tool through one registered agent.</dd>
+    <dt>Identity Security Platform</dt>
+    <dd>Federates the client&#x27;s own Entra ID users in, so the audit record names a person the client already knows.</dd>
+  </dl>
+  <p class="idira-say">🗣️ “Your directory is the crown jewels. Ask who decided an agent could read it, and where that decision is written down.”</p>
+  <p class="idira-more"><a href="reference/securing-agentic-ai.html">One platform, every identity. The deck and the videos →</a></p>
+</div>
+<!-- END GENERATED: idira 15 -->
+
+<h2>Key takeaways</h2>
+
+<ul>
+  <li><strong>Two credentials, two jobs.</strong> The Entra app registration's secret reads the
+    directory and lives in Idira. The agent's client ID and secret prove which agent is calling and
+    grant nothing. Keep those separate when you explain this.</li>
+  <li><strong>Scopes and policy are different limits, held by different people.</strong> Entra decides
+    the widest thing the app could ever ask for. Idira decides what this user, through this agent, may
+    do today. You need both, and only one of them changes daily.</li>
+  <li><strong>Identical directory roles, different outcomes.</strong> That is the proof a security team
+    wants: the control is theirs, in one console, and it does not depend on rewriting anything in
+    Entra.</li>
+  <li><strong>Deny-by-default shows up as <code>No matching policy</code>.</strong> The refusal is a
+    record, with the agent, the user, the tool and the reason. A tool that simply returns an error tells
+    an auditor nothing.</li>
+</ul>
+
+<div class="win">
+  <p><span class="callout-label">✅ You have now done both halves.</span>
+  <a href="0010-identity-broker.html">Lesson 10</a> was the demo with everything prepared for you. This
+  page is the same demo in a tenant you own, in front of the system a client cares most about. Swap
+  Entra ID for their ticketing system or their code host and the twelve steps barely change.</p>
+</div>
+
+<div id="page-pager"></div>
+
+</div>
+<script src="assets/lab.js"></script>
+</body>
+</html>

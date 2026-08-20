@@ -205,6 +205,17 @@ product: Secrets Hub -- Covers the case where those three already live in a clou
 say: Eliminate first, vault what is left, and say how many are still there. The number is the finding.
 
 
+## 15
+
+risk: An agent read the corporate directory. Two users with the same directory role got different answers, and nothing in the directory decided that.
+
+product: Securing AI Agents -- Registers the external MCP server, holds its OAuth secret, and authorises each user per tool through one registered agent.
+
+product: Identity Security Platform -- Federates the client's own Entra ID users in, so the audit record names a person the client already knows.
+
+say: Your directory is the crown jewels. Ask who decided an agent could read it, and where that decision is written down.
+
+
 <!-- ===== product records: one per row of an idira-table block ===== -->
 ## product: Secure Cloud Access
 
@@ -275,9 +286,9 @@ risk: "The agent did it" is a shrug, because the agent had no identity of its ow
 
 controls: Issues agents their **own** identity and scoped tokens, and audits what each part of the harness did with them.
 
-met: 05, 06, 10, 12
+met: 05, 06, 10, 12, 15
 
-hands-on: 10
+hands-on: 10, 15
 
 
 ## product: Securing AI Agents
@@ -307,9 +318,9 @@ risk: Anyone can point an agent at an MCP server by URL, and that server's tools
 
 controls: Sits **in front of** MCP services: registered servers, brokered credentials, per-agent authorisation, one audit trail.
 
-met: 05, 10, 13
+met: 05, 10, 13, 15
 
-hands-on: 10
+hands-on: 10, 15
 
 
 ## product: Endpoint Privilege Manager

@@ -59,10 +59,34 @@
 <figcaption>All three boxes are files or lists <em>we</em> control. None of them are properties of the model.</figcaption>
 </figure>
 
+<div class="os-switch" data-os-switch></div>
+
 <h2>Your Tasks</h2>
 
 <p class="section-intro">Six steps. The first two show you what instructions really are. The next three
-break the window and fix it. Same terminal, same model as before.</p>
+break the window and fix it. Same model as Lessons 01 and 02.</p>
+
+<div class="warn">
+  <p><span class="callout-label">🏗️ First lesson of the day, so set the terminal up.</span> Lessons 01
+  and 02 were prework, and their credentials have expired. Log in, then run the elevate one-liner from
+  <a href="0000-prework.html">prework step 7</a>:</p>
+  <div class="code"><pre><code>idsec login</code></pre></div>
+  <p>Then switch the virtual environment on and move into the app folder:</p>
+  <div class="os os-mac">
+    <div class="code"><pre><code>cd ~/Downloads/sko27-japac-idira-ai-workshop
+source .venv/bin/activate
+export AWS_REGION=us-east-1
+cd ai-harness-app</code></pre></div>
+  </div>
+  <div class="os os-win">
+    <div class="code"><pre><code>cd $HOME\Downloads\sko27-japac-idira-ai-workshop
+.\.venv\Scripts\Activate.ps1
+$env:AWS_REGION="us-east-1"
+cd ai-harness-app</code></pre></div>
+  </div>
+  <p>Your prompt should now start with <code>(.venv)</code>. Never did Lesson 01?
+  <a href="0001-one-call.html">Run it now</a>, it is short.</p>
+</div>
 
 <div class="step">
   <div class="step-head"><div class="step-num">1</div><p class="step-title">Read the instructions, then watch them cost you</p></div>

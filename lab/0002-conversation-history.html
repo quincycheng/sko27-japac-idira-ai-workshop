@@ -15,7 +15,7 @@
 <nav id="page-nav"></nav>
 
 <header class="lesson">
-  <p class="kicker">Part 1 · Build your own AI harness</p>
+  <p class="kicker">Before the session</p>
   <h1>Conversation history 🔁</h1>
   <p class="standfirst">
     You will see where an agent's memory lives. It is not in the model. One word of code changes, the
@@ -29,10 +29,32 @@
   </ul>
 </header>
 
+<div class="os-switch" data-os-switch></div>
+
 <h2>Your Tasks</h2>
 
 <p class="section-intro">Six steps, in the same terminal window as Lesson 01. Same credentials, same
 <code>.venv</code>, same model. Tick each one off as you go.</p>
+
+<div class="warn">
+  <p><span class="callout-label">🏠 Doing this at home?</span> Yes. This lesson is prework now, and the
+  room starts at <a href="0003-context-engineering.html">Lesson 03</a>. Closed your Lesson 01 window?
+  Then the credentials are gone. Run the elevate one-liner from
+  <a href="0000-prework.html">prework step 7</a> in a new window, then switch the virtual environment
+  back on:</p>
+  <div class="os os-mac">
+    <div class="code"><pre><code>cd ~/Downloads/sko27-japac-idira-ai-workshop
+source .venv/bin/activate
+export AWS_REGION=us-east-1
+cd ai-harness-app</code></pre></div>
+  </div>
+  <div class="os os-win">
+    <div class="code"><pre><code>cd $HOME\Downloads\sko27-japac-idira-ai-workshop
+.\.venv\Scripts\Activate.ps1
+$env:AWS_REGION="us-east-1"
+cd ai-harness-app</code></pre></div>
+  </div>
+</div>
 
 <div class="step">
   <div class="step-head"><div class="step-num">1</div><p class="step-title">Run it, and read the footer</p></div>
