@@ -106,9 +106,8 @@ consequences. These are the three sentences to say to a client:</p>
 
 <h2>Your Tasks</h2>
 
-<p class="section-intro">Eight steps, in two halves. In the first half you are a person using an AI
-agent. In the second half you are the administrator who has to answer for that agent. Tick each one
-off as you go.</p>
+<p class="section-intro">Two halves. In the first you are a person using an AI agent. In the second you are the
+administrator who has to answer for it.</p>
 
 <div class="note">
   <p><span class="callout-label">🔑 What you need before you start.</span> This lesson uses the
@@ -126,8 +125,7 @@ off as you go.</p>
     <div class="code"><pre><code>claude</code></pre></div>
     <p>Ask it which MCP servers it has:</p>
     <div class="code"><pre><code>/mcp</code></pre></div>
-    <p>There is no Broker in the list. Remember that, because you run this again in step 3. Now leave
-    the agent:</p>
+    <p>There is no Broker in the list. You run this again in step 3. Now leave the agent:</p>
     <div class="code"><pre><code>/exit</code></pre></div>
     <p>The next command runs in your terminal, not in the agent.</p>
   </div>
@@ -164,9 +162,8 @@ off as you go.</p>
     <div class="code"><pre><code>/mcp</code></pre></div>
     <p>This time <code>idira-broker</code> is in the list, marked as needing authentication. Select it
     and confirm. Your browser opens. Sign in <strong>as your own account</strong> and approve.</p>
-    <p>The browser page says the authentication was successful, and you can close that tab. The
-    terminal says it is connected to <code>idira-broker</code>. Type <code>/mcp</code> once more to
-    list the tools.</p>
+    <p>The browser says the authentication was successful, so close that tab. The terminal says it is
+    connected to <code>idira-broker</code>. Type <code>/mcp</code> once more to list the tools.</p>
     <div class="win">
       <p><span class="callout-label">💡 Stop and notice what just happened.</span> You did not type
       a password for the tool. You proved <em>who you are</em> to Idira, and Idira decided what the
@@ -192,8 +189,8 @@ off as you go.</p>
     carries the server it came from. The tool itself is <code>analyze_domain</code>.</p>
     <p>Now use it:</p>
     <div class="code"><pre><code>Use the analyze_domain tool on the idira-broker server to analyze the domain paloaltonetworks.com.</code></pre></div>
-    <p>Approve the tool call. The tool gathers public information about that domain, including its
-    Microsoft 365 details, and the agent summarises what came back.</p>
+    <p>Approve the tool call. The tool gathers public information about that domain, and the agent
+    summarises what came back.</p>
     <div class="win">
       <p><span class="callout-label">💡 Count your credentials.</span> You hold no account on that
       service and no API key for it. You proved who you were once, in a browser, and the Broker did
@@ -216,9 +213,9 @@ off as you go.</p>
 
 <h3>You are the administrator</h3>
 
-<p>Change hats. What you just did left records an administrator can read. Open the console at
+<p>Change hats. Open the console at
 <a href="https://apj-secrets.cyberark.cloud/"><code>apj-secrets.cyberark.cloud</code></a> and sign in
-with the same account. You have <strong>read</strong> access. You are looking, not changing.</p>
+with the same account. You have <strong>read</strong> access: you are looking, not changing.</p>
 
 <div class="step">
   <div class="step-head"><div class="step-num">5</div><p class="step-title">Find the agent in the inventory</p></div>
@@ -254,10 +251,10 @@ with the same account. You have <strong>read</strong> access. You are looking, n
     <p>Go to <strong>Manage &gt; Policies &gt; AI agents access</strong>
     (<a href="https://apj-secrets.cyberark.cloud/managespace/policies/aigw/access-policy/inventory">direct
     link</a>). The page is titled <strong>AI agents access policies</strong>.</p>
-    <p>The list shows each policy's name, the MCP server and AI agents it covers, its owners, when it
-    last changed, and its tags. You can see the blast radius of every policy without opening one.</p>
-    <p>Open the policy that covers this workshop. This is what decided your tool call was allowed. It
-    has four parts. Read each row below against the screen in front of you:</p>
+    <p>The list shows each policy's name, the servers and agents it covers, its owners, when it last
+    changed, and its tags. You can see the blast radius of every policy without opening one.</p>
+    <p>Open the policy that covers this workshop. It decided your tool call was allowed, and it has four
+    parts. Read each row below against the screen in front of you:</p>
     <table>
       <tr><th>Part</th><th>What it sets</th><th>The choice worth explaining</th></tr>
       <tr>
@@ -412,8 +409,7 @@ access, not the platform's, so your existing access model keeps working unchange
 
 <h2>Your five-minute demo</h2>
 
-<p class="section-intro">You just lived through it, so you can run it. Six beats, in this order. The
-fourth one is the one that lands.</p>
+<p class="section-intro">Six beats, in this order. The fourth one is the one that lands.</p>
 
 <ol>
   <li><strong>Ask how many AI agents</strong> are reaching their corporate data and resources today.
@@ -433,8 +429,7 @@ fourth one is the one that lands.</p>
 
 <h2>Knowledge Check</h2>
 
-<p class="section-intro">Three questions on custody, policy and on-behalf-of. Pick an answer to see why
-it is right or wrong. A wrong one is worth reading.</p>
+<p class="section-intro">Pick an answer to see why it is right or wrong.</p>
 
 <div class="check" data-answer="b">
   <p class="check-q">What is the Broker's main contribution in that first diagram?</p>
@@ -480,8 +475,6 @@ it is right or wrong. A wrong one is worth reading.</p>
 
 <h2>Where Idira fits</h2>
 
-<p class="section-intro">Each lesson names the risk it just demonstrated and the Palo Alto Networks
-product that answers it.</p>
 
 <!-- idira: 10 -->
 <!-- BEGIN GENERATED: idira 10 — build-lab-code.py owns this block -->

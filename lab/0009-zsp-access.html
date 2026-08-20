@@ -19,8 +19,7 @@
   <h1>Skills: ZSP by Idsec CLI 🎫</h1>
   <p class="standfirst">
     You will ask for AWS access you do not have, be granted it by policy, and use it under your own name.
-    No key is stored anywhere. You will also be able to explain what a <strong>skill</strong> is, because
-    one is what tells your agent how to do it.
+    No key is stored anywhere. A <strong>skill</strong> is what tells your agent how to do it.
   </p>
   <ul class="meta">
     <li class="tag-must">Everyone</li>
@@ -125,16 +124,11 @@ that right now, before you run anything on this page, your entitlement to that a
 
 <h2>Your Tasks</h2>
 
-<p class="section-intro">Seven steps, then two optional ones. One of them hands work to the agent, and
-the rest are yours because environment variables only ever belong to a real terminal. Tick each one
-off as you go.</p>
-
 <div class="step">
   <div class="step-head"><div class="step-num">1</div><p class="step-title">Give your agent the skills</p></div>
   <div class="step-body">
-    <p>A <strong>skill</strong> is a short instruction sheet you hand the agent so it knows how to
-    do one specific job the way you want it done. We wrote three for you: <code>idsec</code>,
-    <code>zsp-aws</code> and <code>zsp-azure</code>.</p>
+    <p>A <strong>skill</strong> is a short instruction sheet for one job. We wrote three for you:
+    <code>idsec</code>, <code>zsp-aws</code> and <code>zsp-azure</code>.</p>
     <p>From inside <code>sandbox-app</code>, still outside the agent:</p>
     <div class="os os-mac">
       <div class="code"><pre><code>mkdir -p .claude/skills
@@ -173,8 +167,7 @@ more .claude\skills\zsp-azure\SKILL.md</code></pre></div>
   <div class="step-head"><div class="step-num">3</div><p class="step-title">Check the CLI is there</p></div>
   <div class="step-body">
     <div class="code"><pre><code>idsec version</code></pre></div>
-    <p>You should get a version number. This is a single file, with no installer and nothing added
-    to your system.</p>
+    <p>You should get a version number.</p>
     <div class="warn">
       <p><span class="callout-label">“command not found”?</span> Setup step 5 was skipped, or your
       <code>PATH</code> change needs a new terminal. Run the setup script from the workshop folder,
@@ -207,9 +200,8 @@ bash check-prereqs.sh</code></pre></div>
   <div class="step-body">
     <div class="code"><pre><code>idsec login</code></pre></div>
     <p>Sign in with your own CYBRWorld account, the one ending in <code>@cyberarklab.com</code>. Your
-    tenant is <code>demo.cyberark.cloud</code>. Usually this happens right in the terminal, with your
-    password followed by a multi-factor check. If a browser window opens instead, sign in there and come
-    back to the terminal.</p>
+    tenant is <code>demo.cyberark.cloud</code>. Usually you type your password and a multi-factor code
+    in the terminal. If a browser window opens instead, sign in there and come back to the terminal.</p>
     <p>Already logged in from Lesson 07? You do not need to do it again.</p>
     <div class="note">
       <p><span class="callout-label">👥 Logged in to a different tenant?</span> Make a second
@@ -252,13 +244,13 @@ bash check-prereqs.sh</code></pre></div>
     <div class="note">
       <p><span class="callout-label">💡 Notice.</span> You never learned the flag names, the account
       number or the role ARN. The skill knew the shape of the commands and the CLI supplied the
-      values. That is the difference between an agent with a skill and an agent guessing.</p>
+      values.</p>
     </div>
     <div class="note">
       <p><span class="callout-label">🛑 Why it stops there.</span> The skill tells it to print that
       command, not run it. Credentials the agent fetches would sit in its context and in its transcript.
-      Yours go into your terminal instead. That line is worth taking back to work with you: let the
-      agent find out what you may do, and keep the secret out of it.</p>
+      Yours go into your terminal instead. The rule to take back to work: let the agent find out what
+      you may do, and keep the secret out of it.</p>
     </div>
   </div>
 </div>
@@ -306,19 +298,16 @@ bash check-prereqs.sh</code></pre></div>
     <p>Leave the agent and run the command it prints. You get back a <code>sessionId</code> and nothing
     else. There is no access key, nothing to export, and nothing to clean up. The role is active for
     your own Azure sign-in, and it expires on its own.</p>
-    <p>That response holds no secret, so you can paste it back to the agent and ask what it means. The
-    AWS rule and the Azure rule come from the same principle: keep credentials out of the transcript.
-    Here there is no credential.</p>
-    <p>This step changes nothing about the sandbox app, which is an AWS application. The point is that
-    one CLI, one login and one audit trail cover more than one cloud.</p>
+    <p>That response holds no secret, so you can paste it back to the agent and ask what it means.</p>
+    <p>This step changes nothing about the sandbox app, which is an AWS application. One CLI, one login
+    and one audit trail cover more than one cloud.</p>
   </div>
 </div>
 
 <div class="step step-opt">
   <div class="step-head"><div class="step-num">🧪</div><p class="step-title">Optional: now remove the secret</p></div>
   <div class="step-body">
-    <p>The app still has an AWS key in it. Elevation made that key unnecessary. An unnecessary secret
-    should be deleted, not left where it is.</p>
+    <p>The app still has an AWS key in it. Elevation made that key unnecessary, so delete it.</p>
     <p><a href="0014-fix-the-app.html">Lesson 14</a> is the follow-up to this one. You point an agent at
     the same <code>sandbox-app</code>, and it takes the key out while keeping the app working. Do it
     after the workshop if you run out of time here.</p>
@@ -327,8 +316,8 @@ bash check-prereqs.sh</code></pre></div>
 
 <h2>What this fixes, and what it does not</h2>
 
-<p class="section-intro">This is the part that gets overclaimed on a slide. One of the four secrets is
-now gone. The other three are untouched, and saying so is what makes the first claim credible.</p>
+<p class="section-intro">One of the four secrets is now gone. The other three are untouched, and saying so is what makes
+the first claim credible.</p>
 
 <ul>
   <li><strong>Fixed: AWS access</strong>. No key is needed, ever again. The secret is gone rather than
@@ -348,8 +337,7 @@ and <strong>Secrets Management</strong> governs your machine identities everywhe
 
 <h2>Knowledge Check</h2>
 
-<p class="section-intro">Two questions on what the broker added. Pick an answer to see why it is right
-or wrong. A wrong one is worth reading.</p>
+<p class="section-intro">Pick an answer to see why it is right or wrong.</p>
 
 <div class="check" data-answer="a">
   <p class="check-q">Idira sits in the middle of this. What does it add that AWS alone does not?</p>
@@ -383,8 +371,6 @@ or wrong. A wrong one is worth reading.</p>
 
 <h2>Where Idira fits</h2>
 
-<p class="section-intro">Each lesson names the risk it just demonstrated and the Palo Alto Networks
-product that answers it.</p>
 
 <!-- idira: 09 -->
 <!-- BEGIN GENERATED: idira 09 — build-lab-code.py owns this block -->

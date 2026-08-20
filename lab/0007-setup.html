@@ -18,9 +18,9 @@
   <p class="kicker">Part 2 · Practical Guide to AI Harness</p>
   <h1>Get Started: Claude Code 🤖</h1>
   <p class="standfirst">
-    You will get a real AI agent running in your own terminal. It answers questions about code you have
-    never opened, powered by Claude on your company's Amazon Bedrock account. You will also be able to say
-    which credentials it holds and when they expire.
+    You will get a real AI agent running in your own terminal, powered by Claude on your company's
+    Amazon Bedrock account. You will also be able to say which credentials it holds, and when
+    they expire.
   </p>
   <ul class="meta">
     <li class="tag-must">Everyone</li>
@@ -88,7 +88,7 @@
   <text x="104" y="218" class="svg-sub" fill="var(--ink-faint)">Close the terminal and</text>
   <text x="104" y="236" class="svg-sub" fill="var(--ink-faint)">the access is gone.</text>
 </svg>
-<figcaption>Your credentials live in one terminal window and expire on their own. Remember this picture. It is the whole point of today.</figcaption>
+<figcaption>Your credentials live in one terminal window and expire on their own.</figcaption>
 </figure>
 
 <h2>Your Tasks</h2>
@@ -146,8 +146,7 @@ bash check-prereqs.sh</code></pre></div>
     <div class="note">
       <p><span class="callout-label">💡 Notice what just happened.</span> Nobody gave you a
       permanent AWS key. You asked for access, the platform checked who you are, and handed you
-      credentials that expire. That is <strong>zero standing privileges</strong>, and you used it before
-      anyone explained it.</p>
+      credentials that expire. That is <strong>zero standing privileges</strong>.</p>
     </div>
     <div class="warn">
       <p><span class="callout-label">⚠️ One terminal only.</span> These values live in
@@ -174,8 +173,9 @@ $env:AWS_REGION="us-east-1"
 $env:ANTHROPIC_MODEL="us.anthropic.claude-opus-5"</code></pre></div>
     </div>
 
-    <p>Use the <strong>Copy</strong> button on the block above rather than retyping it. The model name is
-    long, and one wrong character produces a confusing error.</p>
+    <p>Nothing prints. Step 5 proves these three worked.</p>
+    <p>Use the <strong>Copy</strong> button. The model name is long, and one wrong character produces a
+    confusing error.</p>
   </div>
 </div>
 
@@ -239,8 +239,8 @@ source .venv/bin/activate</code></pre></div>
     <p>In <strong>auto mode</strong> the agent runs commands without asking you first. Type this and
     press <code>Return</code>:</p>
     <div class="code"><pre><code>In one sentence, what does this app do?</code></pre></div>
-    <p>It will read the files around you and answer. <strong>That is it. You are vibe coding.</strong>
-    You did not open a single file yourself.</p>
+    <p>It will read the files around you and answer. <strong>You are vibe coding.</strong> You did not
+    open a single file yourself.</p>
     <div class="warn">
       <p><span class="callout-label">⚠️ Auto mode is for today.</span> It is on so the room keeps pace.
       On Monday, in a repo that matters, do not use it. Read each command before you approve it.</p>
@@ -257,8 +257,7 @@ source .venv/bin/activate</code></pre></div>
 
 <h2>If something went wrong</h2>
 
-<p class="section-intro">Five symptoms cover almost everything that goes wrong here. Find yours in
-the left column and do what the right column says.</p>
+<p class="section-intro">Find your symptom in the left column, and do what the right column says.</p>
 
 <table>
   <tr><th>What you see</th><th>What it means</th><th>Do this</th></tr>
@@ -297,8 +296,7 @@ the left column and do what the right column says.</p>
 
 <h2>Knowledge Check</h2>
 
-<p class="section-intro">Two questions on what you just set up. Pick an answer to see why it is right
-or wrong. A wrong one is worth reading.</p>
+<p class="section-intro">Pick an answer to see why it is right or wrong.</p>
 
 <div class="check" data-answer="c">
   <p class="check-q">Why did the credentials go into the terminal instead of into a file?</p>
@@ -326,8 +324,6 @@ or wrong. A wrong one is worth reading.</p>
 
 <h2>Where Idira fits</h2>
 
-<p class="section-intro">Each lesson names the risk it just demonstrated and the Palo Alto Networks
-product that answers it.</p>
 
 <!-- idira: 07 -->
 <!-- BEGIN GENERATED: idira 07 — build-lab-code.py owns this block -->
