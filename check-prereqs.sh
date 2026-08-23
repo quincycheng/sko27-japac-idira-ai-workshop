@@ -110,8 +110,8 @@ if [ ${#MISSING_DIRS[@]} -eq 0 ]; then
   pass "Workshop folder" "complete"
 else
   bad "missing: ${MISSING_DIRS[*]}"
-  info "Run this script from inside the workshop folder — the one your"
-  info "workshop email pointed you at. Nothing else here will work without it."
+  info "Run this script from inside the workshop folder — the one linked in"
+  info "#cybr-japac-ts-all. Nothing else here will work without it."
   fail "Workshop folder" "missing ${MISSING_DIRS[*]}" \
        "Re-download the workshop folder and run this script from inside it"
 fi
@@ -925,7 +925,8 @@ if [ ${#TODO[@]} -eq 0 ]; then
   only_you
   cat <<DONE
 
-  Bring: this laptop, a charger, and your workshop email. See you there! 👋
+  Bring: this laptop and a charger. Questions go to #cybr-japac-ts-all.
+  See you there! 👋
 DONE
   exit 0
 fi

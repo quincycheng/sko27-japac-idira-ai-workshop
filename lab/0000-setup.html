@@ -32,8 +32,8 @@
 <div class="stop">
   <p><span class="callout-label">🚨 Please do not skip this.</span> There are about sixty of us and
   two trainers. If sixty people install software during the session, nobody gets to the interesting
-  part. If something here does not work, <strong>reply to the workshop email</strong>. We would much
-  rather fix it this week than on the day.</p>
+  part. If something here does not work, ask in the Slack channel
+  <code>#cybr-japac-ts-all</code>. We would much rather fix it this week than on the day.</p>
 </div>
 
 <p>Pick your machine once. The whole page will follow your choice.</p>
@@ -201,7 +201,7 @@ see what you are agreeing to before you agree to it.</p>
     </div>
 
     <div class="warn">
-      <p><span class="callout-label">🆘 No Python at all?</span> Reply to the workshop email. Do not
+      <p><span class="callout-label">🆘 No Python at all?</span> Ask in <code>#cybr-japac-ts-all</code>. Do not
       try to install it yourself, because on a managed laptop that is exactly the step that asks for
       admin rights. We will sort it out with you before the day.</p>
     </div>
@@ -388,7 +388,7 @@ jq --version</code></pre></div>
       <strong>Idira Endpoint Privilege Manager</strong>, that is <em>application control</em> doing
       its job. It decides which programs are allowed to run on a managed laptop. Please do not try
       to work around it. If you are offered a <strong>Request authorization</strong> button, use it;
-      otherwise reply to the workshop email <strong>today</strong> and we will get
+      otherwise ask in <code>#cybr-japac-ts-all</code> <strong>today</strong> and we will get
       <code>idsec</code> allowed for you.</p>
       <p>It is the same idea as the rest of the day, one layer lower down.
       <a href="0009-zsp-access.html">Lesson 09</a> comes back to it.</p>
@@ -464,8 +464,8 @@ jq --version</code></pre></div>
     <div class="code"><pre><code>idsec exec sca cloud-access list-targets --csp aws</code></pre></div>
     <p>You should get at least one AWS account with at least one role next to it.</p>
     <div class="stop">
-      <p><span class="callout-label">🚩 An empty list, or an error about policy?</span> Reply to the
-      workshop email <strong>today</strong>. This is an entitlement that has to be granted for you, and
+      <p><span class="callout-label">🚩 An empty list, or an error about policy?</span> Ask in
+      <code>#cybr-japac-ts-all</code> <strong>today</strong>. This is an entitlement that has to be granted for you, and
       it cannot be fixed from your seat on the day.</p>
     </div>
 
@@ -498,7 +498,7 @@ jq --version</code></pre></div>
       <code>accessCredentials</code>?</span> The first one means step 5 is not finished, or you are in
       the terminal you had open before the <code>PATH</code> change. The second means the elevation
       itself failed, so run the command without the <code>| jq</code> part and read what Idira actually
-      said. Reply to the workshop email today if it is a policy message.</p>
+      said. Ask in <code>#cybr-japac-ts-all</code> today if it is a policy message.</p>
     </div>
   </div>
 </div>
@@ -518,8 +518,8 @@ jq --version</code></pre></div>
     <div class="stop">
       <p><span class="callout-label">🚩 A timeout or <code>Connection refused</code> instead?</span>
       There is no route to AWS from this network. The cause is usually a VPN, a firewall, or egress
-      filtering. That <em>does</em> stop both halves of the workshop. Reply to the workshop email
-      <strong>today</strong> with what it printed. If you will be on a different network on the day, run this again there:
+      filtering. That <em>does</em> stop both halves of the workshop. Ask in
+      <code>#cybr-japac-ts-all</code> <strong>today</strong> with what it printed. If you will be on a different network on the day, run this again there:
       reachability is a property of the network, not of your laptop.</p>
     </div>
     <div class="note">
@@ -611,7 +611,7 @@ jq --version</code></pre></div>
     <code>cd</code> to the workshop folder and activate again. This is the most common problem on the
     day and the easiest to fix.</li>
   <li><strong>Two things cannot be fixed from your seat on the day:</strong> your AWS entitlement in
-    Idira and a network route to AWS. If either one is missing, reply to the workshop email today.</li>
+    Idira and a network route to AWS. If either one is missing, ask in <code>#cybr-japac-ts-all</code> today.</li>
   <li><strong>There are two tenants.</strong> Your CYBRWorld login gets you AWS access through
     <code>idsec</code>. A sign-in to <code>apj-secrets</code> gets you the console in Lesson 10.</li>
 </ul>

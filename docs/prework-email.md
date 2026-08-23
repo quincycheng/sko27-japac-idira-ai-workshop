@@ -57,8 +57,8 @@ case GitHub is blocked on your network.
 
 The setup script checks everything, including your AWS access and whether each program really
 starts. Two of its answers cannot be fixed from your seat, and neither can a helper fix them on the
-day. Both need days of lead time. So please run the script this week and **reply to this email** if
-you see either of these.
+day. Both need days of lead time. So please run the script this week and post in
+**#cybr-japac-ts-all** on Slack if you see either of these.
 
 **1. No AWS role came back.** The script runs `idsec exec sca cloud-access list-targets --csp aws`
 for you. An empty list, or an error about policy, is an **access entitlement** we have to grant in
@@ -107,7 +107,7 @@ script that saves you most of the typing.
 ## A few things worth knowing
 
 **Nothing needs administrator rights.** Everything installs into your own home folder. If you
-get a prompt asking for admin credentials, stop and reply to this email — something has gone
+get a prompt asking for admin credentials, stop and post in #cybr-japac-ts-all — something has gone
 sideways and we would like to know.
 
 **You will set up a Python virtual environment** (step 3). It is a folder inside the project
@@ -129,10 +129,10 @@ never opened a terminal, you are exactly who this was written for.
 
 ## If something does not work
 
-**Reply to this email.** Please do not wait for the day.
+**Ask in #cybr-japac-ts-all on Slack.** Please do not wait for the day.
 
-Run the setup script first if you have not — it names the problem for you, which makes your reply
-much easier for us to act on. Then paste what it printed into your reply.
+Run the setup script first if you have not — it names the problem for you, which makes your message
+much easier for us to act on. Then paste what it printed into the channel.
 
 And the two at the top of this email, again, because they are the ones that cannot wait: **no AWS
 role** and **a program your laptop refuses to run**. Both need days, not minutes.

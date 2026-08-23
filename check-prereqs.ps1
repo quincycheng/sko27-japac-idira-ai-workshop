@@ -111,8 +111,8 @@ if ($missing.Count -eq 0) {
     Add-Pass 'Workshop folder' 'complete'
 } else {
     Write-Bad ("missing: " + ($missing -join ', '))
-    Write-Info 'Run this script from inside the workshop folder — the one your'
-    Write-Info 'workshop email pointed you at. Nothing else here will work without it.'
+    Write-Info 'Run this script from inside the workshop folder — the one linked in'
+    Write-Info '#cybr-japac-ts-all. Nothing else here will work without it.'
     Add-Fail 'Workshop folder' ("missing " + ($missing -join ', ')) `
              'Re-download the workshop folder and run this script from inside it'
 }
@@ -900,7 +900,8 @@ if ($Todo.Count -eq 0) {
     Write-Host '  🎉 Every check this script can make has passed.' -ForegroundColor Green
     Show-OnlyYou
     Write-Host ''
-    Write-Host '  Bring: this laptop, a charger, and your workshop email. See you there! 👋'
+    Write-Host '  Bring: this laptop and a charger. Questions go to #cybr-japac-ts-all.'
+    Write-Host '  See you there! 👋'
     exit 0
 }
 
