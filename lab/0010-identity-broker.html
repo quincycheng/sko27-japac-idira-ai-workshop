@@ -35,7 +35,7 @@
   <p><span class="callout-label">🎯 This is the lesson you will demo.</span> You are a Domain
   Consultant. Everything else today was you learning to use an agent. <em>This</em> is the part a
   client will ask you to show them on a screen share. So you do it three times over, as the user, as
-  the security professional and as the auditor. It ends with a five-minute demo script you can reuse.</p>
+  the security professional and as the auditor.</p>
 </div>
 
 <p><strong>The problem it solves.</strong> Today your agent in this workshop needed one thing only: AWS.
@@ -103,21 +103,15 @@ consequences. These are the three sentences to say to a client:</p>
   agent loses it immediately.</li>
 </ul>
 
-<!-- Video walkthrough. Record the new CYBRWorld flow on macOS, then replace CAST_ID in
-     all four places below with the asciinema cast ID and delete these comment markers.
-     Keep the italic fallback line: the page has to work offline.
-
 <h2>Video walkthrough</h2>
 
-<p>Watch this lesson run from start to finish. It was recorded on macOS. On Windows, follow the steps
-below rather than the recording.</p>
+<p>Watch this lesson run from start to finish. It takes about 3 minutes. It was recorded on macOS. On
+Windows, follow the steps below rather than the recording.</p>
 
-<script src="https://asciinema.org/a/CAST_ID.js" id="asciicast-CAST_ID" async data-rows="44"></script>
+<script src="https://asciinema.org/a/PFKStVQ1CIbB3QQ4.js" id="asciicast-PFKStVQ1CIbB3QQ4" async data-rows="44"></script>
 
 <p><em>Blank? You are offline. Watch it at
-<a href="https://asciinema.org/a/CAST_ID">asciinema.org/a/CAST_ID</a>.</em></p>
-
--->
+<a href="https://asciinema.org/a/PFKStVQ1CIbB3QQ4">asciinema.org/a/PFKStVQ1CIbB3QQ4</a>.</em></p>
 
 <h2>Your Tasks</h2>
 
@@ -217,8 +211,7 @@ You can close this tab and return to Claude Code.</code></pre></div>
     the middle.</p>
     <p>Now use the first one:</p>
     <div class="code"><pre><code>Use the analyze_domain tool on the idira-ai-broker-entrasonar server to analyze the domain paloaltonetworks.com.</code></pre></div>
-    <p>Approve the tool call. The answer names that domain's identity provider: it is federated to
-    <strong>Okta</strong> over WS-Federation. You also get its Entra tenant ID, its mail gateway and a
+    <p>Approve the tool call. The answer gives that domain's Entra tenant ID, its mail gateway and a
     long list of third-party services in use.</p>
     <div class="win">
       <p><span class="callout-label">💡 Count your credentials.</span> You hold no account on that
@@ -319,7 +312,7 @@ account. You have <strong>read</strong> access: you are looking, not changing.</
       <tr>
         <td><strong>4 · Users and roles</strong></td>
         <td>Who may work through those agents.</td>
-        <td>Sources include Idira Cloud Directory, Okta and Entra ID. The <strong>Everyone</strong>
+        <td>Sources include Idira Cloud Directory and Entra ID. The <strong>Everyone</strong>
         role covers all users in one entry. Handy for a lab, rarely right in production.</td>
       </tr>
     </table>
@@ -421,25 +414,6 @@ the <strong>resource</strong> being touched. Both the agent and the server must 
 
 <p>Your <code>beta_features</code> call in step 5 failed the resource half. The tool was discovered and
 the agent was enabled, and it still stopped, because no policy named that tool.</p>
-
-<h2>Your five-minute demo</h2>
-
-<p class="section-intro">Six beats, in this order. The fourth one is the one that lands.</p>
-
-<ol>
-  <li><strong>Ask how many AI agents</strong> are reaching their corporate data and resources today.
-  Most clients do not know. That is the same wall you hit in Lesson 06.</li>
-  <li><strong>Connect an agent to a tool</strong> and point out loudly that you typed no credential.
-  You only proved who you were.</li>
-  <li><strong>Run one tool call</strong> that works, then show that call in the audit log with the
-  user's name on it.</li>
-  <li><strong>Run the tool that is not in the policy</strong> and let it be refused in front of them.
-  Then find the refusal in the audit log. You did both yourself, in steps 5 and 9.</li>
-  <li><strong>Open the policy</strong> and show the three lists. “Deny-by-default. Nothing works
-  unless something here says so.”</li>
-  <li><strong>Close with the one question:</strong> “Today, how would you answer an auditor asking
-  which of your agents touched this system last Tuesday?”</li>
-</ol>
 
 <h2>Knowledge Check</h2>
 

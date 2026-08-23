@@ -103,7 +103,7 @@ that right now, before you run anything on this page, your entitlement to that a
 
 <div class="win">
   <p><span class="callout-label">🪶 Notice what nobody had to set up for this.</span> Before you
-  start, look at what is <em>not</em> on the prerequisite list for the seven steps below:</p>
+  start, look at what is <em>not</em> on the prerequisite list for the eight steps below:</p>
   <ul>
     <li><strong>No OIDC provider.</strong> Nobody registered an identity provider in that AWS
     account.</li>
@@ -271,8 +271,8 @@ bash check-prereqs.sh</code></pre></div>
     </div>
     <p>Use the agent's version, with the real account and role in it, not this one. Nothing prints. That
     is success.</p>
-    <p>This replaces the credentials from Lesson 07 with your elevated ones. Everything keeps
-    working, including the agent.</p>
+    <p>This replaces the credentials from Lesson 07 with your elevated ones. The agent will not run
+    in this role, and step 8 puts it back.</p>
   </div>
 </div>
 
@@ -289,6 +289,22 @@ bash check-prereqs.sh</code></pre></div>
       you are <strong>in</strong> that AWS role, and your <strong>own name</strong> is attached to
       the session. A shared access key can never tell you that second part.</p>
     </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">8</div><p class="step-title">Put your lab credentials back</p></div>
+  <div class="step-body">
+    <p>Run this in your <strong>terminal</strong>, not in the agent.</p>
+    <p>The role you elevated into cannot reach Bedrock, so <code>claude</code> will not start. This
+    command puts back the lab credentials from Lesson 07.</p>
+    <div class="os os-mac">
+      <div class="code"><pre><code>eval "$(idsec exec sca cloud-access elevate --csp aws --workspace-id 409556437035 --roleIds arn:aws:iam::409556437035:role/CW-SCA-AdminAccess --raw | jq -r '.response.results[0].accessCredentials | fromjson | "export AWS_ACCESS_KEY_ID=\(.aws_access_key)\nexport AWS_SECRET_ACCESS_KEY=\(.aws_secret_access_key)\nexport AWS_SESSION_TOKEN=\(.aws_session_token)"')"</code></pre></div>
+    </div>
+    <div class="os os-win">
+      <div class="code"><pre><code>idsec exec sca cloud-access elevate --csp aws --workspace-id 409556437035 --roleIds arn:aws:iam::409556437035:role/CW-SCA-AdminAccess --raw | jq -r '.response.results[0].accessCredentials | fromjson | "$env:AWS_ACCESS_KEY_ID=\"\(.aws_access_key)\"\n$env:AWS_SECRET_ACCESS_KEY=\"\(.aws_secret_access_key)\"\n$env:AWS_SESSION_TOKEN=\"\(.aws_session_token)\""' | Invoke-Expression</code></pre></div>
+    </div>
+    <p>Nothing prints. That is success.</p>
   </div>
 </div>
 
