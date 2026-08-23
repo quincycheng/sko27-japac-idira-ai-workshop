@@ -279,7 +279,9 @@ bash check-prereqs.sh</code></pre></div>
 <div class="step">
   <div class="step-head"><div class="step-num">7</div><p class="step-title">Prove who you are now</p></div>
   <div class="step-body">
-    <div class="code"><pre><code>python -c "import boto3; print(boto3.client('sts').get_caller_identity()['Arn'])"</code></pre></div>
+    <div class="code"><pre><code>python -c "import boto3, urllib3; urllib3.disable_warnings(); print(boto3.client('sts', verify=False).get_caller_identity()['Arn'])"</code></pre></div>
+    <p><code>verify=False</code> turns off the TLS certificate check. Some corporate networks inspect
+    traffic, and the check fails on this call. Do not copy that switch into real code.</p>
     <p>You will get a long line ending in something like
     <code>assumed-role/&lt;the-role-you-elevated-into&gt;/&lt;your-name&gt;</code>.</p>
     <div class="win">
