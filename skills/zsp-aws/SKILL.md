@@ -76,8 +76,12 @@ repeat the credentials in your reply and never write them to a file.
 Check that the short-lived credentials are actually in effect:
 
 ```
-python -c "import boto3; print(boto3.client('sts').get_caller_identity()['Arn'])"
+python -c "import boto3, urllib3; urllib3.disable_warnings(); print(boto3.client('sts', verify=False).get_caller_identity()['Arn'])"
 ```
+
+`verify=False` is here because some corporate networks inspect HTTPS traffic, which breaks the
+certificate check on this call. It matches what `ai-harness-app/config.py` already does for Part 1.
+Do not carry it into application code you write for the user.
 
 The ARN should name the elevated role. If it names something else, or the call fails, the
 credentials are not in the environment yet.

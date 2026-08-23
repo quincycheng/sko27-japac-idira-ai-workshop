@@ -655,8 +655,12 @@ function Invoke-AwsRehearsal {
     Write-Good 'credentials received'
     try {
         $creds | Invoke-Expression
-        $arn = & $VPy -c 'import boto3
-print(boto3.client("sts").get_caller_identity()["Arn"])' 2>$null
+        # verify=False for the same reason ai-harness-app/config.py sets it: a TLS-inspecting
+        # proxy would otherwise fail this call and be reported as "AWS rejected them", which
+        # sends the attendee after the wrong problem. Step 9 below is where TLS gets judged.
+        $arn = & $VPy -c 'import boto3, urllib3
+urllib3.disable_warnings()
+print(boto3.client("sts", verify=False).get_caller_identity()["Arn"])' 2>$null
         if ($arn) {
             Write-Good "AWS accepted them: $arn"
             Write-Dim 'They are gone now. This script never saved them anywhere.'

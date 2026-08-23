@@ -483,7 +483,9 @@ jq --version</code></pre></div>
     them into this terminal window. They were never written to a file, and never shown on screen.</p>
 
     <p><strong>Third, prove it worked.</strong> With the virtual environment switched on from step 3:</p>
-    <div class="code"><pre><code>python -c "import boto3; print(boto3.client('sts').get_caller_identity()['Arn'])"</code></pre></div>
+    <div class="code"><pre><code>python -c "import boto3, urllib3; urllib3.disable_warnings(); print(boto3.client('sts', verify=False).get_caller_identity()['Arn'])"</code></pre></div>
+    <p><code>verify=False</code> turns off the TLS certificate check. Some corporate networks inspect
+    traffic, and the check fails on this call. Do not copy that switch into real code.</p>
     <p>You should get a long line ending in
     <code>assumed-role/CW-SCA-AdminAccess/&lt;your-name&gt;</code>. Your own name is in it, which is the
     part a shared access key could never tell you.</p>

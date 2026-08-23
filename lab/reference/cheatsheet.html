@@ -85,7 +85,9 @@ claude</code></pre></div>
 <p>Nothing prints. That is success. To see which accounts and roles you may ask for:</p>
 <div class="code"><pre><code>idsec exec sca cloud-access list-targets --csp aws</code></pre></div>
 <p>To prove it worked:</p>
-<div class="code"><pre><code>python -c "import boto3; print(boto3.client('sts').get_caller_identity()['Arn'])"</code></pre></div>
+<div class="code"><pre><code>python -c "import boto3, urllib3; urllib3.disable_warnings(); print(boto3.client('sts', verify=False).get_caller_identity()['Arn'])"</code></pre></div>
+<p><code>verify=False</code> turns off the TLS certificate check, because some corporate networks inspect
+traffic. Do not copy that switch into real code.</p>
 
 <h2>3 · Claude Code</h2>
 
@@ -158,7 +160,7 @@ secrets you cannot eliminate.</p>
 python summarize.py other-report.txt   # summarise a different file
 python notify.py "your summary here"   # dry run — sends nothing
 
-python -c "import boto3; print(boto3.client('sts').get_caller_identity()['Arn'])"
+python -c "import boto3, urllib3; urllib3.disable_warnings(); print(boto3.client('sts', verify=False).get_caller_identity()['Arn'])"
                                        # who am I in AWS right now?</code></pre></div>
 
 <p><strong>Activate the virtual environment first</strong>, or none of the above will find

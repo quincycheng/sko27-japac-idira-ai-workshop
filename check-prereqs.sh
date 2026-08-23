@@ -674,8 +674,12 @@ export AWS_SESSION_TOKEN=\(.aws_session_token)"' 2>/dev/null)"
     return 1
   fi
   good "credentials received"
-  arn="$(eval "$creds"; "$VPY" -c 'import boto3
-print(boto3.client("sts").get_caller_identity()["Arn"])' 2>/dev/null)"
+  # verify=False for the same reason ai-harness-app/config.py sets it: a TLS-inspecting
+  # proxy would otherwise fail this call and be reported as "AWS rejected them", which
+  # sends the attendee after the wrong problem. Step 9 below is where TLS gets judged.
+  arn="$(eval "$creds"; "$VPY" -c 'import boto3, urllib3
+urllib3.disable_warnings()
+print(boto3.client("sts", verify=False).get_caller_identity()["Arn"])' 2>/dev/null)"
   if [ -n "$arn" ]; then
     good "AWS accepted them: $arn"
     dim "They are gone now. This script never saved them anywhere."
