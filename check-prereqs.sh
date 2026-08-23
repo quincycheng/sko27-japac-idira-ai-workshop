@@ -84,8 +84,8 @@ blocked() {  # blocked <command name>
   bad "'$1' is on your PATH but will not run"
   info "That is endpoint application control, not a PATH problem. It decides"
   info "which programs may run on a managed laptop. Please do not work around it."
-  info "Offered a 'Request for authorization' button? Use it. Otherwise ask in the"
-  info "workshop Slack channel or 📧 reply to the workshop email TODAY."
+  info "Offered a 'Request for authorization' button? Use it. Otherwise ask in"
+  info "the 💬 #cybr-japac-ts-all Slack channel TODAY."
 }
 
 cat <<BANNER
@@ -144,9 +144,9 @@ if [ -n "$PY" ]; then
 else
   bad "no Python 3.9+ found"
   info "Please do NOT install Python yourself — on a managed laptop that is"
-  info "exactly the step that asks for admin rights. 📧 Reply to your workshop"
-  info "email instead and we will sort it out with you before the day."
-  fail "Python" "not found" "Reply to the workshop email about Python — do not install it yourself"
+  info "exactly the step that asks for admin rights. 💬 Ask in the"
+  info "#cybr-japac-ts-all Slack channel and we will sort it out before the day."
+  fail "Python" "not found" "Ask in #cybr-japac-ts-all about Python — do not install it yourself"
 fi
 
 # ------------------------------------------------- 3 · virtual environment
@@ -170,7 +170,7 @@ else
       fixed "Virtual environment" "created .venv"
     else
       bad "creating it failed"
-      fail "Virtual environment" "creation failed" "Raise this in a reply to the workshop email"
+      fail "Virtual environment" "creation failed" "Raise this in #cybr-japac-ts-all"
     fi
   else
     fail "Virtual environment" "not created" "Run: $PY -m venv .venv"
@@ -258,7 +258,7 @@ if have claude && runs claude --version; then
 elif have claude; then
   blocked claude
   fail "Claude Code" "found but will not run" \
-       "Get Claude Code allowed by your endpoint policy — reply to the workshop email"
+       "Get Claude Code allowed by your endpoint policy — ask in #cybr-japac-ts-all"
 else
   bad "the 'claude' command was not found"
   dim "It installs into your home folder. No admin rights, no Node.js."
@@ -274,7 +274,7 @@ else
       fi
     else
       bad "the installer failed"
-      fail "Claude Code" "install failed" "Try again on a network without a proxy, or reply to the workshop email"
+      fail "Claude Code" "install failed" "Try again on a network without a proxy, or ask in #cybr-japac-ts-all"
     fi
   else
     fail "Claude Code" "not installed" "Run: curl -fsSL https://claude.ai/install.sh | bash"
@@ -310,7 +310,7 @@ if have idsec && runs idsec version; then
 elif have idsec; then
   blocked idsec
   fail "idsec CLI" "found but will not run" \
-       "Get idsec allowed by your endpoint policy — reply to the workshop email"
+       "Get idsec allowed by your endpoint policy — ask in #cybr-japac-ts-all"
 elif [ -x "$BINDIR/idsec" ]; then
   warn "idsec is at $BINDIR/idsec but not on your PATH in this window"
   if ask "Add $BINDIR to your PATH in ~/.zshrc?"; then
@@ -420,7 +420,7 @@ if have jq && runs jq --version; then
 elif have jq; then
   blocked jq
   fail "jq" "found but will not run" \
-       "Get jq allowed by your endpoint policy — reply to the workshop email"
+       "Get jq allowed by your endpoint policy — ask in #cybr-japac-ts-all"
 elif [ -x "$BINDIR/jq" ]; then
   warn "jq is at $BINDIR/jq but not on your PATH in this window"
   ensure_bindir_path
@@ -547,8 +547,8 @@ verify_login() {
   cybrworld_values
   info ""
   default_profile_advice
-  info "Still failing? Ask in the workshop Slack channel, or 📧 reply to the"
-  info "workshop email. Do it this week, not on the day."
+  info "Still failing? Ask in the 💬 #cybr-japac-ts-all Slack channel."
+  info "Do it this week, not on the day."
   return 1
 }
 
@@ -668,9 +668,9 @@ export AWS_SESSION_TOKEN=\(.aws_session_token)"' 2>/dev/null)"
   if [ -z "$creds" ]; then
     bad "no credentials came back"
     info "The role exists, so this is usually a policy on the role itself."
-    info "📧 Reply to the workshop email today and paste in what you ran."
+    info "💬 Ask in #cybr-japac-ts-all today and paste in what you ran."
     fail "AWS credentials" "elevate returned nothing" \
-         "📧 Reply to the workshop email — elevate gave no credentials"
+         "💬 Ask in #cybr-japac-ts-all — elevate gave no credentials"
     return 1
   fi
   good "credentials received"
@@ -684,7 +684,7 @@ print(boto3.client("sts").get_caller_identity()["Arn"])' 2>/dev/null)"
     bad "the credentials came back, but AWS did not accept them"
     info "Do the two commands by hand — setup step 7 explains every error."
     fail "AWS credentials" "AWS rejected them" \
-         "Run setup step 7 by hand, then 📧 reply to the workshop email"
+         "Run setup step 7 by hand, then 💬 ask in #cybr-japac-ts-all"
   fi
 }
 
@@ -709,10 +709,10 @@ else
            "Put CYBRWorld on the default profile: idsec configure — then re-run this script"
     else
       dim "This is an access entitlement. It cannot be fixed from your seat, and"
-      dim "it takes days. 📧 Reply to the workshop email TODAY."
+      dim "it takes days. 💬 Ask in #cybr-japac-ts-all TODAY."
       dim "Logged in to a tenant other than CYBRWorld? Check with: idsec profiles show"
       fail "AWS credentials" "no entitlement" \
-           "📧 Reply to the workshop email today — you have no AWS role yet"
+           "💬 Ask in #cybr-japac-ts-all today — you have no AWS role yet"
     fi
   elif [ -z "$JQ" ]; then
     good "$TARGETS_N AWS role(s) available to you"
@@ -847,7 +847,7 @@ PYEOF
         good "reached AWS — but the certificate was issued by: $TLS_DETAIL"
         dim "Not Amazon, so something on this network is inspecting HTTPS. Part 1"
         dim "does not care: it does not verify certificates. Claude Code in Part 2"
-        dim "does, so mention this in a reply — it is useful for us to know. 📧"
+        dim "does, so mention it in #cybr-japac-ts-all. Useful for us to know. 💬"
         manual "HTTPS to Bedrock" "inspected by $TLS_DETAIL — fine for Part 1"
       fi
       ;;
@@ -915,9 +915,8 @@ only_you() {
   This script cannot fix it and neither can a helper on the day: it needs an
   endpoint policy change, and that takes days.
 
-  📧 ${B}Reply to the workshop email TODAY.${R} If a ${B}Request for authorization${R}
-  prompt appears, use it too. For anything smaller, ask in the workshop Slack
-  channel.
+  💬 ${B}Ask in the #cybr-japac-ts-all Slack channel TODAY.${R} If a
+  ${B}Request for authorization${R} prompt appears, use it too.
 ONLYYOU
 }
 
@@ -948,7 +947,7 @@ cat <<NEXT
 
       ${BLU}bash check-prereqs.sh${R}
 
-  Stuck on any of them? 📧 Reply to the workshop email this week — we would
+  Stuck on any of them? 💬 Ask in #cybr-japac-ts-all this week — we would
   much rather fix it now than on the day.
 NEXT
 only_you

@@ -160,7 +160,7 @@ $RECYCLE.BIN/
 credentials
 .idsec/
 .netrc
-
+*.cast
 
 # ---------------------------------------------------------------------------
 # 🚨 DO NOT IGNORE THESE

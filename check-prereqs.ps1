@@ -89,8 +89,8 @@ function Write-Blocked ($Name) {
     Write-Bad "'$Name' is on your PATH but will not run"
     Write-Info 'That is endpoint application control, not a PATH problem. It decides'
     Write-Info 'which programs may run on a managed laptop. Please do not work around it.'
-    Write-Info "Offered a 'Request for authorization' button? Use it. Otherwise ask in the"
-    Write-Info 'workshop Slack channel or 📧 reply to the workshop email TODAY.'
+    Write-Info "Offered a 'Request for authorization' button? Use it. Otherwise ask in"
+    Write-Info 'the 💬 #cybr-japac-ts-all Slack channel TODAY.'
 }
 
 Write-Host ''
@@ -146,9 +146,9 @@ if ($Py) {
 } else {
     Write-Bad 'no Python 3.9+ found'
     Write-Info 'Please do NOT install Python yourself — on a managed laptop that is'
-    Write-Info 'exactly the step that asks for admin rights. 📧 Reply to your workshop'
-    Write-Info 'email instead and we will sort it out with you before the day.'
-    Add-Fail 'Python' 'not found' 'Reply to the workshop email about Python — do not install it yourself'
+    Write-Info 'exactly the step that asks for admin rights. 💬 Ask in the'
+    Write-Info '#cybr-japac-ts-all Slack channel and we will sort it out before the day.'
+    Add-Fail 'Python' 'not found' 'Ask in #cybr-japac-ts-all about Python — do not install it yourself'
 }
 
 # ------------------------------------------------- 3 · virtual environment
@@ -174,7 +174,7 @@ if (Test-Path $VPy) {
             Add-Fixed 'Virtual environment' 'created .venv'
         } else {
             Write-Bad 'creating it failed'
-            Add-Fail 'Virtual environment' 'creation failed' 'Raise this in a reply to the workshop email'
+            Add-Fail 'Virtual environment' 'creation failed' 'Raise this in #cybr-japac-ts-all'
         }
     } else {
         Add-Fail 'Virtual environment' 'not created' "Run: $Py -m venv .venv"
@@ -270,7 +270,7 @@ if ((Have-Command 'claude') -and (Test-Runs 'claude' @('--version'))) {
 } elseif (Have-Command 'claude') {
     Write-Blocked 'claude'
     Add-Fail 'Claude Code' 'found but will not run' `
-             'Get Claude Code allowed by your endpoint policy — reply to the workshop email'
+             'Get Claude Code allowed by your endpoint policy — ask in #cybr-japac-ts-all'
 } else {
     Write-Bad "the 'claude' command was not found"
     Write-Dim 'It installs into your home folder. No admin rights, no Node.js.'
@@ -282,7 +282,7 @@ if ((Have-Command 'claude') -and (Test-Runs 'claude' @('--version'))) {
             Add-Fixed 'Claude Code' 'installed (new window needed)'
         } catch {
             Write-Bad "the installer failed: $($_.Exception.Message)"
-            Add-Fail 'Claude Code' 'install failed' 'Try again on a network without a proxy, or reply to the workshop email'
+            Add-Fail 'Claude Code' 'install failed' 'Try again on a network without a proxy, or ask in #cybr-japac-ts-all'
         }
     } else {
         Add-Fail 'Claude Code' 'not installed' 'Run: irm https://claude.ai/install.ps1 | iex'
@@ -325,7 +325,7 @@ if ((Have-Command 'idsec') -and (Test-Runs 'idsec' @('version'))) {
 } elseif (Have-Command 'idsec') {
     Write-Blocked 'idsec'
     Add-Fail 'idsec CLI' 'found but will not run' `
-             'Get idsec allowed by your endpoint policy — reply to the workshop email'
+             'Get idsec allowed by your endpoint policy — ask in #cybr-japac-ts-all'
 } elseif (Test-Path $idsecExe) {
     Write-Warn "idsec is at $idsecExe but not on your PATH in this window"
     if (Confirm-Action "Add $BinDir to your user PATH?") {
@@ -406,7 +406,7 @@ if ((Have-Command 'jq') -and (Test-Runs 'jq' @('--version'))) {
 } elseif (Have-Command 'jq') {
     Write-Blocked 'jq'
     Add-Fail 'jq' 'found but will not run' `
-             'Get jq allowed by your endpoint policy — reply to the workshop email'
+             'Get jq allowed by your endpoint policy — ask in #cybr-japac-ts-all'
 } elseif (Test-Path $jqExe) {
     Write-Warn "jq is at $jqExe but not on your PATH in this window"
     if (Confirm-Action "Add $BinDir to your user PATH?") {
@@ -516,8 +516,8 @@ function Invoke-IdsecLogin {
     Show-CybrWorldValues
     Write-Info ''
     Show-DefaultProfileAdvice
-    Write-Info 'Still failing? Ask in the workshop Slack channel, or 📧 reply to the'
-    Write-Info 'workshop email. Do it this week, not on the day.'
+    Write-Info 'Still failing? Ask in the 💬 #cybr-japac-ts-all Slack channel.'
+    Write-Info 'Do it this week, not on the day.'
     return $false
 }
 
@@ -648,8 +648,8 @@ function Invoke-AwsRehearsal {
     if (-not $creds.Trim()) {
         Write-Bad 'no credentials came back'
         Write-Info 'The role exists, so this is usually a policy on the role itself.'
-        Write-Info '📧 Reply to the workshop email today and paste in what you ran.'
-        Add-Fail 'AWS credentials' 'elevate returned nothing' '📧 Reply to the workshop email — elevate gave no credentials'
+        Write-Info '💬 Ask in #cybr-japac-ts-all today and paste in what you ran.'
+        Add-Fail 'AWS credentials' 'elevate returned nothing' '💬 Ask in #cybr-japac-ts-all — elevate gave no credentials'
         return
     }
     Write-Good 'credentials received'
@@ -664,7 +664,7 @@ print(boto3.client("sts").get_caller_identity()["Arn"])' 2>$null
         } else {
             Write-Bad 'the credentials came back, but AWS did not accept them'
             Write-Info 'Do the two commands by hand — setup step 7 explains every error.'
-            Add-Fail 'AWS credentials' 'AWS rejected them' 'Run setup step 7 by hand, then 📧 reply to the workshop email'
+            Add-Fail 'AWS credentials' 'AWS rejected them' 'Run setup step 7 by hand, then 💬 ask in #cybr-japac-ts-all'
         }
     } finally {
         Remove-Item Env:AWS_ACCESS_KEY_ID, Env:AWS_SECRET_ACCESS_KEY, Env:AWS_SESSION_TOKEN -ErrorAction SilentlyContinue
@@ -690,9 +690,9 @@ if (-not $Idsec) {
             Add-Fail 'AWS credentials' 'wrong tenant' 'Put CYBRWorld on the default profile: idsec configure — then re-run this script'
         } else {
             Write-Dim 'This is an access entitlement. It cannot be fixed from your seat, and'
-            Write-Dim 'it takes days. 📧 Reply to the workshop email TODAY.'
+            Write-Dim 'it takes days. 💬 Ask in #cybr-japac-ts-all TODAY.'
             Write-Dim 'Logged in to a tenant other than CYBRWorld? Check with: idsec profiles show'
-            Add-Fail 'AWS credentials' 'no entitlement' '📧 Reply to the workshop email today — you have no AWS role yet'
+            Add-Fail 'AWS credentials' 'no entitlement' '💬 Ask in #cybr-japac-ts-all today — you have no AWS role yet'
         }
     } else {
         Write-Good "$targetCount AWS role(s) available to you"
@@ -822,7 +822,7 @@ except Exception as error:
                 Write-Good "reached AWS — but the certificate was issued by: $detail"
                 Write-Dim  'Not Amazon, so something on this network is inspecting HTTPS. Part 1'
                 Write-Dim  'does not care: it does not verify certificates. Claude Code in Part 2'
-                Write-Dim  'does, so mention this in a reply — it is useful for us to know. 📧'
+                Write-Dim  'does, so mention it in #cybr-japac-ts-all. Useful for us to know. 💬'
                 Add-Manual 'HTTPS to Bedrock' "inspected by $detail — fine for Part 1"
             }
         }
@@ -890,9 +890,9 @@ function Show-OnlyYou {
     Write-Host '  This script cannot fix it and neither can a helper on the day: it needs an'
     Write-Host '  endpoint policy change, and that takes days.'
     Write-Host ''
-    Write-Host '  📧 Reply to the workshop email TODAY.' -NoNewline -ForegroundColor White
-    Write-Host ' If a Request for authorization prompt'
-    Write-Host '  appears, use it too. For anything smaller, ask in the workshop Slack channel.'
+    Write-Host '  💬 Ask in the #cybr-japac-ts-all Slack channel TODAY.' -NoNewline -ForegroundColor White
+    Write-Host ' If a Request for'
+    Write-Host '  authorization prompt appears, use it too.'
 }
 
 if ($Todo.Count -eq 0) {
@@ -919,7 +919,7 @@ Write-Host '  Re-run this script when you have worked through those:'
 Write-Host ''
 Write-Host '      .\check-prereqs.ps1' -ForegroundColor Cyan
 Write-Host ''
-Write-Host '  Stuck on any of them? 📧 Reply to the workshop email this week — we would'
+Write-Host '  Stuck on any of them? 💬 Ask in #cybr-japac-ts-all this week — we would'
 Write-Host '  much rather fix it now than on the day.'
 Show-OnlyYou
 exit 1
