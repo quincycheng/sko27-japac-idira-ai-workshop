@@ -44,6 +44,11 @@ Lesson 01 (`lab/0001-one-call.html`) is the reference for this style. Match it.
   video, and the `The deck` section of `lab/reference/securing-agentic-ai.html`. Every embed carries a
   plain link next to it and a sentence saying corporate Google access is needed, and nothing on either
   page depends on an embed loading. Lesson 06's step is also marked `step-opt`.
+- The other exception is the asciinema walkthroughs: the `What it looks like` section of
+  `lab/0000-setup.html`, and the `Video walkthrough` section that sits above `Your Tasks` on lessons
+  01 to 05, 07 and 08. Each one is an asciinema `<script>` tag followed by an italic fallback line
+  that gives the plain `asciinema.org/a/<id>` link, so an offline reader loses nothing. Lesson 06 has
+  no recording. The recordings are macOS only, and each section says so.
 - **Never embed YouTube.** The player returns error 153 to a page with no referrer, which is every page
   opened from `file://`. Link to the video and give its length instead.
 - `lab/assets/lab.js` holds `PAGES`, the single source of truth for nav and pager.
