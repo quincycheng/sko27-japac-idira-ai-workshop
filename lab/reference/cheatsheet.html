@@ -109,10 +109,11 @@ traffic. Do not copy that switch into real code.</p>
 
 <p>Adding an MCP server through the Idira AI Agent Identity Broker. Run this outside the agent, all
 on one line:</p>
-<div class="code"><pre><code>claude mcp add --transport http --scope user idira-broker https://apj-secrets.data.aigw.cyberark.cloud/mcp/entrasonar-mcp --client-id e5ba972d-ad32-4c7b-9fcb-c9a24a9cf370 --client-secret</code></pre></div>
-<p><code>--client-secret</code> takes no value. It prompts, so the secret stays out of your shell
-history. Take the secret from the Slack channel <code>#cybr-japac-ts-all</code>. Then run
-<code>/mcp</code> inside the agent to authenticate as yourself.</p>
+<div class="code"><pre><code>claude mcp add --transport http --scope user idira-ai-broker-entrasonar https://demo.data.aigw.cyberark.cloud/mcp/entrasonarmcp --client-id 04e6ab3b-de59-4d1d-a73c-c283f48713b8 --callback-port 8080</code></pre></div>
+<p>There is no secret: this agent is registered as a public client. Then run <code>/mcp</code> inside
+the agent, select the server with the arrow keys, and choose <strong>Authenticate</strong>. Wrong
+browser? Press <code>c</code> to copy the URL. Port 8080 busy? Re-add with another
+<code>--callback-port</code>.</p>
 
 <h2>4 · idsec, the Idira CLI</h2>
 
@@ -257,7 +258,9 @@ again, because they expire.</p>
 
 <div class="code"><pre><code>What MCP tools are available?</code></pre></div>
 
-<div class="code"><pre><code>Use the analyze_domain tool on the idira-broker server to analyze the domain paloaltonetworks.com.</code></pre></div>
+<div class="code"><pre><code>Use the analyze_domain tool on the idira-ai-broker-entrasonar server to analyze the domain paloaltonetworks.com.</code></pre></div>
+
+<div class="code"><pre><code>Use the beta_features tool on the idira-ai-broker-entrasonar server.</code></pre></div>
 
 <h2>7 · The AI Agent Identity Broker, on a whiteboard</h2>
 
@@ -265,15 +268,17 @@ again, because they expire.</p>
 
 <table>
   <tr><th>Thing</th><th>Where / what</th></tr>
-  <tr><td>Console for Lesson 10</td><td><code>apj-secrets.cyberark.cloud</code>, in a browser. A different tenant from <code>idsec</code>, and you have read access only.</td></tr>
-  <tr><td>Gateway URL shape</td><td><code>https://&lt;region&gt;.data.aigw.cyberark.cloud/mcp/&lt;server-name&gt;</code></td></tr>
-  <tr><td>Client ID + Secret</td><td>Issued when an admin <strong>registers an AI agent</strong></td></tr>
+  <tr><td>Console for Lesson 10</td><td><code>demo.cyberark.cloud</code>, in a browser. The same tenant <code>idsec</code> uses, and you have read access only.</td></tr>
+  <tr><td>Gateway URL shape</td><td><code>https://&lt;tenant&gt;.data.aigw.cyberark.cloud/mcp/&lt;server-name&gt;</code></td></tr>
+  <tr><td>Client ID</td><td>Issued when an admin <strong>registers an AI agent</strong>. A public client has no secret.</td></tr>
+  <tr><td>The workshop's agent and server</td><td>Agent <code>JAPAC-SKO27</code>, server <code>EntraSonar MCP</code>, policy <code>EntraSonar MCP - Allow</code></td></tr>
   <tr><td>AI agent inventory</td><td><strong>Manage &gt; Inventory &gt; AI &gt; Managed AI Agents</strong>, then the <strong>Connected MCP servers</strong> tab</td></tr>
   <tr><td>MCP server inventory</td><td><strong>Manage &gt; Inventory &gt; AI &gt; MCP Servers</strong>, then Details, Tools, Connected AI agents</td></tr>
   <tr><td>Access policies</td><td><strong>Manage &gt; Policies &gt; AI agents access</strong>, titled <strong>AI agents access policies</strong></td></tr>
   <tr><td>The four policy parts</td><td>General details → MCP servers and tools → AI agents → Users and roles</td></tr>
   <tr><td>Role needed to write one</td><td><strong>Secure AI Admin</strong></td></tr>
-  <tr><td>Audit</td><td><strong>Audit and Reports</strong>. Time range, Service name = Secure AI Agents, filter by Username.</td></tr>
+  <tr><td>Audit</td><td><strong>Audit and Reports</strong>. Time range, Service name = Secure AI Agents, filter by Username, then your login name ending <code>@cyberarklab.com</code>.</td></tr>
+  <tr><td>The tool that is refused</td><td><code>beta_features</code>. No policy names it, so nobody can call it. The denial is audited.</td></tr>
   <tr><td>Kill switch</td><td>Remove the tool, agent or role from the policy, or set the MCP server to <strong>Disabled</strong>. Instant, for every agent.</td></tr>
   <tr><td>Your own tenant (Lesson 15)</td><td>Register a custom MCP server, Server URL <code>https://mcp.svc.cloud.microsoft/enterprise</code> for Entra ID. Then paste Idira's redirect URL, <code>&lt;gateway-url&gt;/OAuth2/Callback</code>, into the Entra app registration.</td></tr>
 </table>

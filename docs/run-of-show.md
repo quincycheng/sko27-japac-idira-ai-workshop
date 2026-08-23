@@ -393,10 +393,11 @@ workshop.
 measurably harder when it was set up:
 
 > In about ten minutes you are all going to connect an agent through the Broker and call a tool you hold
-> no credential for. Then you are going to find your own name on that call, in the audit log, and the one
-> screen where I could take it away from all sixty of you at once.
+> no credential for. Then you are going to ask it for a second tool and be refused. Both calls end up in
+> the audit log with your own name on them.
 
-Do **not** promise a live kill switch. Nothing in the tenant is changed during the session.
+Do **not** promise a live kill switch: no server is disabled and no policy is edited during the session.
+The refused call is the live moment, and every attendee runs it themselves.
 
 ⚠️ **On the projector, do not run `elevate` live.** Its JSON response carries the short-lived
 credentials in an `accessCredentials` field. The lab's one-liner ends in `eval`, so at a desk it prints
@@ -409,25 +410,30 @@ fine; they are short-lived and scoped to a sandbox account.
 ## Module 5 · MCP: AI Agent Identity Broker (20 min) 🛡️
 
 **Goal:** every attendee has an MCP server connected through the Broker, has authenticated as their own
-user, has called a tool while holding **no credential for that system**, and has then read their own
-call back out of the console as an administrator would.
+user, has called a tool while holding **no credential for that system**, has been **refused** a second
+tool, and has then read both calls back out of the console.
 
 This module is mandatory because it is the part Domain Consultants get asked to demo. Treat it as a
 rehearsal for that demo, not as an exercise.
 
-Attendees work [Lesson 10](../lab/0010-identity-broker.html), which is in two halves: four steps as a
-user, four as an administrator. Trainer B drives it from the front at the pace of the room.
+Attendees work [Lesson 10](../lab/0010-identity-broker.html), which is in three acts: five steps as a
+user, three as a security professional, one as an auditor. It all runs on CYBRWorld,
+`demo.cyberark.cloud`, so there is no tenant to switch and no secret to fetch. Trainer B drives it from
+the front at the pace of the room.
 
-**Nothing in the `apj-secrets` tenant is changed during the session.** No server is disabled, no policy
-is edited. Say so, so nobody waits for a demo that is not coming.
+**Nothing in the tenant is changed during the session.** No server is disabled, no policy is edited. Say
+so, so nobody waits for a demo that is not coming.
 
-**Part 1, connect and call a tool (≈8 min).** `/mcp` inside the agent to see it is empty, `/exit`, then
-`claude mcp add …` in the terminal, then `/mcp` again and the browser sign-in. The Gateway URL and
-Client ID are printed in the lesson, so nothing needs to be on a slide. The **Client Secret** is in
-`#cybr-japac-ts-all`: `--client-secret` takes no value and prompts, so it never reaches shell history.
+**Part 1, connect and call two tools (≈8 min).** `/mcp` inside the agent to see it is empty, `/exit`,
+then `claude mcp add …` in the terminal, then `/mcp` again, arrow keys, **Authenticate**, and the browser
+sign-in. The Gateway URL and Client ID are printed in the lesson, so nothing needs to be on a slide.
+There is **no Client Secret**: the agent is a public client, and the browser sign-in is what
+authenticates the person.
 
-Then two prompts: `What MCP tools are available?` and the `analyze_domain` call on
-`paloaltonetworks.com`.
+Then three prompts: `What MCP tools are available?`, the `analyze_domain` call on
+`paloaltonetworks.com`, and the `beta_features` call that is **refused**. The refusal is the point of the
+module. Say out loud that nobody wrote a rule to block them, and that no policy naming the tool is
+enough.
 
 Three failure modes, all expected: a server listed as *needs authentication* (they have not run `/mcp`
 yet), the sign-in opening in the wrong browser or profile, and a callback page that does not load (the
@@ -439,11 +445,14 @@ The callback here is short and worth it:
 > In lesson 05 you connected to an MCP server by pasting a URL, with no authentication at all, and some
 > of you got blocked by the proxy. This is the same protocol with somebody in charge of it.
 
-**Part 2, the console, as an administrator (≈8 min).** Attendees have read access, so they do this
-themselves, four screens at under two minutes each: the agent inventory and its **Connected MCP
-servers** tab, the MCP server and its three tabs, the **AI agents access policies** list, and the
-**Audit and Reports** space filtered to Time range, Service name = Secure AI Agents, and their own
-Username.
+**Part 2, the console (≈8 min).** Attendees have read access, so they do this themselves, four screens
+at under two minutes each: the agent inventory (`JAPAC-SKO27`) and its **Connected MCP servers** tab,
+the `EntraSonar MCP` server and its three tabs, the **EntraSonar MCP - Allow** policy, and the **Audit
+and Reports** space filtered to Time range, Service name = Secure AI Agents, and their own Username.
+
+On the policy screen, point at part 2 of the policy: it names `analyze_domain` and not
+`beta_features`. That single omission is what refused them a minute earlier. In the audit log they
+should find **both** records, the success and the denial.
 
 Sixty people are hitting the same tenant, so expect the console to be slow. That is what the spare time
 is for.
@@ -467,8 +476,8 @@ pushes on:
 Then a minute of slack, because the browser sign-in is where a room of sixty spreads out.
 
 Point at the last section of the lesson, *Your five-minute demo*, and tell them plainly: that is the
-script, it works, use it. Beat 4 is the live kill switch, which they did **not** see today, so tell them
-to rehearse it in their own tenant before they show it.
+script, it works, use it. Beat 4 is the refused call, which every one of them has now run, so they can
+demo it from memory.
 
 ---
 

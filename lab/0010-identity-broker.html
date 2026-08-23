@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>16 · MCP: AI Agent Identity Broker on apj-secrets · SKO27 TechSummit - AI Workshop for Idira DC</title>
+<title>10 · MCP: AI Agent Identity Broker · SKO27 TechSummit - AI Workshop for Idira DC</title>
 <link rel="icon" type="image/svg+xml" href="assets/idira-icon.svg">
 <link rel="stylesheet" href="assets/lab.css">
 </head>
@@ -15,17 +15,16 @@
 <nav id="page-nav"></nav>
 
 <header class="lesson">
-  <p class="kicker">Part 3 · Optional Deep Dives</p>
-  <h1>MCP: AI Agent Identity Broker on apj-secrets 🛡️</h1>
+  <p class="kicker">Part 2 · Practical Guide to AI Harness</p>
+  <h1>MCP: AI Agent Identity Broker 🛡️</h1>
   <p class="standfirst">
-    This is the same lesson as <a href="0010-identity-broker.html">Lesson 10</a>, run against the
-    <strong>apj-secrets</strong> tenant instead of CYBRWorld. Do Lesson 10 today. Come here when you
-    want to demo from apj-secrets, where the agent authenticates with a <strong>Client Secret</strong>
-    rather than a browser sign-in alone.
+    By the end of this lesson you will know how to govern AI agents with the <strong>Idira AI Agent
+    Identity Broker</strong>. You will make one tool call that works and one that is refused. You will
+    then find both of them in the audit log, with your own name on them.
   </p>
   <ul class="meta">
-    <li class="tag-opt">Optional deep dive</li>
-    <li>A second tenant</li>
+    <li class="tag-must">Everyone</li>
+    <li>The lesson you will demo</li>
     <li id="step-counter">&nbsp;</li>
   </ul>
 </header>
@@ -33,11 +32,10 @@
 <div class="os-switch" data-os-switch></div>
 
 <div class="note">
-  <p><span class="callout-label">🔑 What you need before you start.</span> Two things the workshop
-  setup does not arrange for you. An account on the <strong>apj-secrets</strong> tenant: everybody on
-  the team has administrator rights there, so ask a colleague. And the <strong>Client Secret</strong>
-  for step 2, which is in the Slack channel <code>#cybr-japac-ts-all</code>. Do not paste it into any
-  other window.</p>
+  <p><span class="callout-label">🎯 This is the lesson you will demo.</span> You are a Domain
+  Consultant. Everything else today was you learning to use an agent. <em>This</em> is the part a
+  client will ask you to show them on a screen share. So you do it three times over, as the user, as
+  the security professional and as the auditor. It ends with a five-minute demo script you can reuse.</p>
 </div>
 
 <p><strong>The problem it solves.</strong> Today your agent in this workshop needed one thing only: AWS.
@@ -105,15 +103,32 @@ consequences. These are the three sentences to say to a client:</p>
   agent loses it immediately.</li>
 </ul>
 
+<!-- Video walkthrough. Record the new CYBRWorld flow on macOS, then replace CAST_ID in
+     all four places below with the asciinema cast ID and delete these comment markers.
+     Keep the italic fallback line: the page has to work offline.
+
+<h2>Video walkthrough</h2>
+
+<p>Watch this lesson run from start to finish. It was recorded on macOS. On Windows, follow the steps
+below rather than the recording.</p>
+
+<script src="https://asciinema.org/a/CAST_ID.js" id="asciicast-CAST_ID" async data-rows="44"></script>
+
+<p><em>Blank? You are offline. Watch it at
+<a href="https://asciinema.org/a/CAST_ID">asciinema.org/a/CAST_ID</a>.</em></p>
+
+-->
+
 <h2>Your Tasks</h2>
 
-<p class="section-intro">Two halves. In the first you are a person using an AI agent. In the second you are the
-administrator who has to answer for it.</p>
+<p class="section-intro">Three acts. You use an agent, you read the policy that governed it, then you
+read the audit trail it left behind.</p>
 
 <div class="note">
-  <p><span class="callout-label">🧭 One tenant, from here to the end.</span> Every command and every
-  console link on this page is <code>apj-secrets</code>. Sign in with your own account on that tenant,
-  not the CYBRWorld one you used in Lesson 09.</p>
+  <p><span class="callout-label">🔑 One tenant, all the way through.</span> Everything here runs against
+  <strong>CYBRWorld</strong>, the tenant you set up in step 6 of setup. There is nothing to switch and
+  no secret to fetch. Sign in as your own account, the one ending <code>@cyberarklab.com</code>. The
+  console is at <a href="https://demo.cyberark.cloud/"><code>demo.cyberark.cloud</code></a>.</p>
 </div>
 
 <h3>You are the user</h3>
@@ -125,7 +140,9 @@ administrator who has to answer for it.</p>
     <div class="code"><pre><code>claude</code></pre></div>
     <p>Ask it which MCP servers it has:</p>
     <div class="code"><pre><code>/mcp</code></pre></div>
-    <p>There is no Broker in the list. You run this again in step 3. Now leave the agent:</p>
+    <p>Most people see <code>No MCP servers configured</code>. If you use Claude Code at work you may
+    see your own servers. Either way, there is no Broker in the list. You run this again in step 3.</p>
+    <p>Now leave the agent:</p>
     <div class="code"><pre><code>/exit</code></pre></div>
     <p>The next command runs in your terminal, not in the agent.</p>
   </div>
@@ -136,19 +153,25 @@ administrator who has to answer for it.</p>
   <div class="step-body">
     <p>An administrator has already registered an MCP server for you. Its <strong>Gateway URL</strong>
     is the address an agent uses to reach that server <em>through</em> the Broker:</p>
-    <div class="code"><pre><code>https://apj-secrets.data.aigw.cyberark.cloud/mcp/entrasonar-mcp</code></pre></div>
+    <div class="code"><pre><code>https://demo.data.aigw.cyberark.cloud/mcp/entrasonarmcp</code></pre></div>
     <p>That host is the Broker, not the tool. The tool's own address never appears on your laptop.</p>
     <p>Run this in your terminal. It is one line:</p>
-    <div class="code"><pre><code>claude mcp add --transport http --scope user idira-broker https://apj-secrets.data.aigw.cyberark.cloud/mcp/entrasonar-mcp --client-id e5ba972d-ad32-4c7b-9fcb-c9a24a9cf370 --client-secret</code></pre></div>
-    <p><code>--client-secret</code> takes no value on the line. It prompts you instead, so the secret
-    never reaches your shell history. Paste it from Slack when asked.</p>
-    <p>It confirms <code>idira-broker</code> was added and names the file it changed. Nothing is
-    authenticated yet. <code>--scope user</code> means the connection follows you into any folder.</p>
-    <div class="note">
-      <p><span class="callout-label">🪪 Where the Client ID and Secret come from.</span> An
-      administrator <strong>registered an AI agent</strong> in Idira. That is what issues them. They
-      are the agent's <em>identity</em>, not a key to any tool. That is why it is safe to hand one to
-      sixty people, and why the audit trail can name the agent.</p>
+    <div class="code"><pre><code>claude mcp add --transport http --scope user idira-ai-broker-entrasonar https://demo.data.aigw.cyberark.cloud/mcp/entrasonarmcp --client-id 04e6ab3b-de59-4d1d-a73c-c283f48713b8 --callback-port 8080</code></pre></div>
+    <p>It confirms <code>idira-ai-broker-entrasonar</code> was added and names the file it changed.
+    Nothing is authenticated yet. <code>--scope user</code> means the connection follows you into any
+    folder.</p>
+    <div class="win">
+      <p><span class="callout-label">✅ There is no secret on this page.</span> The
+      <code>--client-id</code> is the agent's <strong>identity</strong>, not a key to any tool. This
+      agent is registered as a <strong>public client</strong>, so there is no client secret to hand out
+      or to leak. Your browser sign-in in step 3 is what proves who you are.</p>
+    </div>
+    <div class="warn">
+      <p><span class="callout-label">🧭 If step 3 never returns to the terminal</span>, something else
+      is already using port 8080. That port is where the agent waits for the browser to come back.
+      Stop the other process, or run the command again with a free port such as
+      <code>--callback-port 8123</code>. Remove the server first with
+      <code>claude mcp remove idira-ai-broker-entrasonar</code>.</p>
     </div>
   </div>
 </div>
@@ -158,12 +181,16 @@ administrator who has to answer for it.</p>
   <div class="step-body">
     <p>Start the agent and open the MCP panel again:</p>
     <div class="code"><pre><code>claude</code></pre></div>
-    <p>Press <code>Shift+Tab</code> a few times until the bottom line says <strong>auto</strong>. Then:</p>
     <div class="code"><pre><code>/mcp</code></pre></div>
-    <p>This time <code>idira-broker</code> is in the list, marked as needing authentication. Select it
-    and confirm. Your browser opens. Sign in <strong>as your own account</strong> and approve.</p>
-    <p>The browser says the authentication was successful, so close that tab. The terminal says it is
-    connected to <code>idira-broker</code>. Type <code>/mcp</code> once more to list the tools.</p>
+    <p>Use the up and down arrow keys to select <code>idira-ai-broker-entrasonar</code>, then press
+    Enter. Choose <strong>Authenticate</strong>. Your browser opens. Sign in to CYBRWorld as your own
+    account and approve.</p>
+    <p>The browser says:</p>
+    <div class="code"><pre><code>Connected
+Authentication successful
+You can close this tab and return to Claude Code.</code></pre></div>
+    <p>Close that tab. The terminal says:</p>
+    <div class="code"><pre><code>Authentication successful. Connected to idira-ai-broker-entrasonar.</code></pre></div>
     <div class="win">
       <p><span class="callout-label">💡 Stop and notice what just happened.</span> You did not type
       a password for the tool. You proved <em>who you are</em> to Idira, and Idira decided what the
@@ -171,11 +198,10 @@ administrator who has to answer for it.</p>
       of the product.</p>
     </div>
     <div class="warn">
-      <p><span class="callout-label">🧭 If the browser step goes wrong.</span> Wrong browser, or wrong
-      profile in it: copy the URL from the terminal into the right one. The error will not tell you
-      that. Page will not load after you approve: a URL starting <code>http://localhost:</code> with
-      <code>?code=…</code> means the handshake worked and the agent picks it up. If it hangs,
-      <code>/exit</code>, run <code>claude</code> again, and retry <code>/mcp</code>.</p>
+      <p><span class="callout-label">🧭 If the wrong browser opens</span>, or the wrong profile in it,
+      press <code>c</code> in the terminal to copy the sign-in URL. Paste it into the browser that has
+      your CYBRWorld session. The error will not tell you that this is the problem. If the terminal
+      hangs, run <code>/exit</code>, start <code>claude</code> again, and retry <code>/mcp</code>.</p>
     </div>
   </div>
 </div>
@@ -185,12 +211,15 @@ administrator who has to answer for it.</p>
   <div class="step-body">
     <p>Ask the agent what it can now do:</p>
     <div class="code"><pre><code>What MCP tools are available?</code></pre></div>
-    <p>One tool comes back. Its name starts with <code>mcp__idira-broker__</code>, because the name
-    carries the server it came from. The tool itself is <code>analyze_domain</code>.</p>
-    <p>Now use it:</p>
-    <div class="code"><pre><code>Use the analyze_domain tool on the idira-broker server to analyze the domain paloaltonetworks.com.</code></pre></div>
-    <p>Approve the tool call. The tool gathers public information about that domain, and the agent
-    summarises what came back.</p>
+    <p>Two tools come back, <code>analyze_domain</code> and <code>beta_features</code>. Each name starts
+    with <code>mcp__idira-ai-broker-entrasonar__</code>, because the name carries the server it came
+    from. Both are described as a <em>proxied version</em>, which is the Broker telling you it sits in
+    the middle.</p>
+    <p>Now use the first one:</p>
+    <div class="code"><pre><code>Use the analyze_domain tool on the idira-ai-broker-entrasonar server to analyze the domain paloaltonetworks.com.</code></pre></div>
+    <p>Approve the tool call. The answer names that domain's identity provider: it is federated to
+    <strong>Okta</strong> over WS-Federation. You also get its Entra tenant ID, its mail gateway and a
+    long list of third-party services in use.</p>
     <div class="win">
       <p><span class="callout-label">💡 Count your credentials.</span> You hold no account on that
       service and no API key for it. You proved who you were once, in a browser, and the Broker did
@@ -211,50 +240,63 @@ administrator who has to answer for it.</p>
   </div>
 </div>
 
-<h3>You are the administrator</h3>
+<div class="step">
+  <div class="step-head"><div class="step-num">5</div><p class="step-title">Ask for the other tool</p></div>
+  <div class="step-body">
+    <p><code>beta_features</code> was in the list, so the agent will try it. Ask for it:</p>
+    <div class="code"><pre><code>Use the beta_features tool on the idira-ai-broker-entrasonar server.</code></pre></div>
+    <p>Approve the call. It fails, and this is the expected result:</p>
+    <div class="code"><pre><code>Access denied by access policy: you are not authorized to call tool
+"beta_features__entrasonarmcp" on this target. This request was blocked by
+the organization's access policies; ask an administrator to grant access.</code></pre></div>
+    <p>Nothing on your laptop refused that. The Broker did, and it wrote the attempt down. You find out
+    why in step 8, and you find the record in step 9.</p>
+  </div>
+</div>
+
+<h3>You are the security professional</h3>
 
 <p>Change hats. Open the console at
-<a href="https://apj-secrets.cyberark.cloud/"><code>apj-secrets.cyberark.cloud</code></a> and sign in
-with the same account. You have <strong>read</strong> access: you are looking, not changing.</p>
+<a href="https://demo.cyberark.cloud/"><code>demo.cyberark.cloud</code></a> and sign in with the same
+account. You have <strong>read</strong> access: you are looking, not changing.</p>
 
 <div class="step">
-  <div class="step-head"><div class="step-num">5</div><p class="step-title">Find the agent in the inventory</p></div>
+  <div class="step-head"><div class="step-num">6</div><p class="step-title">Find the agent in the inventory</p></div>
   <div class="step-body">
     <p>Go to <strong>Manage &gt; Inventory &gt; AI &gt; Managed AI Agents</strong>
-    (<a href="https://apj-secrets.cyberark.cloud/managespace/identities/machines/ai-agents/aigw/inventory">direct
-    link</a>). Click <code>japac-sko27</code> to open it.</p>
+    (<a href="https://demo.cyberark.cloud/managespace/identities/machines/ai-agents/aigw/inventory">direct
+    link</a>). Click <code>JAPAC-SKO27</code> to open it.</p>
     <p>This is the agent whose Client ID you pasted in step 2. Open the <strong>Connected MCP
     servers</strong> tab. The server you just used is listed there.</p>
-    <p>Everyone in the room connected as this one registered agent.</p>
+    <p>Everyone in the room connected as this one registered agent. Registering it is what lets the
+    audit log name it in step 9.</p>
   </div>
 </div>
 
 <div class="step">
-  <div class="step-head"><div class="step-num">6</div><p class="step-title">Find the MCP server</p></div>
+  <div class="step-head"><div class="step-num">7</div><p class="step-title">Find the MCP server</p></div>
   <div class="step-body">
     <p>Go to <strong>Manage &gt; Inventory &gt; AI &gt; MCP Servers</strong>
-    (<a href="https://apj-secrets.cyberark.cloud/managespace/identities/machines/ai-agents/aigw/mcp/inventory">direct
-    link</a>). Open the server you found in step 5.</p>
+    (<a href="https://demo.cyberark.cloud/managespace/identities/machines/ai-agents/aigw/mcp/inventory">direct
+    link</a>). Open <code>EntraSonar MCP</code>.</p>
     <p>Read three tabs, in this order:</p>
     <table>
       <tr><th>Tab</th><th>What to look for</th></tr>
       <tr><td><strong>Details</strong></td><td>The Gateway URL you pasted, and whether the server is Enabled.</td></tr>
-      <tr><td><strong>Tools</strong></td><td><code>analyze_domain</code>, listed because an agent connected and Idira discovered it.</td></tr>
-      <tr><td><strong>Connected AI agents</strong></td><td><code>japac-sko27</code>. The same relationship as step 5, read from the resource instead of the principal.</td></tr>
+      <tr><td><strong>Tools</strong></td><td>Both <code>analyze_domain</code> and <code>beta_features</code>, listed because an agent connected and Idira discovered them.</td></tr>
+      <tr><td><strong>Connected AI agents</strong></td><td><code>JAPAC-SKO27</code>. The same relationship as step 6, read from the resource instead of the principal.</td></tr>
     </table>
+    <p>Discovered is not the same as allowed. Both tools are here. Only one of them worked for you.</p>
   </div>
 </div>
 
 <div class="step">
-  <div class="step-head"><div class="step-num">7</div><p class="step-title">Read the access policy</p></div>
+  <div class="step-head"><div class="step-num">8</div><p class="step-title">Read the access policy</p></div>
   <div class="step-body">
     <p>Go to <strong>Manage &gt; Policies &gt; AI agents access</strong>
-    (<a href="https://apj-secrets.cyberark.cloud/managespace/policies/aigw/access-policy/inventory">direct
-    link</a>). The page is titled <strong>AI agents access policies</strong>.</p>
-    <p>The list shows each policy's name, the servers and agents it covers, its owners, when it last
-    changed, and its tags. You can see the blast radius of every policy without opening one.</p>
-    <p>Open the policy that covers this workshop. It decided your tool call was allowed, and it has four
-    parts. Read each row below against the screen in front of you:</p>
+    (<a href="https://demo.cyberark.cloud/managespace/policies/aigw/access-policy/inventory">direct
+    link</a>). Open <strong>EntraSonar MCP - Allow</strong>.</p>
+    <p>Read its four parts against the screen in front of you:</p>
     <table>
       <tr><th>Part</th><th>What it sets</th><th>The choice worth explaining</th></tr>
       <tr>
@@ -265,15 +307,14 @@ with the same account. You have <strong>read</strong> access: you are looking, n
       <tr>
         <td><strong>2 · MCP servers and tools</strong></td>
         <td>The servers, then the tools on them.</td>
-        <td><em>Select specific tools</em> denies anything discovered later.
-        <em>Allow all current and future tools</em> keeps working when the server adds a tool. That is
-        convenient, and it is a standing grant nobody reviews.</td>
+        <td>This policy names <code>analyze_domain</code> and not <code>beta_features</code>. That one
+        omission is the whole of step 5.</td>
       </tr>
       <tr>
         <td><strong>3 · AI agents</strong></td>
         <td>The agents users may work through.</td>
-        <td>Same trade-off again: <em>Allow all current and future AI agents</em> means tomorrow's
-        newly registered agent inherits this access with nobody approving it.</td>
+        <td><em>Allow all current and future AI agents</em> means tomorrow's newly registered agent
+        inherits this access with nobody approving it.</td>
       </tr>
       <tr>
         <td><strong>4 · Users and roles</strong></td>
@@ -283,10 +324,12 @@ with the same account. You have <strong>read</strong> access: you are looking, n
       </tr>
     </table>
     <div class="stop">
-      <p><span class="callout-label">🚨 This screen is a kill switch.</span> Remove the tool, the agent
-      or your role from this policy and the calls stop. Every connected agent, at once, from one screen.
-      No credential rotation, no code change, and no need to know where those agents are running.
-      Disabling the MCP server does the same thing. Ask a client how long that takes them today.</p>
+      <p><span class="callout-label">🚨 Access is denied by default.</span> No policy grants
+      <code>beta_features</code> to anyone, so nobody can call it. Nothing had to be written to block
+      you. That is the opposite of most systems, where access is open until somebody remembers to close
+      it. It also makes this screen a kill switch: remove the tool, the agent or your role and the calls
+      stop, for every connected agent at once. Disabling the server does the same. Ask a client how long
+      that takes them today.</p>
     </div>
     <p>You can read this policy. You cannot write one: authoring needs the <strong>Secure AI
     Admin</strong> role. If a client says this menu is missing for them, that is the answer, not a
@@ -296,18 +339,25 @@ with the same account. You have <strong>read</strong> access: you are looking, n
   </div>
 </div>
 
+<h3>You are the auditor</h3>
+
+<p>Change hats once more. You have one question to answer: what did this agent do, and who asked for it.
+Go to the <strong>Audit and Reports</strong> space
+(<a href="https://demo.cyberark.cloud/auditandreports/activities">direct link</a>).</p>
+
 <div class="step">
-  <div class="step-head"><div class="step-num">8</div><p class="step-title">Find yourself in the audit log</p></div>
+  <div class="step-head"><div class="step-num">9</div><p class="step-title">Find both of your calls in the audit log</p></div>
   <div class="step-body">
-    <p>Go to the <strong>Audit and Reports</strong> space. Set the filter bar to three things:</p>
+    <p>Set the filter bar to three things:</p>
     <table>
       <tr><th>Filter</th><th>Set it to</th></tr>
       <tr><td>Time range</td><td>Last 24 hours</td></tr>
       <tr><td>Service name</td><td>Secure AI Agents</td></tr>
-      <tr><td>Filter by</td><td>Username, then your own username</td></tr>
+      <tr><td>Filter by</td><td>Username, then your own login name ending <code>@cyberarklab.com</code></td></tr>
     </table>
-    <p>Your <code>analyze_domain</code> call from step 4 is in the results. Open it. You are looking
-    for four things in one record:</p>
+    <p>Both of your tool calls are in the results: the <code>analyze_domain</code> call that worked and
+    the <code>beta_features</code> call that was refused. Open each one. You are looking for four things
+    in a single record:</p>
     <table>
       <tr><th>The record names</th><th>Why a client cares</th></tr>
       <tr><td>The <strong>human</strong> who initiated it</td><td>“An agent did it” is not an answer an auditor accepts</td></tr>
@@ -315,13 +365,12 @@ with the same account. You have <strong>read</strong> access: you are looking, n
       <tr><td>The <strong>tool</strong> and server</td><td>Says exactly how far the reach went</td></tr>
       <tr><td><strong>Success or failure</strong></td><td>Refused attempts are the interesting ones</td></tr>
     </table>
-    <p>Every attempt is recorded, <strong>including the refused ones</strong>. Denials are how you spot
-    an agent probing beyond its remit. Nothing you did today was refused, so your records all say
-    success.</p>
     <div class="win">
-      <p><span class="callout-label">✅ Filtering by your own username is the whole point.</span>
-      Sixty people shared one registered agent. The log still separates them, because you signed in as
-      yourself in step 3.</p>
+      <p><span class="callout-label">✅ The refusal is the record that matters.</span> A run of denials
+      from one user is an agent probing beyond its remit, and you can see it here without anyone
+      reporting it. Filtering by your own username is the other half of the point: sixty people shared
+      one registered agent, and the log still separates them, because you signed in as yourself in
+      step 3.</p>
     </div>
   </div>
 </div>
@@ -370,42 +419,8 @@ the <strong>resource</strong> being touched. Both the agent and the server must 
 <figcaption>Deny-by-default. Three things line up, or nothing happens.</figcaption>
 </figure>
 
-<h2>Registered vs pass-through</h2>
-
-<p class="section-intro">Registering an agent is optional. The cost of skipping it only shows up on the
-worst day.</p>
-
-<p>An agent that was never registered can still reach a server. Idira calls that traffic
-<strong>pass-through</strong>. Two differences:</p>
-
-<ul>
-  <li><strong>Pass-through</strong> tells you a server was accessed and which tools ran. It cannot tell
-  you who or what did it.</li>
-  <li>A <strong>registered agent</strong> names the human, the agent, the server and the tool. In an
-  incident you can suspend one agent and one user, and prove the scope.</li>
-</ul>
-
-<h2>On-behalf-of: the question every client asks</h2>
-
-<p class="section-intro">If the agent can read anything, has every user just become an admin? Two modes,
-and you used the safe one in step 3.</p>
-
-<table>
-  <tr><th>Mode</th><th>Who the tool thinks is calling</th><th>Consequence</th></tr>
-  <tr>
-    <td><strong>Service identity</strong></td>
-    <td>The Broker itself</td>
-    <td>Simple, but every user gets the same permissions: the union of everyone's.</td>
-  </tr>
-  <tr>
-    <td><strong>On-behalf-of (OBO)</strong></td>
-    <td>You, the human who asked</td>
-    <td>The tool applies <em>your</em> permissions. The agent cannot exceed what you could do yourself.</td>
-  </tr>
-</table>
-
-<p>Your browser sign-in in step 3 put <em>your</em> identity into the chain. The agent inherits your
-access, not the platform's, so your existing access model keeps working unchanged.</p>
+<p>Your <code>beta_features</code> call in step 5 failed the resource half. The tool was discovered and
+the agent was enabled, and it still stopped, because no policy named that tool.</p>
 
 <h2>Your five-minute demo</h2>
 
@@ -416,11 +431,10 @@ access, not the platform's, so your existing access model keeps working unchange
   Most clients do not know. That is the same wall you hit in Lesson 06.</li>
   <li><strong>Connect an agent to a tool</strong> and point out loudly that you typed no credential.
   You only proved who you were.</li>
-  <li><strong>Run one tool call</strong>, then show that call in the audit log with the user's name
-  on it.</li>
-  <li><strong>Disable the server</strong> in your own tenant while they watch, re-run the call, and
-  let it fail. This is the moment that lands. You did not see it today, because nothing in the
-  workshop tenant is changed during the session. Rehearse it before you show it.</li>
+  <li><strong>Run one tool call</strong> that works, then show that call in the audit log with the
+  user's name on it.</li>
+  <li><strong>Run the tool that is not in the policy</strong> and let it be refused in front of them.
+  Then find the refusal in the audit log. You did both yourself, in steps 5 and 9.</li>
   <li><strong>Open the policy</strong> and show the three lists. “Deny-by-default. Nothing works
   unless something here says so.”</li>
   <li><strong>Close with the one question:</strong> “Today, how would you answer an auditor asking
@@ -439,7 +453,7 @@ access, not the platform's, so your existing access model keeps working unchange
     <li><button data-opt="c">It lets the agent reach tools it was never registered to use</button></li>
   </ul>
   <p class="why" data-for="a">Adding a hop does not make anything faster. The benefit is custody and visibility, not speed. Try again.</p>
-  <p class="why" data-for="b">✅ Correct. The agent gets a connection, not a key. The audit trail, the kill switch and on-behalf-of all follow from the Broker holding the credentials.</p>
+  <p class="why" data-for="b">✅ Correct. The agent gets a connection, not a key. The audit trail and the kill switch both follow from the Broker holding the credentials.</p>
   <p class="why" data-for="c">The opposite is true. The Broker is what prevents that. Only registered, enabled, policy-covered servers are reachable. Try again.</p>
 </div>
 
@@ -456,30 +470,30 @@ access, not the platform's, so your existing access model keeps working unchange
 </div>
 
 <div class="check" data-answer="c">
-  <p class="check-q">With on-behalf-of, an agent asks a tool for data you cannot see. Result?</p>
+  <p class="check-q">Your <code>beta_features</code> call was refused in step 5. Why?</p>
   <ul class="opts">
-    <li><button data-opt="a">It succeeds, because the agent runs with the Broker's own permissions</button></li>
-    <li><button data-opt="b">It succeeds, but the access is flagged for review by an administrator</button></li>
-    <li><button data-opt="c">It is refused, because the tool applies your permissions, not the agent's</button></li>
+    <li><button data-opt="a">The Broker had not discovered that tool, so it could not be called</button></li>
+    <li><button data-opt="b">Your token had expired, and re-authenticating would have fixed it</button></li>
+    <li><button data-opt="c">No policy names that tool, and access is denied by default</button></li>
   </ul>
-  <p class="why" data-for="a">That is what happens <em>without</em> OBO. It is the privilege-escalation problem OBO exists to close. Try again.</p>
-  <p class="why" data-for="b">Flagging after the fact is not the same as preventing. OBO does something stronger than logging. Try again.</p>
-  <p class="why" data-for="c">✅ Correct. The agent is acting as you, so it can do exactly what you can do and no more. Your existing access model keeps working, unchanged.</p>
+  <p class="why" data-for="a">It was discovered. You saw it in the agent's tool list in step 4, and again in the server's Tools tab in step 7. Discovered is not the same as allowed. Try again.</p>
+  <p class="why" data-for="b">An expired token stops both tools, not one. <code>analyze_domain</code> worked on the same connection a moment earlier. Try again.</p>
+  <p class="why" data-for="c">✅ Correct. <strong>EntraSonar MCP - Allow</strong> names <code>analyze_domain</code> only. Nobody wrote a rule to block you. Nothing granted it, which is enough.</p>
 </div>
 
 <div class="ask">
   🗣️ <strong>Ask your agent:</strong> “Compare how you reached AWS in Lesson 09 with how you reached
-  the tool on this page. In both cases, what did you actually hold on my laptop, and for how long?”
-  Its answer is a better summary than anything on this page.
+  the tool in Lesson 10. In both cases, what did you actually hold on my laptop, and for how long?”
+  Its answer is a better summary of today than anything on this page.
 </div>
 
 <h2>Where Idira fits</h2>
 
 
-<!-- idira: 16 -->
-<!-- BEGIN GENERATED: idira 16 — build-lab-code.py owns this block -->
+<!-- idira: 10 -->
+<!-- BEGIN GENERATED: idira 10 — build-lab-code.py owns this block -->
 <div class="idira">
-  <p class="idira-risk"><span class="callout-label">🧨 The risk you just saw.</span> An agent reached a system you hold no credential for. The credential lives somewhere the agent cannot read or print.</p>
+  <p class="idira-risk"><span class="callout-label">🧨 The risk you just saw.</span> An agent reached a system you hold no credential for, and was refused the next tool it asked for. Both attempts were written down, and the credential lives somewhere the agent cannot read or print.</p>
   <p class="idira-kicker">What answers it</p>
   <dl>
     <dt>Securing AI Agents</dt>
@@ -490,7 +504,7 @@ access, not the platform's, so your existing access model keeps working unchange
   <p class="idira-say">🗣️ “Ask who authorised the tool, whose token was on the call, and where you switch it off.”</p>
   <p class="idira-more"><a href="reference/securing-agentic-ai.html">One platform, every identity. The deck and the videos →</a></p>
 </div>
-<!-- END GENERATED: idira 16 -->
+<!-- END GENERATED: idira 10 -->
 
 <h2>Key takeaways</h2>
 
@@ -498,19 +512,25 @@ access, not the platform's, so your existing access model keeps working unchange
   <li><strong>The agent held a connection, not a credential.</strong> You proved who you were; Idira
     decided what the agent could do. Everything else on this page follows from that.</li>
   <li><strong>Deny-by-default means three things line up or nothing happens:</strong> the user, the
-    agent and the tool. A partial match is a denial, and the denial is logged.</li>
+    agent and the tool. You saw it: one tool worked and one was refused, on the same connection, a
+    minute apart.</li>
   <li><strong>Access is removed from one screen.</strong> Take the tool, the agent or the role out of
     the policy, or disable the server, and every connected agent stops. No rotation, no code change,
     no knowing where sixty agents were running. That is the sentence a client remembers.</li>
-  <li><strong>Registering the agent is what makes the audit answer a question.</strong> Pass-through
-    tells you something happened. A registered agent tells you who, what and how far.</li>
+  <li><strong>The refusal was audited too.</strong> A record that names the human, the agent and the
+    tool answers an auditor. A record of what was refused is how you spot an agent going too far.</li>
 </ul>
 
 <div class="win">
-  <p><span class="callout-label">✅ Two tenants, one product.</span> You have now run this demo on
-  apj-secrets. <a href="0010-identity-broker.html">Lesson 10</a> is the same demo on CYBRWorld, with no
-  secret to fetch. To register a server in a tenant of your own, against Entra ID,
-  <a href="0015-external-mcp-server.html">Lesson 15</a> is the runbook.</p>
+  <p><span class="callout-label">✅ That is the workshop.</span> Everything from here is optional and
+  worth your time: <a href="0011-build-from-nothing.html">Lesson 11</a> builds an app from one prompt,
+  <a href="0012-write-a-skill.html">Lesson 12</a> has you write a skill of your own, and
+  <a href="0013-afk-harness.html">Lesson 13</a> sets a harness working while you are away from the
+  keyboard, and <a href="0014-fix-the-app.html">Lesson 14</a> deletes the key the sandbox app no longer
+  needs. To run this demo in your own tenant, against Entra ID,
+  <a href="0015-external-mcp-server.html">Lesson 15</a> is the runbook.
+  <a href="0016-identity-broker-apj-secrets.html">Lesson 16</a> is this same lesson on the
+  <code>apj-secrets</code> tenant, where the agent uses a client secret.</p>
 </div>
 
 <div id="page-pager"></div>

@@ -34,11 +34,11 @@ you a workshop login. These three answers are what `idsec configure` asks for:
 Already using `idsec` against another tenant? Make a second profile:
 `idsec configure --profile-name cybrworld`, then `idsec login --profile-name cybrworld`.
 
-**There is a second tenant, and it is browser-only.** Lesson 10 opens the console at
-`apj-secrets.cyberark.cloud`. `idsec` is not involved and there is nothing to install for it. Please
-open it this week and check you can sign in with your own account. No account there? Ask your manager
-or a colleague. Everybody on the team has administrator rights on that tenant and can create one for
-you, so this is a five-minute job if you do it before the day.
+**One more check, and it is browser-only.** Lessons 09 and 10 open the console at
+`demo.cyberark.cloud`. Same account, no `idsec` involved, nothing to install. Please open it this week
+and sign in. Note which browser you used: Lesson 10 opens a sign-in page from the terminal, and it uses
+your default browser. If you have joined recently and a page says you have no access, tell us this week
+rather than on the day.
 
 ## Downloads
 
@@ -155,9 +155,10 @@ See you on `<date>`. Bring a charger. 🔋
       entitlement in Secure Cloud Access against it — checked before this email goes out
 - [ ] `idsec configure` has been run once by you against `demo.cyberark.cloud`, and its prompts match
       the three values in this email
-- [ ] Every attendee can **sign in to `apj-secrets.cyberark.cloud`** in a browser, which Lesson 10
-      needs. Anyone on the team can create an account there, so the email asks them to check it
-      themselves. Gate G4 in [owner-prep.md](owner-prep.md) covers what to do about stragglers
+- [ ] Every attendee can **sign in to `demo.cyberark.cloud`** in a browser, and read **Inventory > AI**,
+      **Policies > AI agent access** and **Audit and Reports** there. A standard account has all three.
+      The email asks them to check it themselves, and new hires are the ones who find out they cannot.
+      Gate G4 in [owner-prep.md](owner-prep.md) covers what to do about stragglers
 - [ ] `jq` installs cleanly on both platforms from the URLs in `lab/0000-setup.html` step 5
 - [ ] **`idsec`, `jq` and Claude Code are permitted by the EPM policy on the attendees' laptop fleet** —
       confirmed with the team that owns the EPM sets, *before* this email goes out, because the fix
@@ -166,10 +167,9 @@ See you on `<date>`. Bring a charger. 🔋
 
 ### Not in this email, on purpose
 
-The **Identity Broker** details for Lesson 10 — Gateway URL, Client ID, Client Secret — are
-**not** sent in advance. A client secret in sixty inboxes is a worse idea than a client secret on
-sixty cards. Put them on the cards or on a slide on the day. See gate G5 in
-[owner-prep.md](owner-prep.md).
+The **Identity Broker** details for Lesson 10 are not sent in advance, because they do not need to be:
+the Gateway URL and Client ID are printed in the lesson itself, and there is no client secret. The agent
+is registered as a public client. See gate G5 in [owner-prep.md](owner-prep.md).
 
-The tenant address and the sign-in check **are** in the email. Neither is a secret, and the sign-in
-is the one part of Lesson 10 that has to be sorted out beforehand.
+The console address and the sign-in check **are** in the email. Neither is a secret, and the sign-in is
+the one part of Lesson 10 that has to be sorted out beforehand.

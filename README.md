@@ -19,7 +19,7 @@ Three parts, in order:
   running the sixty agents that just started.
 - **Part 2 · Practical Guide to AI Harness** (lessons `07`–`10`) — the same seven components,
   properly engineered, pointed at Idira problems.
-- **Part 3 · Optional Deep Dives** (lessons `11`–`14`) — for people who finish early.
+- **Part 3 · Optional Deep Dives** (lessons `11`–`16`) — for people who finish early.
 
 Part 1 replaced the twelve-minute slide deck this workshop used to open with. Building an agent costs
 the same time as explaining one and nobody has to take the trainer's word for anything. What remains
@@ -85,7 +85,7 @@ sko27-japac-idira-ai-workshop/
 │   ├── 0009-zsp-access.html
 │   │                       Everyone · elevate with the zsp-aws skill
 │   ├── 0010-identity-broker.html
-│   │                       Everyone · MCP through the Broker, audit, kill switch
+│   │                       Everyone · MCP through the Broker, one call refused, audit
 │   ├── 0011-build-from-nothing.html
 │   │                       Optional deep dive · one prompt, empty folder
 │   ├── 0012-write-a-skill.html
@@ -94,6 +94,10 @@ sko27-japac-idira-ai-workshop/
 │   │                       Optional deep dive · grill → spec → tickets → review
 │   ├── 0014-fix-the-app.html
 │   │                       Optional deep dive · delete the credential
+│   ├── 0015-external-mcp-server.html
+│   │                       Optional deep dive · register your own MCP server
+│   ├── 0016-identity-broker-apj-secrets.html
+│   │                       Optional deep dive · Lesson 10 on the apj-secrets tenant
 │   ├── annotations/        The hover/click notes for the code on each Part 1 page
 │   ├── reference/
 │   │   ├── cheatsheet.html         Every command in the lab, on one page
@@ -166,7 +170,7 @@ switches to Vertex, Gemini or a local GGUF model without touching the loop.
 zero standing privileges via `zsp-aws` and `zsp-azure`, and connecting an MCP server through the
 Identity Broker.
 
-**Part 3, Optional Deep Dives (Lessons 11–14)**, one self-contained page each, independent of
+**Part 3, Optional Deep Dives (Lessons 11–16)**, one self-contained page each, independent of
 one another:
 
 - **11 · Build something from nothing with a simple prompt** — an empty folder and one sentence,
@@ -180,6 +184,11 @@ one another:
 - **14 · Delete the key** — the follow-up to Lesson 09 on the same sandbox app: zero standing
   privileges made the AWS key unnecessary, so an agent takes it out and the attendee reviews the
   diff. Seven lines removed, nothing added, and three secrets still there.
+- **15 · Bring your own MCP server** — the follow-up to Lesson 10: register an MCP server in front
+  of Microsoft Entra ID, then refuse one user and find the refusal in the log.
+- **16 · Identity Broker on apj-secrets** — Lesson 10 again on a second tenant, where the agent is a
+  confidential client and authenticates with a client secret. Needs an `apj-secrets` account and the
+  secret from Slack, so it is not on the mandatory path.
 
 ## Constraints this material was built under
 

@@ -148,7 +148,7 @@ say: Zero standing privileges is not a stricter key. It is no key at all, and ac
 
 ## 10
 
-risk: An agent reached a system you hold no credential for. The credential lives somewhere the agent cannot read or print.
+risk: An agent reached a system you hold no credential for, and was refused the next tool it asked for. Both attempts were written down, and the credential lives somewhere the agent cannot read or print.
 
 product: Securing AI Agents -- The **Idira AI Agent Identity Broker** registers the MCP servers and authorises each agent per tool. It brokers the credential and keeps one audit trail.
 
@@ -214,6 +214,17 @@ product: Securing AI Agents -- Registers the external MCP server, holds its OAut
 product: Identity Security Platform -- Federates the client's own Entra ID users in, so the audit record names a person the client already knows.
 
 say: Your directory is the crown jewels. Ask who decided an agent could read it, and where that decision is written down.
+
+
+## 16
+
+risk: An agent reached a system you hold no credential for. The credential lives somewhere the agent cannot read or print.
+
+product: Securing AI Agents -- The **Idira AI Agent Identity Broker** registers the MCP servers and authorises each agent per tool. It brokers the credential and keeps one audit trail.
+
+product: Identity Security Platform -- Issues the agent its own identity and token, so you can name who it acted as and kill the token.
+
+say: Ask who authorised the tool, whose token was on the call, and where you switch it off.
 
 
 <!-- ===== product records: one per row of an idira-table block ===== -->

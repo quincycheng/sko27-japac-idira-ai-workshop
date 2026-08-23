@@ -44,6 +44,7 @@
     { f: '0013-afk-harness.html',                 n: '13', t: 'Build something AFK',           g: 'Part 3 · Optional Deep Dives' },
     { f: '0014-fix-the-app.html',                 n: '14', t: 'Delete the key',                g: 'Part 3 · Optional Deep Dives' },
     { f: '0015-external-mcp-server.html',         n: '15', t: 'Bring your own MCP server',     g: 'Part 3 · Optional Deep Dives' },
+    { f: '0016-identity-broker-apj-secrets.html', n: '16', t: 'Identity Broker on apj-secrets', g: 'Part 3 · Optional Deep Dives' },
     { f: 'reference/securing-agentic-ai.html',    n: '',   t: 'Post-Workshop Resources',       g: 'Reference' },
     { f: 'reference/cheatsheet.html',             n: '',   t: 'Cheat sheet',                   g: 'Reference' }
   ];

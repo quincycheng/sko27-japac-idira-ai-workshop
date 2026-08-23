@@ -324,35 +324,38 @@ Mostly prompt-driven, so mostly fine. Five things:
 This is the only module with an authentication flow, so it fails in ways the rest of the day
 does not. **Read this one properly before the session, and do the lesson yourself once.**
 
-Two things to know before you walk the room. It runs on the **`apj-secrets` tenant**, not the Lesson 09
-one, so a sign-in that "works" in the wrong tab is a real failure mode. And the lesson has a second half
-in the console: steps 5 to 8 are read-only clicking, not terminal work.
+Two things to know before you walk the room. It runs on **CYBRWorld**, `demo.cyberark.cloud`, the same
+tenant as Lesson 09, so there is no tenant to switch. A sign-in that "works" in the wrong browser
+profile is still a real failure mode. And the lesson has two console acts: steps 6 to 9 are read-only
+clicking, not terminal work.
 
-The one rule: **a refused tool call is escalated, not debugged.** Refusals mean no policy matches or the
-server is disabled, and both are tenant-side.
+The one rule: **one refusal is expected, a second is escalated.** Step 5 has everyone call
+`beta_features` and be refused. That is the lesson working. Any *other* refused call means no policy
+matches or the server is disabled, and both are tenant-side.
 
 | Symptom | Cause | Fix |
 | --- | --- | --- |
 | `claude mcp add` complains about arguments | It was run *inside* the agent | Run it in the terminal, before starting `claude`. `/exit` first if needed. |
-| It never prompted for the client secret | They typed `--client-secret <value>` | The flag takes **no** value. Re-run without it and let it prompt. |
-| They cannot find the Client Secret | It is not on the lesson page, deliberately | Slack channel `#cybr-japac-ts-all`. The Gateway URL and Client ID *are* on the page, so those can be copied. |
+| They are looking for a client secret | There is none. The agent is a public client | Everything they need is on the lesson page: Gateway URL, Client ID, callback port. Nothing comes from Slack this year. |
+| The browser never comes back to the terminal | Port 8080 is already in use by something else | `claude mcp remove idira-ai-broker-entrasonar`, then re-add with `--callback-port 8123`. |
 | Server listed but *needs authentication* | They have not signed in yet | `/mcp` inside the agent → pick the server → sign in in the browser |
 | Browser opens, then the callback page will not load | The redirect goes to `http://localhost:<port>` — a VPN or proxy ate it | Try again; if it repeats, have them disconnect the VPN for that one step. 🙋 tell a trainer if several people hit it. |
 | Browser never opens | Default browser not set | Copy the URL from the terminal into a browser manually |
-| Signs in, but authentication still fails | The browser opened a **different profile**, signed into another tenant | Copy the URL from the terminal into the browser profile that has their `apj-secrets` session. The error does not say this. |
-| They have no account on `apj-secrets` at all | They skipped setup step 9 | 🙋 tell a trainer. Anyone on the team has administrator rights on that tenant and can create the account, so it is minutes, not days. Pair them with a neighbour meanwhile. |
+| Signs in, but authentication still fails | The browser opened a **different profile**, signed into another tenant | Press `c` in the terminal to copy the sign-in URL, then paste it into the browser profile that has their CYBRWorld session. The error does not say this. |
+| `beta_features` was **allowed** | The policy has been edited, or it uses *Allow all current and future tools* | 🙋 tell a trainer. Step 5 and the whole of act 2 stop making sense, room-wide. |
 | Signed in, but the tools are not listed | The connection has not refreshed | `/mcp` again. Tools appear automatically once authentication completes. |
 | Worked earlier, now says the server **needs re-authorization** | The token expired. Expected, and it is the lesson's point | `/mcp` and sign in again. Say why: the agent holds a short-lived token, not a credential. |
 | Tool count reads *Not discovered yet* in the console | No agent has connected to that server yet | Expected before the first connection. Not an attendee problem. |
 | A tool call is **refused** | No policy matches this user + agent + tool, or the server is disabled | **Escalate to a trainer.** Do not debug it — it is tenant-side and affects everyone. |
 | It worked, then everything stopped, room-wide | **Not** a demo. Nothing in the tenant is changed during the session | **Escalate immediately.** This is a real outage, not the kill switch. |
 | Wrong Gateway URL | One character off in a long URL | Copy it from the lesson page rather than typing it. Errors here often *look* like auth failures. |
-| Console page shows an error or an empty list (steps 5–8) | Wrong tenant, or the read role is missing | Check they are signed into `apj-secrets.cyberark.cloud`, not the Lesson 09 tenant. If the tenant is right, 🙋 tell a trainer: it affects everyone. |
-| Console is very slow on steps 5–8 | Sixty people are hitting the same tenant | Expected. Have them wait rather than reloading repeatedly. |
-| They cannot find their own call in the audit log | Filter not set | Time range = last 24 hours, Service name = **Secure AI Agents**, filter by **Username** with their own username. |
+| Console page shows an error or an empty list (steps 6–9) | Signed in as the wrong account, or the read role is missing | Check they are signed in to `demo.cyberark.cloud` with their own `@cyberarklab.com` account. If that is right, 🙋 tell a trainer: it affects everyone. New hires are the likely case. |
+| Console is very slow on steps 6–9 | Sixty people are hitting the same tenant | Expected. Have them wait rather than reloading repeatedly. |
+| They can find one call in the audit log, not both | Filter is right, they stopped at the success | Both records are there. The `beta_features` denial is the one worth opening. |
+| They cannot find their own call in the audit log | Filter not set | Time range = last 24 hours, Service name = **Secure AI Agents**, filter by **Username** with their own login name ending `@cyberarklab.com`. |
 
-**Do not let anyone paste their Client Secret into a chat, a shared doc, or the projector.**
-It is a lab credential in a lab tenant, but the habit is the thing we are teaching.
+**The Client ID on the lesson page is not a secret**, and there is no secret in this lesson. If somebody
+asks why not, that is the best question of the module: the browser sign-in is what proves who they are.
 
 ### Lessons 11–14 — the optional ones
 

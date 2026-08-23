@@ -308,11 +308,12 @@ Lesson 10 is now **mandatory**, so this is a gate rather than a nice-to-have. Ev
 is done once, tenant-side, and shared by all sixty attendees. You need the **Secure AI Admin**
 role to do the policy step.
 
-**The tenant for this gate is `apj-secrets.cyberark.cloud`,** which is not the tenant the rest of the
-day runs on. Two consequences: every attendee needs a working sign-in there, and every attendee needs
-**read** access to **Manage > Inventory > AI** and **Manage > Policies > AI agents access**, because
-lesson 10 steps 5 to 8 have them read those screens themselves. Verify that with a real test attendee
-account, not with your own admin role.
+**The tenant for this gate is `demo.cyberark.cloud`,** the same CYBRWorld tenant the rest of the day
+runs on. There is no tenant to switch and no second account to create. Attendees do need **read**
+access to **Manage > Inventory > AI**, **Manage > Policies > AI agents access** and **Audit and
+Reports**, because lesson 10 steps 6 to 9 have them read those screens themselves. Every attendee
+account should already have it. Verify with a real test attendee account, not with your own admin role,
+and remind new hires in the setup email.
 
 **Six things, in this order:**
 
@@ -320,15 +321,16 @@ account, not with your own admin role.
    Gateway URL only exist while it is enabled. Note the Gateway URL — it has the shape
    `https://<region>.data.aigw.cyberark.cloud/mcp/<server-name>`. Pick a server whose tools are
    read-only and safe for sixty people to hammer at once.
-2. **Register an AI agent.** This issues the **OAuth 2.1 Client ID and Client Secret** that
-   attendees pass to `claude mcp add`. Registering the agent is what makes the audit trail name
-   the agent rather than degrading to pass-through.
+2. **Register an AI agent** as a **public client**, so it issues an **OAuth 2.1 Client ID** and no
+   secret. That is what lets the Client ID sit in the lesson text. Registering the agent is what makes
+   the audit trail name the agent rather than degrading to pass-through.
 3. **Create the access policy.** **Manage > Policies > AI agents access** → **Create policy**:
-   - *Step 1 — General details*: name it something obviously disposable, e.g.
-     `workshop-<date>`, so it is easy to delete afterwards.
-   - *Step 2 — MCP servers and tools*: **+ Add MCP servers**, pick the server. For a lab,
-     **Allow all current and future tools** saves you a re-edit when you change your mind about
-     which tool attendees call.
+   - *Step 1 — General details*: name it after the server it covers, e.g. `EntraSonar MCP - Allow`,
+     so the lesson can tell attendees which policy to open.
+   - *Step 2 — MCP servers and tools*: **+ Add MCP servers**, pick the server, then
+     **Select specific tools** and pick `analyze_domain` **only**. Leaving `beta_features` out is
+     deliberate: step 5 of the lesson has every attendee call it and be refused. **Allow all current
+     and future tools** breaks the lesson.
    - *Step 3 — AI agents*: **+ Add AI agents**, pick the agent you registered. **Allow all
      current and future AI agents** is also defensible in a disposable lab tenant.
    - *Step 4 — Users and roles*: **+ Add users and roles**. The **Everyone** role covers all
@@ -337,24 +339,29 @@ account, not with your own admin role.
 4. **Connect once yourself, before the day.** Tool availability shows **Not discovered yet**
    until an agent connects for the first time. Do that connection now, so the policy is
    selecting real tools and the console looks right when you project it.
-5. **Rehearse the kill switch, for yourself only.** Set the server to **Disabled**, confirm a tool
-   call fails, then **Enable** it again and confirm it recovers. You will **not** do this during the
-   session, because nothing in the tenant is changed while sixty people are working in it. Rehearse it
-   anyway: attendees are told to run it as beat 4 of their own customer demo, and they will ask you
-   what it looks like.
-6. **Put the four literals into the lesson.** `lab/0010-identity-broker.html` names the Gateway URL,
-   the Client ID, the registered agent (`japac-sko27`) and the tool (`analyze_domain`) verbatim, so
-   attendees copy rather than type. **If you re-register the server or the agent, those four values in
-   the lesson are stale.** The cheat sheet carries the same command, so update
-   `lab/reference/cheatsheet.html` with it.
+5. **Confirm the denial, then confirm the success.** Call `beta_features` yourself and check the
+   refusal text still reads `Access denied by access policy`. Then call `analyze_domain` and check it
+   returns. Both are load-bearing: the lesson quotes the refusal verbatim in step 5, and steps 8 and 9
+   explain it. Also rehearse the kill switch for yourself only: set the server to **Disabled**, confirm
+   a call fails, then **Enable** it again. You will **not** do that during the session, because nothing
+   in the tenant is changed while sixty people are working in it.
+6. **Put the six literals into the lesson.** `lab/0010-identity-broker.html` names the Gateway URL, the
+   Client ID, the registered agent (`JAPAC-SKO27`), the MCP server (`EntraSonar MCP`), the policy
+   (`EntraSonar MCP - Allow`) and both tools verbatim, so attendees copy rather than type. **If you
+   re-register the server or the agent, or rename the policy, those values in the lesson are stale.**
+   The cheat sheet carries the same command, so update `lab/reference/cheatsheet.html` with it.
 
-**Getting the Client Secret to sixty people.** It is deliberately *not* in the lesson, and the lesson
-tells attendees to take it from the Slack channel `#cybr-japac-ts-all`. Post it there before the module
-starts. Do not put it on a slide or a printed card: the page teaches them not to spread a secret around,
-and it should not contradict itself.
+**There is no Client Secret to distribute.** The agent is a public client, the Client ID is printed in
+the lesson, and the browser sign-in is what authenticates the person. Nothing goes in the Slack channel
+and nothing goes on a card. If you register the agent as a confidential client by mistake, you are back
+to handing a secret to sixty people, and the lesson text is then wrong.
 
-**Rotate or delete the agent registration after the session.** It is a client credential that sixty
-people have seen.
+**Review the agent registration after the session.** Sixty people have its Client ID. That is an
+identity, not a key, but it is still worth deleting a registration nobody needs any more.
+
+**The apj-secrets variant.** `lab/0016-identity-broker-apj-secrets.html` is the same lesson against
+`apj-secrets.cyberark.cloud`, where the agent uses a Client Secret. It is an optional Part 3 page.
+Nothing in the session depends on it, and nobody should be sent to it on the day.
 
 **Remember for the front of the room:** access is deny-by-default, and a request is permitted
 only where a policy matches *both* the principal (user/role **and** agent) and the resource
@@ -370,10 +377,10 @@ It is three checks:
 - Every attendee **has** a CYBRWorld account. Get the list, compare it against the invite list.
 - Every one of those accounts has an **AWS entitlement** in Secure Cloud Access, so
   `idsec exec sca cloud-access list-targets --csp aws` returns at least one account and role.
-- Every attendee can **sign in to `apj-secrets.cyberark.cloud`** in a browser, which Lesson 10 needs.
-  This is a second tenant and `idsec` is not involved. Anyone on the team has administrator rights
-  there and can create an account, so the setup page asks attendees to check it themselves and to ask a
-  colleague if it fails. G5 owns the detail, including the read access those accounts need.
+- Every attendee can **sign in to `demo.cyberark.cloud` in a browser**, which Lesson 10 needs. Same
+  account, no `idsec` involved. They also need read access to **Inventory > AI**, **Policies > AI agent
+  access** and **Audit and Reports**, which a standard account already has. Treat it as a reminder
+  rather than a task, and aim the reminder at new hires. G5 owns the detail.
 
 **Email these three values a week ahead**, because `idsec configure` asks for them:
 
@@ -389,8 +396,8 @@ about `--profile-name`: anyone already using `idsec` against another tenant need
 profile rather than an overwritten one.
 
 The numbered cards are still worth printing, but only as the **help signal**. They carry a number
-and nothing else, plus optionally the Broker **Gateway URL** and **Client ID** from G5. The
-**Client Secret** never goes on a card. It goes in the Slack channel, and G5 says why.
+and nothing else, plus optionally the Broker **Gateway URL** and **Client ID** from G5. There is no
+Client Secret to print, and G5 says why.
 
 ### Send the setup email
 
@@ -548,7 +555,7 @@ attendee's first `cat audit.log` should show *their* calls.
 - Open **Audit and Reports** in a browser tab and leave it there. You will be projecting it.
 - Open **Manage > Policies > AI agents access** in another tab. You point at that screen in Module 5;
   you do not change anything on it.
-- Post the **Client Secret** to `#cybr-japac-ts-all`
+- **Call `beta_features` once and confirm it is still refused.** Step 5 of the lesson depends on it
 - Confirm the share link or clone URL works from the guest Wi-Fi, on a device that has never
   used it
 - Lay out the numbered cards by the door. They are the help signal, not a login
@@ -563,8 +570,9 @@ attendee's first `cat audit.log` should show *their* calls.
 - Agree the escalation signal: card held up, helper goes.
 - Agree who owns the front of the room during each module so two trainers are never both
   talking.
-- Agree that **nobody changes anything in `apj-secrets` during the session**. No server is disabled, no
-  policy is edited. Sixty people are working in that tenant at the same time.
+- Agree that **nobody changes the Secure AI configuration during the session**. No server is disabled,
+  no policy is edited. Sixty people are working in that tenant at the same time, and editing the policy
+  would make step 5 stop failing.
 
 ### Spares
 
@@ -576,9 +584,10 @@ attendee's first `cat audit.log` should show *their* calls.
 ### Afterwards
 
 - **Confirm the MCP server is still Enabled.** Nothing should have changed it, so this is a check.
-- **Delete or rotate the registered AI agent** — sixty people have its Client Secret.
-- **Delete the `workshop-<date>` access policy**, especially if you used *Allow all current and
-  future tools* or the **Everyone** role.
+- **Review the registered AI agent.** Sixty people have its Client ID. It is an identity rather than a
+  key, and a registration nobody needs is still worth deleting.
+- **Review the `EntraSonar MCP - Allow` policy**, especially the **Everyone** role. Leave the tool list
+  alone if the workshop runs again: `beta_features` has to stay out of it.
 - Disable the sixty attendee accounts, or reset their passwords.
 
 ---

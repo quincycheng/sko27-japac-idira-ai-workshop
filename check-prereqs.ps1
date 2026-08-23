@@ -855,20 +855,20 @@ except Exception as error:
     }
 }
 
-# ------------------------------------------------- 10 · apj-secrets sign-in
+# ------------------------------------------------- 10 · console sign-in
 
-# Lesson 10 reads the audit trail in a second tenant, apj-secrets, in a browser.
-# There is no idsec profile for it and nothing to install, so this script cannot
-# test it: it needs a real sign-in with a real MFA prompt. It is printed as a
+# Lessons 09 and 10 read the console in a browser: the same CYBRWorld tenant idsec
+# uses, reached the other way. Nothing to install, and this script cannot test it,
+# because it needs a real sign-in with a real MFA prompt. It is printed as a
 # reminder and never as a gate, the same treatment as the HTTPS step above.
-Write-Step '🔟 ' 'A sign-in for the apj-secrets tenant 🪪 (information only)'
+Write-Step '🔟 ' 'A browser sign-in to the console 🪪 (information only)'
 
-Write-Info 'Lesson 10 opens https://apj-secrets.cyberark.cloud/ in a browser. That is a'
-Write-Info 'different tenant from the one idsec uses, and this script cannot test it.'
+Write-Info 'Lesson 10 opens https://demo.cyberark.cloud/ in a browser. That is the same'
+Write-Info 'tenant idsec uses, and this script cannot test the browser half.'
 Write-Info 'Open it now and sign in with your own account. If the console loads, you are'
-Write-Info 'done. No account there? Ask your manager or a colleague: everybody on the'
-Write-Info 'team has administrator rights on that tenant and can create one for you.'
-Add-Manual 'apj-secrets sign-in' 'check it in a browser — setup step 9'
+Write-Info 'done. Note which browser you used: lesson 10 opens a sign-in page from the'
+Write-Info 'terminal, and it uses whichever browser is your default.'
+Add-Manual 'console sign-in' 'check it in a browser — setup step 9'
 
 # --------------------------------------------------------------- summary
 

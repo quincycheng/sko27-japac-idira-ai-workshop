@@ -107,7 +107,7 @@ to rehearse step 7, your AWS access, for real: say yes to that one.</p>
   <tr><td>6</td><td>CYBRWorld on the default <code>idsec</code> profile</td><td><code>idsec login</code> succeeds</td></tr>
   <tr><td>7</td><td>Short-lived AWS credentials from <code>idsec</code></td><td>An <code>assumed-role</code> line prints with your name in it</td></tr>
   <tr><td>8</td><td>A network that can reach AWS</td><td>The connection check prints <code>AWS reachable</code></td></tr>
-  <tr><td>9</td><td>An account on the <code>apj-secrets</code> tenant</td><td>You can sign in to <code>apj-secrets.cyberark.cloud</code> in a browser</td></tr>
+  <tr><td>9</td><td>A browser sign-in to CYBRWorld</td><td>The console loads at <code>demo.cyberark.cloud</code></td></tr>
 </table>
 
 <h2>The manual way (optional)</h2>
@@ -123,8 +123,8 @@ see what you are agreeing to before you agree to it.</p>
 <div class="warn">
   <p><span class="callout-label">⚠️ Two steps nobody gets to skip.</span> <strong>Step 7</strong> is your
   AWS access. If no role comes back, that is an entitlement, and it cannot be fixed from your seat on
-  the day. <strong>Step 9</strong> is your sign-in to a second tenant. If you have no account there,
-  somebody has to create one for you. Check both today, by whichever route you took.</p>
+  the day. <strong>Step 9</strong> is your browser sign-in to the console. Lessons 09 and 10 both need
+  it. Check both today, by whichever route you took.</p>
 </div>
 
 <div class="step">
@@ -538,25 +538,22 @@ jq --version</code></pre></div>
 </div>
 
 <div class="step">
-  <div class="step-head"><div class="step-num">9</div><p class="step-title">Check you can sign in to the apj-secrets tenant</p></div>
+  <div class="step-head"><div class="step-num">9</div><p class="step-title">Check you can sign in to the console in a browser</p></div>
   <div class="step-body">
-    <p>Lesson 10 uses a second Idira tenant, <code>apj-secrets</code>, not the one you set up in step 6.
-    You sign in to it <strong>in a browser</strong>, not with <code>idsec</code>, so there is nothing to
-    install here.</p>
+    <p>Step 6 proved the <code>idsec</code> command line works. This step is the other half: the same
+    CYBRWorld tenant, opened in a browser. There is nothing to install.</p>
     <p>Open it now and sign in with your own account:</p>
-    <p><a href="https://apj-secrets.cyberark.cloud/"><code>apj-secrets.cyberark.cloud</code></a></p>
+    <p><a href="https://demo.cyberark.cloud/"><code>demo.cyberark.cloud</code></a></p>
     <p>If the console loads, step 9 is done.</p>
     <div class="warn">
-      <p><span class="callout-label">🙋 No account on this tenant?</span> Ask your manager or a
-      colleague to create one for you. Everybody on the team has administrator rights on
-      <code>apj-secrets</code>, so the person next to you can probably do it in a minute. Do it this
-      week, not on the day.</p>
+      <p><span class="callout-label">🙋 Note which browser you signed in with.</span> Lesson 10 opens a
+      sign-in page from the terminal, and it uses your default browser. If that is not the browser
+      holding this session, the lesson tells you how to move the URL across.</p>
     </div>
     <div class="note">
-      <p><span class="callout-label">🔍 Why a second tenant.</span> In Lesson 10 you read the audit
-      trail of your own agent. That means signing in to the console where the AI Agent Identity Broker
-      is configured, and that is <code>apj-secrets</code>. You get <strong>read</strong> access. You
-      look, you change nothing.</p>
+      <p><span class="callout-label">🔍 Why the browser matters.</span> In Lesson 10 you read the audit
+      trail of your own agent, and the access policy that governed it. Both are console pages. You get
+      <strong>read</strong> access. You look, you change nothing.</p>
     </div>
   </div>
 </div>
@@ -571,7 +568,7 @@ jq --version</code></pre></div>
   <li>Your corporate laptop with the setup done on it, not a different one, and a charger</li>
   <li>Your own CYBRWorld login, the one ending in <code>@cyberarklab.com</code>. It is how you get
     AWS access.</li>
-  <li>Your sign-in for the <code>apj-secrets</code> tenant. Lesson 10 needs it in a browser.</li>
+  <li>The browser you signed in to <code>demo.cyberark.cloud</code> with. Lesson 10 needs it.</li>
   <li>You, with a clear mind and some energy</li>
 </ul>
 
@@ -614,8 +611,8 @@ jq --version</code></pre></div>
     day and the easiest to fix.</li>
   <li><strong>Two things cannot be fixed from your seat on the day:</strong> your AWS entitlement in
     Idira and a network route to AWS. If either one is missing, ask in <code>#cybr-japac-ts-all</code> today.</li>
-  <li><strong>There are two tenants.</strong> Your CYBRWorld login gets you AWS access through
-    <code>idsec</code>. A sign-in to <code>apj-secrets</code> gets you the console in Lesson 10.</li>
+  <li><strong>One login, two routes.</strong> Your CYBRWorld account gets you AWS access through
+    <code>idsec</code>, and the console in a browser for Lessons 09 and 10.</li>
 </ul>
 
 <div class="win">
