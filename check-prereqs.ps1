@@ -118,6 +118,10 @@ function Confirm-Action ($Question) {
 # fast instead, and a failed fetch is already handled: the version line just says
 # it could not reach GitHub.  Everything is per call.  Nothing is written to the
 # attendee's own git config.
+#
+# These flags stop the window opening.  They do not stop a 401 happening, because
+# a stale extraheader is sent whatever the helper list says.  Repair-PackagedGit
+# below deals with that, and the two are needed together.
 $GitAnon = @('-c', 'credential.helper=', '-c', 'credential.interactive=false', '-c', 'core.askPass=')
 
 function Invoke-GitAnon {
@@ -133,6 +137,55 @@ function Invoke-GitAnon {
     } finally {
         $env:GIT_TERMINAL_PROMPT = $oldPrompt
         $env:GIT_ASKPASS         = $oldAskPass
+    }
+}
+
+# Repairs two things the workshop download itself got wrong.  Both are ours, not
+# the attendee's, and both are inside this project folder only.
+#
+# 1. A dead access token.  The zip is built by a GitHub Actions job, and
+#    actions/checkout writes a one-hour token into .git/config as an
+#    http.<host>.extraheader.  The zip then ships it to sixty laptops, where it
+#    expired long ago.  It is an HTTP header, not a credential, so the anonymous
+#    flags above do not stop git sending it: GitHub answers 401, and Git for
+#    Windows opens "Sign in to GitHub" twice for one fetch.  Nobody in the room
+#    needs an account.  The repo is public, and an anonymous fetch works as soon
+#    as the dead header is gone.  So it goes.
+#
+# 2. No credential helper for this folder.  Belt and braces for a 401 we do not
+#    control, such as an inspecting proxy.  With the helper list reset there is no
+#    GUI sign-in window for this folder, whatever anyone types in it.  git can
+#    still ask on the console, which this script's own calls avoid with
+#    GIT_TERMINAL_PROMPT=0, and which a hand-typed command can answer with
+#    Ctrl-C.  Nothing outside this folder is touched.
+#
+# release.yml now passes persist-credentials: false, so a package built after that
+# carries no token and part 1 finds nothing to do.  This stays for every folder
+# downloaded before then.
+function Repair-PackagedGit {
+    $header = 'http.https://github.com/.extraheader'
+    if (& git -C $Project config --get-all $header 2>$null) {
+        if (Invoke-GitAnon 'config' '--unset-all' $header) {
+            Write-Dim 'removed a dead access token that the download left in this folder'
+        }
+    }
+    # Only when this folder has no helper of its own.  Someone who set one
+    # deliberately keeps it.
+    & git -C $Project config --local --get-all credential.helper *> $null
+    if ($LASTEXITCODE -ne 0) {
+        Invoke-GitAnon 'config' '--local' '--replace-all' 'credential.helper' '' | Out-Null
+    }
+    # 3. The packaged repo is checked out at a tag, so main has no upstream and a
+    #    hand-typed "git pull" answers "no tracking information" instead of
+    #    pulling.  Pure config, no network.  update.ps1 does not need this, it
+    #    uses explicit refspecs, but a helper typing git pull does.
+    $branch = (& git -C $Project symbolic-ref --short -q HEAD 2>$null | Select-Object -First 1)
+    if ($branch) {
+        & git -C $Project config --local --get "branch.$branch.remote" *> $null
+        if ($LASTEXITCODE -ne 0) {
+            Invoke-GitAnon 'config' '--local' "branch.$branch.remote" 'origin' | Out-Null
+            Invoke-GitAnon 'config' '--local' "branch.$branch.merge" "refs/heads/$branch" | Out-Null
+        }
     }
 }
 
@@ -279,6 +332,9 @@ if (-not (Have-Command 'git')) {
 if ($HasGit) {
     & git -C $Project rev-parse --git-dir *> $null
     if ($LASTEXITCODE -eq 0) {
+        # Before the fetch, or the fetch is the thing that opens the sign-in window.
+        Repair-PackagedGit
+
         $localVer = (& git -C $Project describe --tags --always 2>$null | Select-Object -First 1)
         if (-not $localVer) { $localVer = 'unknown' }
 

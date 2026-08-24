@@ -258,6 +258,11 @@ if (Get-Git 'config' '--get-all' 'http.https://github.com/.extraheader') {
         Write-Dim "removed a stale credential from this folder's git settings"
     }
 }
+# Belt and braces, so a hand-typed 'git pull' in this folder cannot open a
+# sign-in window either.  Only when the folder has no helper of its own.
+if (-not (Test-Git 'config' '--local' '--get-all' 'credential.helper')) {
+    Test-Git 'config' '--local' '--replace-all' 'credential.helper' '' | Out-Null
+}
 if (-not (Get-Git 'remote' 'get-url' 'origin')) {
     if (Test-Git 'remote' 'add' 'origin' $RepoUrl) {
         Write-Dim 'pointed this folder back at GitHub'

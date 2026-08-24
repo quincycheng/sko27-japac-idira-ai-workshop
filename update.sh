@@ -204,6 +204,11 @@ if [ -n "$(git_q config --get-all http.https://github.com/.extraheader)" ]; then
   git_q config --unset-all http.https://github.com/.extraheader
   dim "removed a stale credential from this folder's git settings"
 fi
+# Belt and braces, so a hand-typed 'git pull' in this folder cannot ask for a
+# login either. Only when the folder has no helper of its own.
+if ! git -C "$PROJECT" config --local --get-all credential.helper >/dev/null 2>&1; then
+  git_q config --local --replace-all credential.helper ''
+fi
 if [ -z "$(git_q remote get-url origin)" ]; then
   git_q remote add origin "$REPO_URL" && dim "pointed this folder back at GitHub"
 fi

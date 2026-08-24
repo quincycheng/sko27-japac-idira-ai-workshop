@@ -80,8 +80,52 @@ have() { command -v "$1" >/dev/null 2>&1; }
 # and GIT_TERMINAL_PROMPT=0 stops git asking in the terminal instead, which would
 # stall this script. A failed fetch is already handled below. Per call: the
 # attendee's own git config is not touched.
+# Those flags stop the prompt. They do not stop a 401 happening, because a stale
+# extraheader is sent whatever the helper list says. repair_packaged_git deals
+# with that, and the two are needed together.
 git_anon() { GIT_TERMINAL_PROMPT=0 GIT_ASKPASS='' \
   git -c credential.helper= -c credential.interactive=false -c core.askPass= "$@"; }
+
+# Repairs two things the workshop download itself got wrong. Both are ours, not
+# the attendee's, and both are inside this project folder only.
+#
+# 1. A dead access token. The zip is built by a GitHub Actions job, and
+#    actions/checkout writes a one-hour token into .git/config as an
+#    http.<host>.extraheader. The zip then ships it, and by the time anyone
+#    unpacks it the token has expired. It is an HTTP header, not a credential, so
+#    the flags above do not stop git sending it: GitHub answers 401, and git asks
+#    for a login. Nobody in the room needs an account. The repo is public, and an
+#    anonymous fetch works as soon as the dead header is gone. So it goes.
+#
+# 2. No credential helper for this folder. Belt and braces for a 401 we do not
+#    control, such as an inspecting proxy. Nothing outside this folder is touched.
+#
+# release.yml now passes persist-credentials: false, so a package built after that
+# carries no token and part 1 finds nothing to do. This stays for every folder
+# downloaded before then.
+repair_packaged_git() {
+  local header='http.https://github.com/.extraheader'
+  if [ -n "$(git -C "$PROJECT" config --get-all "$header" 2>/dev/null)" ]; then
+    git_anon -C "$PROJECT" config --unset-all "$header" 2>/dev/null \
+      && dim "removed a dead access token that the download left in this folder"
+  fi
+  # Only when this folder has no helper of its own. Someone who set one
+  # deliberately keeps it.
+  if ! git -C "$PROJECT" config --local --get-all credential.helper >/dev/null 2>&1; then
+    git_anon -C "$PROJECT" config --local --replace-all credential.helper '' 2>/dev/null
+  fi
+  # 3. The packaged repo is checked out at a tag, so main has no upstream and a
+  #    hand-typed "git pull" answers "no tracking information" instead of
+  #    pulling. Pure config, no network. update.sh does not need this, it uses
+  #    explicit refspecs, but a helper typing git pull does.
+  local branch
+  branch="$(git -C "$PROJECT" symbolic-ref --short -q HEAD 2>/dev/null)"
+  if [ -n "$branch" ] \
+     && ! git -C "$PROJECT" config --local --get "branch.$branch.remote" >/dev/null 2>&1; then
+    git_anon -C "$PROJECT" config --local "branch.$branch.remote" origin 2>/dev/null
+    git_anon -C "$PROJECT" config --local "branch.$branch.merge" "refs/heads/$branch" 2>/dev/null
+  fi
+}
 
 # `command -v` only proves a file is on PATH. On a managed laptop the file can be
 # there and still refuse to start, because application control decides which
@@ -164,6 +208,8 @@ if [ "$HAS_GIT" = 1 ] && ! git -C "$PROJECT" rev-parse --git-dir >/dev/null 2>&1
   run "bash update.sh"
   manual "Workshop version" "no history in this folder — run: bash update.sh"
 elif [ "$HAS_GIT" = 1 ]; then
+  # Before the fetch, or the fetch is the thing that asks for a login.
+  repair_packaged_git
   LOCAL_VER="$(git -C "$PROJECT" describe --tags --always 2>/dev/null || echo unknown)"
   if git_anon -C "$PROJECT" fetch --tags --quiet origin \
        '+refs/heads/main:refs/remotes/origin/main' 2>/dev/null; then

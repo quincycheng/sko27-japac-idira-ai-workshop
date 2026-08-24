@@ -341,6 +341,7 @@ instead.</p>
   <tr><td><code>Activate.ps1 cannot be loaded</code></td><td>PowerShell execution policy</td><td><code>Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass</code></td></tr>
   <tr><td>Windows <em>Security warning: run only scripts that you trust</em></td><td>Every file from the downloaded zip is still marked untrusted</td><td>In the workshop folder: <code>Get-ChildItem -Recurse | Unblock-File</code></td></tr>
   <tr><td><code>Unexpected token</code> from a <code>.ps1</code>, with <code>ðŸ</code> or <code>â</code> in the message</td><td>Windows PowerShell 5.1 read the file as ANSI, not UTF-8. The file lost its byte order mark</td><td>Run <code>.\update.ps1</code> to get the current copy. Raise your card if it persists</td></tr>
+  <tr><td>A <em>Sign in to GitHub</em> window opens, twice, and you have no GitHub account</td><td>The download left a dead access token in this folder. You do not need an account: this repo is public</td><td>Close both windows. Then run <code>.\update.ps1</code> or <code>bash update.sh</code>, which removes the dead token</td></tr>
   <tr><td>MCP server shows <em>needs authentication</em></td><td>You have not signed in yet</td><td><code>/mcp</code> → pick it → sign in in the browser</td></tr>
   <tr><td>MCP tool call refused</td><td>Server disabled, or no policy allows it</td><td>Raise your card. This one is tenant-side</td></tr>
   <tr><td>Everything worked, now nothing does</td><td>You are in a different terminal window</td><td>Redo §1. That is almost always it</td></tr>
