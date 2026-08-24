@@ -531,7 +531,7 @@ jq --version</code></pre></div>
       <p>Nothing prints. That is success.</p>
     </div>
     <div class="os os-win">
-      <div class="code"><pre><code>idsec exec sca cloud-access elevate --csp aws --workspace-id 409556437035 --roleIds arn:aws:iam::409556437035:role/CW-SCA-AdminAccess --raw | jq -r '.response.results[0].accessCredentials | fromjson | "$env:AWS_ACCESS_KEY_ID=\"\(.aws_access_key)\"\n$env:AWS_SECRET_ACCESS_KEY=\"\(.aws_secret_access_key)\"\n$env:AWS_SESSION_TOKEN=\"\(.aws_session_token)\""' | Invoke-Expression</code></pre></div>
+      <div class="code"><pre><code>idsec exec sca cloud-access elevate --csp aws --workspace-id 409556437035 --roleIds arn:aws:iam::409556437035:role/CW-SCA-AdminAccess --raw | jq -r '.response.results[0].accessCredentials | fromjson | [.aws_access_key, .aws_secret_access_key, .aws_session_token] | @tsv' | ForEach-Object { $ak,$sk,$token = $_ -split "`t"; $env:AWS_ACCESS_KEY_ID=$ak; $env:AWS_SECRET_ACCESS_KEY=$sk; $env:AWS_SESSION_TOKEN=$token }</code></pre></div>
       <p>Nothing prints. That is success.</p>
     </div>
     <p>Idira just granted you an AWS role and handed back credentials that expire. <code>jq</code> put

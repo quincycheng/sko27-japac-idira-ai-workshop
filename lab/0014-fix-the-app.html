@@ -40,7 +40,7 @@
     <div class="code"><pre><code>eval "$(idsec exec sca cloud-access elevate --csp aws --workspace-id 409556437035 --roleIds arn:aws:iam::409556437035:role/CW-SCA-AdminAccess --raw | jq -r '.response.results[0].accessCredentials | fromjson | "export AWS_ACCESS_KEY_ID=\(.aws_access_key)\nexport AWS_SECRET_ACCESS_KEY=\(.aws_secret_access_key)\nexport AWS_SESSION_TOKEN=\(.aws_session_token)"')"</code></pre></div>
   </div>
   <div class="os os-win">
-    <div class="code"><pre><code>idsec exec sca cloud-access elevate --csp aws --workspace-id 409556437035 --roleIds arn:aws:iam::409556437035:role/CW-SCA-AdminAccess --raw | jq -r '.response.results[0].accessCredentials | fromjson | "$env:AWS_ACCESS_KEY_ID=\"\(.aws_access_key)\"\n$env:AWS_SECRET_ACCESS_KEY=\"\(.aws_secret_access_key)\"\n$env:AWS_SESSION_TOKEN=\"\(.aws_session_token)\""' | Invoke-Expression</code></pre></div>
+    <div class="code"><pre><code>idsec exec sca cloud-access elevate --csp aws --workspace-id 409556437035 --roleIds arn:aws:iam::409556437035:role/CW-SCA-AdminAccess --raw | jq -r '.response.results[0].accessCredentials | fromjson | [.aws_access_key, .aws_secret_access_key, .aws_session_token] | @tsv' | ForEach-Object { $ak,$sk,$token = $_ -split "`t"; $env:AWS_ACCESS_KEY_ID=$ak; $env:AWS_SECRET_ACCESS_KEY=$sk; $env:AWS_SESSION_TOKEN=$token }</code></pre></div>
   </div>
   <p>Then check. This should print a role name, not an error:</p>
   <div class="code"><pre><code>python -c "import boto3, urllib3; urllib3.disable_warnings(); print(boto3.client('sts', verify=False).get_caller_identity()['Arn'])"</code></pre></div>

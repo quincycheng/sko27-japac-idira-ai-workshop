@@ -64,7 +64,7 @@ def list_skills():
         path = directory / "SKILL.md"
         if not path.is_file():
             continue
-        text = strip_comments(path.read_text())
+        text = strip_comments(path.read_text(encoding="utf-8"))
         found.append((directory.name, _first_paragraph(text), text))
     return found
 

@@ -45,7 +45,7 @@ def read_style(name: str) -> str:
     if not path.is_file():
         available = ", ".join(sorted(p.stem for p in STYLES_DIR.glob("*.md")))
         raise SystemExit(f"No output style '{name}'. Available: {available}.")
-    return strip_comments(path.read_text())
+    return strip_comments(path.read_text(encoding="utf-8"))
 
 
 def strip_comments(text: str) -> str:
@@ -67,7 +67,7 @@ def read_prompt(name: str = "system") -> str:
     path = PROMPTS_DIR / f"{name}.md"
     if not path.is_file():
         raise SystemExit(f"No prompt file at {path}.")
-    return strip_comments(path.read_text())
+    return strip_comments(path.read_text(encoding="utf-8"))
 
 
 def styles() -> list:
@@ -200,7 +200,7 @@ class Session:
         """
         parts = [p for p in (self.system_prompt, self.style_text) if p]
         if self.memory and MEMORY_FILE.is_file():
-            remembered = strip_comments(MEMORY_FILE.read_text())
+            remembered = strip_comments(MEMORY_FILE.read_text(encoding="utf-8"))
             if remembered:
                 parts.append("What you remember from previous sessions:\n" + remembered)
         return "\n\n".join(parts)
@@ -488,7 +488,7 @@ class Session:
 
     def remember_this(self, text: str):
         """Append a line to memory.md. Lesson 05 only."""
-        with MEMORY_FILE.open("a") as handle:
+        with MEMORY_FILE.open("a", encoding="utf-8") as handle:
             handle.write(text.rstrip() + "\n")
         ui.note(f"Written to {MEMORY_FILE.name}. It will still be there tomorrow.")
 
