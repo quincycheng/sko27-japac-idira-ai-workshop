@@ -205,6 +205,140 @@ Write-Host '   Guide updater | Windows | your virtual environment is not touched
 Write-Host ''
 Write-Host "   Project folder : $Project"
 
+# --------------------------------------------------------- claude auto mode
+#
+# The same offer check-prereqs.ps1 makes in step 5, repeated here because this is
+# the script the room runs on the morning.  Anyone who did the prework before this
+# offer existed, or who installed Claude Code today, is only reached here.
+#
+# It runs before the git work on purpose.  Every branch below this can exit early,
+# including the happy "you are on the current version" one, and auto mode needs
+# neither git nor the network.
+#
+# Why the user settings file and not the workshop folder: a defaultMode in a
+# project's .claude\settings.json is ignored, because a repo may not grant itself
+# auto mode.  check-prereqs.ps1 carries the long version of that note, and of why
+# Python does the edit rather than ConvertTo-Json.
+$ClaudeSettings = Join-Path $HOME '.claude\settings.json'
+
+#   check -> auto | bypass | unset | other:<value> | unreadable
+#   set   -> set, having merged permissions.defaultMode=auto into the file,
+#            keeping every other key, after taking one backup
+function Invoke-ClaudeSettings ($PyExe, $Action) {
+    $helper = Join-Path ([IO.Path]::GetTempPath()) 'idira-claude-settings.py'
+    @'
+import json, os, shutil, sys
+
+path, action = sys.argv[1], sys.argv[2]
+data = {}
+
+if os.path.exists(path):
+    try:
+        with open(path, encoding='utf-8') as handle:
+            text = handle.read().strip()
+        data = json.loads(text) if text else {}
+    except Exception:
+        print('unreadable')
+        sys.exit(0)
+
+if not isinstance(data, dict):
+    print('unreadable')
+    sys.exit(0)
+
+perms = data.get('permissions')
+if perms is not None and not isinstance(perms, dict):
+    print('unreadable')
+    sys.exit(0)
+
+current = perms.get('defaultMode') if perms else None
+
+if action == 'check':
+    if current == 'auto':
+        print('auto')
+    elif current == 'bypassPermissions':
+        print('bypass')
+    elif current is None:
+        print('unset')
+    else:
+        print('other:%s' % current)
+    sys.exit(0)
+
+folder = os.path.dirname(path)
+if folder:
+    os.makedirs(folder, exist_ok=True)
+if os.path.exists(path):
+    backup = path + '.sko27-backup'
+    if not os.path.exists(backup):
+        shutil.copyfile(path, backup)
+
+data.setdefault('permissions', {})['defaultMode'] = 'auto'
+
+temp = path + '.sko27-tmp'
+with open(temp, 'w', encoding='utf-8') as handle:
+    json.dump(data, handle, indent=2)
+    handle.write('\n')
+os.replace(temp, path)
+print('set')
+'@ | Set-Content -LiteralPath $helper -Encoding utf8
+
+    $out = (& $PyExe $helper $ClaudeSettings $Action 2>$null | Select-Object -Last 1)
+    Remove-Item -LiteralPath $helper -ErrorAction SilentlyContinue
+    if ($out) { return "$out".Trim() }
+    return ''
+}
+
+$ClaudeRuns = $false
+foreach ($cand in @('claude', (Join-Path $HOME '.local\bin\claude.exe'), (Join-Path $HOME 'bin\claude.exe'))) {
+    if (-not (Have-Command $cand)) { continue }
+    & $cand --version *> $null
+    if ($LASTEXITCODE -eq 0) { $ClaudeRuns = $true; break }
+}
+
+$SetPy = $null
+foreach ($cand in @((Join-Path $Project '.venv\Scripts\python.exe'), 'python', 'py', 'python3')) {
+    if (-not (Have-Command $cand)) { continue }
+    # No double quote in that -c argument, on purpose: see the note at the top of
+    # check-prereqs.ps1. It also filters out the Microsoft Store stub, which is a
+    # command that exits non-zero.
+    & $cand -c 'import json' *> $null
+    if ($LASTEXITCODE -eq 0) { $SetPy = $cand; break }
+}
+
+if ($ClaudeRuns -and $SetPy) {
+    Write-Step '*' 'Claude Code auto mode'
+    $mode = Invoke-ClaudeSettings $SetPy 'check'
+    if ($mode -eq 'auto') {
+        Write-Good 'already the default. Nothing to do.'
+    } elseif ($mode -eq 'bypass') {
+        Write-Warn 'your settings ask for bypassPermissions, which is wider than auto mode'
+        Write-Dim  'Left exactly as it is. The lessons run either way.'
+    } elseif ($mode -eq 'unreadable') {
+        Write-Warn "$ClaudeSettings is there, but this script cannot read it as JSON"
+        Write-Dim  'Left alone. In the agent, press Shift+Tab until the line says auto.'
+    } elseif ($mode -eq 'unset' -or $mode -like 'other:*') {
+        Write-Info 'The lessons assume auto mode, where the agent runs commands without'
+        Write-Info 'asking you first. It can be set once, here.'
+        Write-Warn 'This applies to every folder on this laptop, not only the workshop one.'
+        if (Confirm-Action "Set Claude Code to auto mode by default? (edits $ClaudeSettings)") {
+            if ((Invoke-ClaudeSettings $SetPy 'set') -eq 'set') {
+                Write-Good 'auto mode is now the default'
+                Write-Info 'It stays that way after the workshop. To undo it, remove the'
+                Write-Info "defaultMode line from $ClaudeSettings"
+                Write-Info "or copy $ClaudeSettings.sko27-backup back over it."
+            } else {
+                Write-Bad "writing $ClaudeSettings failed"
+                Write-Dim 'In the agent, press Shift+Tab until the bottom line says auto.'
+            }
+        } else {
+            Write-Info 'Left alone. In the agent, press Shift+Tab until the bottom line'
+            Write-Info 'says auto. Every lesson from 08 onward needs it.'
+        }
+    } else {
+        Write-Warn "could not read the permission mode out of $ClaudeSettings"
+        Write-Dim  'In the agent, press Shift+Tab until the bottom line says auto.'
+    }
+}
+
 # ------------------------------------------------------------------- 1 - git
 
 Write-Step '1.' 'Can we check for updates?'

@@ -727,16 +727,23 @@ function Resolve-ClaudeOffPath ($Exe) {
 
 $ClaudeExe = Find-ClaudeExe
 
+# Set by every branch below that ends with a Claude Code able to start. The auto
+# mode block after this step reads it: a setting for a program that will not run
+# is noise on a report that is already failing.
+$ClaudeUsable = $false
+
 if ((Have-Command 'claude') -and (Test-Runs 'claude' @('--version'))) {
     $cv = (& claude --version 2>$null | Select-Object -First 1)
     Write-Good "claude $cv"
     Add-Pass 'Claude Code' 'runs'
+    $ClaudeUsable = $true
 } elseif (Have-Command 'claude') {
     Write-Blocked 'claude'
     Add-Fail 'Claude Code' 'found but will not run' `
              'Get Claude Code allowed by your endpoint policy -- ask in #cybr-japac-ts-all'
 } elseif ($ClaudeExe -and (Test-Runs $ClaudeExe @('--version'))) {
     Resolve-ClaudeOffPath $ClaudeExe
+    $ClaudeUsable = $true
 } elseif ($ClaudeExe) {
     # The file is there and will not start, which is application control rather
     # than a PATH problem. Installing it again cannot help.
@@ -759,12 +766,156 @@ if ((Have-Command 'claude') -and (Test-Runs 'claude' @('--version'))) {
                 Write-Good 'installed -- open a NEW PowerShell window, then run: claude --version'
                 Add-Fixed 'Claude Code' 'installed (new window needed)'
             }
+            $ClaudeUsable = $true
         } catch {
             Write-Bad "the installer failed: $($_.Exception.Message)"
             Add-Fail 'Claude Code' 'install failed' 'Try again on a network without a proxy, or ask in #cybr-japac-ts-all'
         }
     } else {
         Add-Fail 'Claude Code' 'not installed' 'Run: irm https://claude.ai/install.ps1 | iex'
+    }
+}
+
+# ------------------------------------------------ 5 - auto mode, by default
+#
+# Every lesson from 08 onward opens with "press Shift+Tab until the bottom line
+# says auto", and a room that misses those presses is stopped at an approval
+# prompt.  Setting it here means the agent starts in auto mode on its own.
+#
+# It has to be the user settings file.  A defaultMode in a project's
+# .claude\settings.json is ignored on purpose, because a repo may not grant itself
+# auto mode: only policy, user and CLI-flag sources may.  So a copy of this
+# setting shipped inside the workshop folder would do nothing.  The user file is
+# also the only scope that covers Lesson 11, which starts the agent in
+# $HOME\my-first-app, outside the workshop folder entirely.
+$ClaudeSettings = Join-Path $HOME '.claude\settings.json'
+
+# Python does the edit, not PowerShell.  Windows PowerShell 5.1 has two traps
+# here and both silently damage a real settings file: ConvertTo-Json defaults to
+# -Depth 2, which flattens nested keys such as permissions.allow or env into
+# strings, and Set-Content -Encoding utf8 writes a byte order mark that Claude
+# Code will not read back.  Python has neither problem, and step 2 already
+# checked that it is here.
+#
+# Written to a temp file rather than passed with -c, for the reason at the top of
+# this file: 5.1 mangles quotes and newlines inside an argument to a native
+# program.
+#
+#   check -> auto | bypass | unset | other:<value> | unreadable
+#   set   -> set, having merged permissions.defaultMode=auto into the file,
+#            keeping every other key, after taking one backup
+function Invoke-ClaudeSettings ($PyExe, $Action) {
+    $helper = Join-Path ([IO.Path]::GetTempPath()) 'idira-claude-settings.py'
+    @'
+import json, os, shutil, sys
+
+path, action = sys.argv[1], sys.argv[2]
+data = {}
+
+if os.path.exists(path):
+    try:
+        with open(path, encoding='utf-8') as handle:
+            text = handle.read().strip()
+        data = json.loads(text) if text else {}
+    except Exception:
+        print('unreadable')
+        sys.exit(0)
+
+if not isinstance(data, dict):
+    print('unreadable')
+    sys.exit(0)
+
+perms = data.get('permissions')
+if perms is not None and not isinstance(perms, dict):
+    print('unreadable')
+    sys.exit(0)
+
+current = perms.get('defaultMode') if perms else None
+
+if action == 'check':
+    if current == 'auto':
+        print('auto')
+    elif current == 'bypassPermissions':
+        print('bypass')
+    elif current is None:
+        print('unset')
+    else:
+        print('other:%s' % current)
+    sys.exit(0)
+
+folder = os.path.dirname(path)
+if folder:
+    os.makedirs(folder, exist_ok=True)
+if os.path.exists(path):
+    backup = path + '.sko27-backup'
+    if not os.path.exists(backup):
+        shutil.copyfile(path, backup)
+
+data.setdefault('permissions', {})['defaultMode'] = 'auto'
+
+temp = path + '.sko27-tmp'
+with open(temp, 'w', encoding='utf-8') as handle:
+    json.dump(data, handle, indent=2)
+    handle.write('\n')
+os.replace(temp, path)
+print('set')
+'@ | Set-Content -LiteralPath $helper -Encoding utf8
+
+    $out = (& $PyExe $helper $ClaudeSettings $Action 2>$null | Select-Object -Last 1)
+    Remove-Item -LiteralPath $helper -ErrorAction SilentlyContinue
+    if ($out) { return "$out".Trim() }
+    return ''
+}
+
+if ($ClaudeUsable) {
+    $SetPy = if ($Py) { $Py } elseif (Test-Path $VPy) { $VPy } else { $null }
+
+    if (-not $SetPy) {
+        Write-Warn "cannot read $ClaudeSettings without Python"
+        Write-Dim  'Nothing is lost: in the agent, press Shift+Tab until the line says auto.'
+        Add-Manual 'Claude auto mode' 'not set -- use Shift+Tab'
+    } else {
+        $mode = Invoke-ClaudeSettings $SetPy 'check'
+        if ($mode -eq 'auto') {
+            Write-Good 'auto mode is already the default'
+            Add-Pass 'Claude auto mode' 'already on'
+        } elseif ($mode -eq 'bypass') {
+            Write-Warn 'your settings ask for bypassPermissions, which is wider than auto mode'
+            Write-Dim  'Left exactly as it is. Narrowing it here would change how the agent'
+            Write-Dim  'behaves in every folder you own, and the lessons run either way.'
+            Add-Manual 'Claude auto mode' 'bypassPermissions left alone'
+        } elseif ($mode -eq 'unreadable') {
+            Write-Warn "$ClaudeSettings is there, but this script cannot read it as JSON"
+            Write-Dim  'Left alone rather than risk your file. In the agent, press Shift+Tab'
+            Write-Dim  'until the bottom line says auto.'
+            Add-Manual 'Claude auto mode' 'settings file not readable'
+        } elseif ($mode -eq 'unset' -or $mode -like 'other:*') {
+            Write-Info 'The lessons assume auto mode, where the agent runs commands without'
+            Write-Info 'asking you first. It can be set once, here, instead of by hand at the'
+            Write-Info 'start of every lesson.'
+            Write-Warn 'This applies to every folder on this laptop, not only the workshop one.'
+            if (Confirm-Action "Set Claude Code to auto mode by default? (edits $ClaudeSettings)") {
+                if ((Invoke-ClaudeSettings $SetPy 'set') -eq 'set') {
+                    Write-Good 'auto mode is now the default'
+                    Write-Info 'It stays that way after the workshop. To undo it, remove the'
+                    Write-Info "defaultMode line from $ClaudeSettings"
+                    Write-Info "or copy $ClaudeSettings.sko27-backup back over it."
+                    Add-Fixed 'Claude auto mode' 'on by default'
+                } else {
+                    Write-Bad "writing $ClaudeSettings failed"
+                    Write-Dim 'In the agent, press Shift+Tab until the bottom line says auto.'
+                    Add-Manual 'Claude auto mode' 'not set -- use Shift+Tab'
+                }
+            } else {
+                Write-Info 'Left alone. In the agent, press Shift+Tab until the bottom line'
+                Write-Info 'says auto. Every lesson from 08 onward needs it.'
+                Add-Manual 'Claude auto mode' 'not set -- use Shift+Tab'
+            }
+        } else {
+            Write-Warn "could not read the permission mode out of $ClaudeSettings"
+            Write-Dim  'In the agent, press Shift+Tab until the bottom line says auto.'
+            Add-Manual 'Claude auto mode' 'not set -- use Shift+Tab'
+        }
     }
 }
 

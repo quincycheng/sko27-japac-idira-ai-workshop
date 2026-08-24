@@ -320,8 +320,10 @@ hands going up later:
 
 > If your prompt does not start with `(.venv)`, Python cannot see `boto3`. Every window, every time.
 
-Then narrate step 5 slowly, because it sets up the rest of the afternoon: after `claude` starts,
-press `Shift+Tab` until the bottom line says **auto**. Say why once, and say it honestly:
+Then narrate step 5 slowly, because it sets up the rest of the afternoon: after `claude` starts, the
+bottom line should already say **auto**, because the setup script offered to make it the default.
+Anyone whose line says something else presses `Shift+Tab` until it does. Say why once, and say it
+honestly:
 
 > Auto mode is on so that sixty people move at the same speed. On Monday, in a repo that matters, do
 > not use it. You read each command before you approve it.

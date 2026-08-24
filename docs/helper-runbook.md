@@ -282,7 +282,7 @@ folder answers it in five seconds.
 | The elevate one-liner printed something instead of nothing | The `eval` or `Invoke-Expression` at the end was lost in the paste | Use the Copy button rather than selecting the text. If a credential did print, it is short-lived and scoped to a sandbox account, so re-run and move on. |
 | `jq: command not found` | Setup `jq` install did not stick | Setup step 5. One binary in `~/bin`, and this window has to see it on `PATH`. |
 | `idsec: command not found` | Same, for `idsec` | Setup step 5. If the shell finds it but it will not *start*, that is EPM — top-four #3. |
-| Bottom line of the agent does not say **auto** | They missed the `Shift+Tab` presses | Keep pressing `Shift+Tab`. It cycles round. Every lesson after this one assumes auto mode. |
+| Bottom line of the agent does not say **auto** | Setup sets auto as the default, so this one said no to that offer, or ran the prework before the offer existed, or has `bypassPermissions` set already | Keep pressing `Shift+Tab`. It cycles round. Every lesson after this one assumes auto mode. `bash update.sh` (Windows: `.\update.ps1`) offers to set it as the default again. |
 | `python` opens the Microsoft Store | Windows app alias | Use `py` — but inside an active `.venv`, plain `python` works |
 | `python: command not found` (mac) | Only `python3` exists on that machine | Use `python3` to create the venv. Once it is active, plain `python` works. No alias needed. |
 | `No module named boto3` | Virtual environment not active | Top-four #2. Check the prompt for `(.venv)` first. |

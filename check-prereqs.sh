@@ -390,9 +390,15 @@ for c in "$HOME/.local/bin/claude" "$BINDIR/claude"; do
   [ -x "$c" ] && { CLAUDE_EXE="$c"; break; }
 done
 
+# Set by every branch below that ends with a Claude Code able to start. The auto
+# mode block after this step reads it: a setting for a program that will not run
+# is noise on a report that is already failing.
+CLAUDE_USABLE=0
+
 if have claude && runs claude --version; then
   good "claude $(claude --version 2>/dev/null | head -1)"
   pass "Claude Code" "runs"
+  CLAUDE_USABLE=1
 elif have claude; then
   blocked claude
   fail "Claude Code" "found but will not run" \
@@ -402,6 +408,7 @@ elif [ -n "$CLAUDE_EXE" ] && runs "$CLAUDE_EXE" --version; then
   info "It is not on your PATH in this window yet. Open a NEW terminal, then:"
   run "claude --version"
   manual "Claude Code" "installed — open a new terminal"
+  CLAUDE_USABLE=1
 elif [ -n "$CLAUDE_EXE" ]; then
   # The file is there and will not start. That is application control, not a PATH
   # problem, and installing it again cannot help.
@@ -425,12 +432,149 @@ else
         warn "installed, but not on your PATH in this window yet"
         fixed "Claude Code" "installed (open a new terminal)"
       fi
+      CLAUDE_USABLE=1
     else
       bad "the installer failed"
       fail "Claude Code" "install failed" "Try again on a network without a proxy, or ask in #cybr-japac-ts-all"
     fi
   else
     fail "Claude Code" "not installed" "Run: curl -fsSL https://claude.ai/install.sh | bash"
+  fi
+fi
+
+# ------------------------------------------------ 5 · auto mode, by default
+#
+# Every lesson from 08 onward opens with "press Shift+Tab until the bottom line
+# says auto", and a room that misses those presses is stopped at an approval
+# prompt. Setting it here means the agent starts in auto mode on its own.
+#
+# It has to be the user settings file. A defaultMode in a project's
+# .claude/settings.json is ignored on purpose, because a repo may not grant
+# itself auto mode: only policy, user and CLI-flag sources may. So a copy of this
+# setting shipped inside the workshop folder would do nothing. The user file is
+# also the only scope that covers Lesson 11, which starts the agent in
+# ~/my-first-app, outside the workshop folder entirely.
+#
+# Python does the edit, not jq: jq only arrives in step 6, and the file usually
+# has other keys in it already that a text edit would damage.
+CLAUDE_SETTINGS="$HOME/.claude/settings.json"
+
+# claude_settings <python> <check|set>
+#   check -> prints auto | bypass | unset | other:<value> | unreadable
+#   set   -> prints set, and merges permissions.defaultMode=auto into the file,
+#            keeping every other key, after taking one backup
+claude_settings() {
+  "$1" - "$CLAUDE_SETTINGS" "$2" <<'PYEOF'
+import json, os, shutil, sys
+
+path, action = sys.argv[1], sys.argv[2]
+data = {}
+
+if os.path.exists(path):
+    try:
+        with open(path, encoding='utf-8') as handle:
+            text = handle.read().strip()
+        data = json.loads(text) if text else {}
+    except Exception:
+        print('unreadable')
+        sys.exit(0)
+
+if not isinstance(data, dict):
+    print('unreadable')
+    sys.exit(0)
+
+perms = data.get('permissions')
+if perms is not None and not isinstance(perms, dict):
+    print('unreadable')
+    sys.exit(0)
+
+current = perms.get('defaultMode') if perms else None
+
+if action == 'check':
+    if current == 'auto':
+        print('auto')
+    elif current == 'bypassPermissions':
+        print('bypass')
+    elif current is None:
+        print('unset')
+    else:
+        print('other:%s' % current)
+    sys.exit(0)
+
+folder = os.path.dirname(path)
+if folder:
+    os.makedirs(folder, exist_ok=True)
+if os.path.exists(path):
+    backup = path + '.sko27-backup'
+    if not os.path.exists(backup):
+        shutil.copyfile(path, backup)
+
+data.setdefault('permissions', {})['defaultMode'] = 'auto'
+
+temp = path + '.sko27-tmp'
+with open(temp, 'w', encoding='utf-8') as handle:
+    json.dump(data, handle, indent=2)
+    handle.write('\n')
+os.replace(temp, path)
+print('set')
+PYEOF
+}
+
+if [ "$CLAUDE_USABLE" = 1 ]; then
+  PYBIN="$PY"
+  [ -z "$PYBIN" ] && [ -x "$VPY" ] && PYBIN="$VPY"
+
+  if [ -z "$PYBIN" ]; then
+    warn "cannot read $CLAUDE_SETTINGS without Python"
+    dim "Nothing is lost: in the agent, press Shift+Tab until the line says auto."
+    manual "Claude auto mode" "not set — use Shift+Tab"
+  else
+    case "$(claude_settings "$PYBIN" check 2>/dev/null)" in
+      auto)
+        good "auto mode is already the default"
+        pass "Claude auto mode" "already on"
+        ;;
+      bypass)
+        warn "your settings ask for bypassPermissions, which is wider than auto mode"
+        dim "Left exactly as it is. Narrowing it here would change how the agent"
+        dim "behaves in every folder you own, and the lessons run either way."
+        manual "Claude auto mode" "bypassPermissions left alone"
+        ;;
+      unreadable)
+        warn "$CLAUDE_SETTINGS is there, but this script cannot read it as JSON"
+        dim "Left alone rather than risk your file. In the agent, press Shift+Tab"
+        dim "until the bottom line says auto."
+        manual "Claude auto mode" "settings file not readable"
+        ;;
+      unset|other:*)
+        info "The lessons assume auto mode, where the agent runs commands without"
+        info "asking you first. It can be set once, here, instead of by hand at the"
+        info "start of every lesson."
+        warn "This applies to every folder on this laptop, not only the workshop one."
+        if ask "Set Claude Code to auto mode by default? (edits $CLAUDE_SETTINGS)"; then
+          if [ "$(claude_settings "$PYBIN" set 2>/dev/null)" = set ]; then
+            good "auto mode is now the default"
+            info "It stays that way after the workshop. To undo it, remove the"
+            info "\"defaultMode\" line from $CLAUDE_SETTINGS"
+            info "or copy $CLAUDE_SETTINGS.sko27-backup back over it."
+            fixed "Claude auto mode" "on by default"
+          else
+            bad "writing $CLAUDE_SETTINGS failed"
+            dim "In the agent, press Shift+Tab until the bottom line says auto."
+            manual "Claude auto mode" "not set — use Shift+Tab"
+          fi
+        else
+          info "Left alone. In the agent, press Shift+Tab until the bottom line"
+          info "says auto. Every lesson from 08 onward needs it."
+          manual "Claude auto mode" "not set — use Shift+Tab"
+        fi
+        ;;
+      *)
+        warn "could not read the permission mode out of $CLAUDE_SETTINGS"
+        dim "In the agent, press Shift+Tab until the bottom line says auto."
+        manual "Claude auto mode" "not set — use Shift+Tab"
+        ;;
+    esac
   fi
 fi
 

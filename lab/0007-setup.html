@@ -243,9 +243,11 @@ source .venv/bin/activate</code></pre></div>
   <div class="step-head"><div class="step-num">5</div><p class="step-title">Start the agent and say hello</p></div>
   <div class="step-body">
     <div class="code"><pre><code>claude</code></pre></div>
-    <p>The terminal turns into a chat window. Now press <kbd>Shift</kbd> + <kbd>Tab</kbd> a few times. Watch the
-    bottom line of the window and stop when it says <strong>auto</strong>. Went past it? Keep pressing
-    <kbd>Shift</kbd> + <kbd>Tab</kbd>. It cycles round again.</p>
+    <p>The terminal turns into a chat window. The bottom line should say <strong>auto</strong>. The
+    setup script made that your default.</p>
+    <p>Press <kbd>Shift</kbd> + <kbd>Tab</kbd> a few times and watch that line change. Those are the
+    <strong>permission modes</strong>: how much the agent may do without asking. Keep pressing until
+    it says <strong>auto</strong> again. It cycles round.</p>
     <p>In <strong>auto mode</strong> the agent runs commands without asking you first. Type this and
     press <kbd>Return</kbd>:</p>
     <div class="code"><pre><code>In one sentence, what does this app do?</code></pre></div>
@@ -254,6 +256,9 @@ source .venv/bin/activate</code></pre></div>
     <div class="warn">
       <p><span class="callout-label">⚠️ Auto mode is for today.</span> It is on so the room keeps pace.
       On Monday, in a repo that matters, do not use it. Read each command before you approve it.</p>
+      <p>It stays your default until you remove it. The setting is <code>defaultMode</code>, in the
+      <code>.claude/settings.json</code> file in your home folder. Delete that line to go back to
+      being asked.</p>
     </div>
     <p>Now leave the agent:</p>
     <div class="code"><pre><code>/exit</code></pre></div>

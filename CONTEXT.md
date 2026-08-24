@@ -104,6 +104,19 @@ The CLI agent attendees run locally.
 Per Idira: an application or service that uses AI to perform tasks and may require access
 to MCP servers. Claude Code running on an attendee's laptop is an AI agent.
 
+### Permission mode
+
+How much Claude Code may do before it asks the person at the keyboard. The attendee cycles
+the modes with `Shift+Tab`, and the current one is named on the bottom line of the window.
+
+**Auto mode** is the one the workshop assumes: the agent runs commands without asking
+first. Every lesson from 08 onward depends on it, and setup makes it the attendee's
+default so nobody is stopped at an approval prompt. It is a workshop convenience, named as
+such on the pages: the material tells attendees not to use it in a repo that matters.
+
+Distinct from `bypassPermissions`, which is wider still and which the workshop never asks
+for.
+
 ### MCP server
 
 A service an AI agent connects to using the Model Context Protocol, exposing **tools** the

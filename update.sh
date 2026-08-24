@@ -155,6 +155,132 @@ ${DIM}   Guide updater · macOS / Linux · your virtual environment is not touch
    Project folder : $PROJECT
 BANNER
 
+# --------------------------------------------------------- claude auto mode
+#
+# The same offer check-prereqs.sh makes in step 5, repeated here because this is
+# the script the room runs on the morning. Anyone who did the prework before this
+# offer existed, or who installed Claude Code today, is only reached here.
+#
+# It runs before the git work on purpose. Every branch below this can exit early,
+# including the happy "you are on the current version" one, and auto mode needs
+# neither git nor the network.
+#
+# Why the user settings file and not the workshop folder: a defaultMode in a
+# project's .claude/settings.json is ignored, because a repo may not grant itself
+# auto mode. check-prereqs.sh carries the long version of that note.
+CLAUDE_SETTINGS="$HOME/.claude/settings.json"
+
+# claude_settings <python> <check|set>
+#   check -> prints auto | bypass | unset | other:<value> | unreadable
+#   set   -> prints set, and merges permissions.defaultMode=auto into the file,
+#            keeping every other key, after taking one backup
+claude_settings() {
+  "$1" - "$CLAUDE_SETTINGS" "$2" <<'PYEOF'
+import json, os, shutil, sys
+
+path, action = sys.argv[1], sys.argv[2]
+data = {}
+
+if os.path.exists(path):
+    try:
+        with open(path, encoding='utf-8') as handle:
+            text = handle.read().strip()
+        data = json.loads(text) if text else {}
+    except Exception:
+        print('unreadable')
+        sys.exit(0)
+
+if not isinstance(data, dict):
+    print('unreadable')
+    sys.exit(0)
+
+perms = data.get('permissions')
+if perms is not None and not isinstance(perms, dict):
+    print('unreadable')
+    sys.exit(0)
+
+current = perms.get('defaultMode') if perms else None
+
+if action == 'check':
+    if current == 'auto':
+        print('auto')
+    elif current == 'bypassPermissions':
+        print('bypass')
+    elif current is None:
+        print('unset')
+    else:
+        print('other:%s' % current)
+    sys.exit(0)
+
+folder = os.path.dirname(path)
+if folder:
+    os.makedirs(folder, exist_ok=True)
+if os.path.exists(path):
+    backup = path + '.sko27-backup'
+    if not os.path.exists(backup):
+        shutil.copyfile(path, backup)
+
+data.setdefault('permissions', {})['defaultMode'] = 'auto'
+
+temp = path + '.sko27-tmp'
+with open(temp, 'w', encoding='utf-8') as handle:
+    json.dump(data, handle, indent=2)
+    handle.write('\n')
+os.replace(temp, path)
+print('set')
+PYEOF
+}
+
+CLAUDE_OK=0
+for c in claude "$HOME/.local/bin/claude" "$HOME/bin/claude"; do
+  if have "$c" && "$c" --version >/dev/null 2>&1; then CLAUDE_OK=1; break; fi
+done
+
+PYBIN=''
+for cand in "$PROJECT/.venv/bin/python" python3 python; do
+  if have "$cand" && "$cand" -c 'import json' >/dev/null 2>&1; then PYBIN="$cand"; break; fi
+done
+
+if [ "$CLAUDE_OK" = 1 ] && [ -n "$PYBIN" ]; then
+  step "🤖" "Claude Code auto mode"
+  case "$(claude_settings "$PYBIN" check 2>/dev/null)" in
+    auto)
+      good "already the default. Nothing to do."
+      ;;
+    bypass)
+      warn "your settings ask for bypassPermissions, which is wider than auto mode"
+      dim "Left exactly as it is. The lessons run either way."
+      ;;
+    unreadable)
+      warn "$CLAUDE_SETTINGS is there, but this script cannot read it as JSON"
+      dim "Left alone. In the agent, press Shift+Tab until the line says auto."
+      ;;
+    unset|other:*)
+      info "The lessons assume auto mode, where the agent runs commands without"
+      info "asking you first. It can be set once, here."
+      warn "This applies to every folder on this laptop, not only the workshop one."
+      if ask "Set Claude Code to auto mode by default? (edits $CLAUDE_SETTINGS)"; then
+        if [ "$(claude_settings "$PYBIN" set 2>/dev/null)" = set ]; then
+          good "auto mode is now the default"
+          info "It stays that way after the workshop. To undo it, remove the"
+          info "\"defaultMode\" line from $CLAUDE_SETTINGS"
+          info "or copy $CLAUDE_SETTINGS.sko27-backup back over it."
+        else
+          bad "writing $CLAUDE_SETTINGS failed"
+          dim "In the agent, press Shift+Tab until the bottom line says auto."
+        fi
+      else
+        info "Left alone. In the agent, press Shift+Tab until the bottom line"
+        info "says auto. Every lesson from 08 onward needs it."
+      fi
+      ;;
+    *)
+      warn "could not read the permission mode out of $CLAUDE_SETTINGS"
+      dim "In the agent, press Shift+Tab until the bottom line says auto."
+      ;;
+  esac
+fi
+
 # ------------------------------------------------------------------- 1 · git
 
 step "1️⃣ " "Can we check for updates?"
