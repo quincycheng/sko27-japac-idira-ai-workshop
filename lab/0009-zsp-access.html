@@ -313,6 +313,16 @@ claude</code></pre></div>
     </div>
     <p>Use the agent's version, with the real account and role in it, not this one. Nothing prints. That
     is success.</p>
+    <div class="os os-win">
+      <div class="warn">
+        <p><span class="callout-label">Did the agent's command start with <code>eval</code>?</span>
+        That is the macOS form and PowerShell cannot run it. You get
+        <code>The term 'eval' is not recognized</code>. Use the command on this page instead, and
+        copy the account number and the role from the agent's version into it. Do not switch to
+        Git Bash to run the agent's one: your credentials would land in that window, and step 7
+        reads them from this one.</p>
+      </div>
+    </div>
     <p>This replaces the credentials from Lesson 07 with your elevated ones. The agent will not run
     in this role, and step 8 puts it back.</p>
   </div>

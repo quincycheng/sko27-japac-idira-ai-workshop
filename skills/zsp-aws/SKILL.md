@@ -49,6 +49,14 @@ land in your context and in the session transcript. So **you do not run it.** Fi
 values you found in Step 2, print the command, and tell the user to run it in their own
 terminal.
 
+**Print one form, and choose it by the shell the user types in.** That is not the shell you run
+commands in. On Windows they are two different shells: your Bash tool is Git Bash, and the user
+is in PowerShell. Print the form for their shell, and do not tell them to open a different one.
+Environment variables exist only in the window that set them, so credentials elevated in Git
+Bash are invisible to the PowerShell where they run their application.
+
+If you cannot tell which shell they use, ask. One question costs less than the wrong command.
+
 macOS and Linux:
 
 ```
@@ -58,10 +66,17 @@ eval "$(idsec exec sca cloud-access elevate --csp aws --workspace-id <aws-accoun
 PowerShell:
 
 ```
-idsec exec sca cloud-access elevate --csp aws --workspace-id <aws-account-id> --roleIds <role-arn> --raw | jq -r '.response.results[0].accessCredentials | fromjson | "$env:AWS_ACCESS_KEY_ID=\"\(.aws_access_key)\"\n$env:AWS_SECRET_ACCESS_KEY=\"\(.aws_secret_access_key)\"\n$env:AWS_SESSION_TOKEN=\"\(.aws_session_token)\""' | Invoke-Expression
+idsec exec sca cloud-access elevate --csp aws --workspace-id <aws-account-id> --roleIds <role-arn> --raw | jq -r '.response.results[0].accessCredentials | fromjson | [.aws_access_key, .aws_secret_access_key, .aws_session_token] | @tsv' | ForEach-Object { $ak,$sk,$token = $_ -split "`t"; $env:AWS_ACCESS_KEY_ID=$ak; $env:AWS_SECRET_ACCESS_KEY=$sk; $env:AWS_SESSION_TOKEN=$token }
 ```
 
-Three details in that pipeline, all of which break it if changed:
+**Never give the `eval` form to a PowerShell user.** It fails twice over, and the second error
+hides the first. PowerShell expands `$( )` inside double quotes before `jq` ever runs, which
+takes the quotes off the `jq` program and produces `jq: error: export/0 is not defined`. Then it
+reports `eval : The term 'eval' is not recognized`, because PowerShell has no `eval`. Do not
+repair this by swapping in `Invoke-Expression`: use the PowerShell form above, which never puts
+the credentials through a string that a shell has to parse.
+
+Three details in the pipeline, all of which break it if changed:
 
 - `accessCredentials` is a JSON string *inside* the JSON, which is why `fromjson` is there.
 - The field is `aws_access_key`, not `aws_access_key_id`. It maps to `AWS_ACCESS_KEY_ID`.
@@ -153,7 +168,9 @@ covered.
    and which role is now active. Never echo an access key, secret key or session token.
 3. **Credentials live in one shell.** If they are set as environment variables they exist
    only in that terminal session, and they expire. A tool that worked ten minutes ago and
-   now returns an authentication error usually just needs Step 1 and Step 3 again.
+   now returns an authentication error usually just needs Step 1 and Step 3 again. That one
+   shell is the user's, not yours: on Windows you are in Git Bash and they are in PowerShell,
+   so print the form that matches theirs and never ask them to change shells.
 4. **Never write the short-lived credentials into a file** to "make them last". That
    recreates the problem this skill exists to remove.
 5. **Never turn off certificate verification unasked.** See the TLS section above.
