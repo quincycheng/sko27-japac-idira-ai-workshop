@@ -57,6 +57,12 @@ jobs:
         # something broken to an audience meeting git for the first time.
         run: |
           git checkout -B main
+          # And give main an upstream.  Without it a hand-typed "git pull" in the
+          # unpacked folder answers "no tracking information" rather than pulling,
+          # which is the second thing a helper hits after the sign-in window.  The
+          # package ships remote-tracking refs, so this is enough on its own.
+          git config --local branch.main.remote origin
+          git config --local branch.main.merge refs/heads/main
           git gc --quiet --aggressive --prune=now
 
       - name: Fail if a PowerShell script is not plain ASCII with a BOM
@@ -146,6 +152,9 @@ jobs:
           fi
           grep -q 'url = https://github.com/${{ github.repository }}' "$cfg" \
             || { echo "::error::packaged .git/config has no origin pointing at this repo"; cat "$cfg"; exit 1; }
+          # And that main can pull, so nobody meets "no tracking information".
+          grep -q 'remote = origin' "$cfg" \
+            || { echo "::error::packaged main has no upstream"; cat "$cfg"; exit 1; }
 
       - name: Attach it to the release
         env:
