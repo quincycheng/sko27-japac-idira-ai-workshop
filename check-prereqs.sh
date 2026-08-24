@@ -300,6 +300,17 @@ check_import() {  # check_import <module> -> 0 if importable in the venv
   [ -x "$VPY" ] && "$VPY" -c "import $1" >/dev/null 2>&1
 }
 
+# The HTTPS transport, tested by building the real client instead of by importing a
+# package name. The name is a moving target: anthropic 0.x imports httpx, anthropic
+# 1.x imports httpx2, and each rejects the other's client. config.py is the thing
+# that knows which, so ask it. Lessons 01-03 reach Llama through boto3, so a broken
+# transport stays invisible until lesson 04 -- which is why it is tested here.
+check_transport() {  # -> 0 if config.py can build an HTTPS client
+  [ -x "$VPY" ] && [ -d "$PROJECT/ai-harness-app" ] || return 1
+  (cd "$PROJECT/ai-harness-app" && "$VPY" -c 'import config; config.insecure_http_client()') \
+    >/dev/null 2>&1
+}
+
 # Every library can be installed and Part 1 still not start. The lesson modules
 # are Python source too, and an interpreter that is too old for their syntax
 # parses them and then refuses to run them. That shows up as one error message
@@ -329,18 +340,15 @@ else
   # rich powers ui.py, which every lesson imports. Without checking it, a failed
   # rich install reports PASS here and then crashes on import in the room. Both
   # live in the same requirements file, so test them together and list it once.
-  # httpx is what config.py hands the SDK as a transport, and lesson 04 is the
-  # first call that needs it -- lessons 01-03 run on boto3. Test it here or a
-  # half-finished install reports PASS and then dies in front of the room.
-  check_import anthropic && check_import rich && check_import httpx || NEED+=("ai-harness-app/requirements.txt")
+  check_import anthropic && check_import rich && check_transport || NEED+=("ai-harness-app/requirements.txt")
 
   if [ ${#NEED[@]} -eq 0 ]; then
     good "boto3 is ready (the sandbox app)"
     good "anthropic is ready (the harness lessons in Part 1)"
-    good "httpx is ready (the HTTPS transport from lesson 04 on)"
+    good "the HTTPS transport builds (needed from lesson 04 on)"
     good "rich is ready (the terminal UI)"
     if part1_ok; then
-      pass "Libraries" "boto3 + anthropic + httpx + rich"
+      pass "Libraries" "boto3 + anthropic + rich + transport"
     fi
   else
     bad "missing libraries from: ${NEED[*]}"
@@ -351,8 +359,8 @@ else
         run "python -m pip install -r $req"
         "$VPY" -m pip install --quiet -r "$PROJECT/$req" || OK=0
       done
-      if [ "$OK" = 1 ] && check_import boto3 && check_import anthropic && check_import httpx && check_import rich; then
-        good "boto3, anthropic, httpx and rich all import cleanly"
+      if [ "$OK" = 1 ] && check_import boto3 && check_import anthropic && check_import rich && check_transport; then
+        good "boto3, anthropic and rich import cleanly, and the transport builds"
         if part1_ok; then
           fixed "Libraries" "installed"
         fi

@@ -567,6 +567,24 @@ function Test-Import ($Module) {
     return ($LASTEXITCODE -eq 0)
 }
 
+# The HTTPS transport, tested by building the real client instead of by importing a
+# package name. The name is a moving target: anthropic 0.x imports httpx, anthropic
+# 1.x imports httpx2, and each rejects the other's client. config.py is the thing
+# that knows which, so ask it. Lessons 01-03 reach Llama through boto3, so a broken
+# transport stays invisible until lesson 04 -- which is why it is tested here.
+function Test-Transport {  # -> $true if config.py can build an HTTPS client
+    if (-not (Test-Path $VPy)) { return $false }
+    $harness = Join-Path $Project 'ai-harness-app'
+    if (-not (Test-Path $harness)) { return $false }
+    Push-Location $harness
+    try {
+        & $VPy -c 'import config; config.insecure_http_client()' 2>$null
+        return ($LASTEXITCODE -eq 0)
+    } finally {
+        Pop-Location
+    }
+}
+
 # Every library can be installed and Part 1 still not start. The lesson modules
 # are Python source too, and an interpreter that is too old for their syntax
 # parses them and then refuses to run them. That shows up as one error message
@@ -609,20 +627,17 @@ if (-not (Test-Path $VPy)) {
     # rich powers ui.py, which every lesson imports. Without checking it, a failed
     # rich install reports PASS here and then crashes on import in the room. Both
     # live in the same requirements file, so test them together and list it once.
-    # httpx is what config.py hands the SDK as a transport, and lesson 04 is the
-    # first call that needs it -- lessons 01-03 run on boto3. Test it here or a
-    # half-finished install reports PASS and then dies in front of the room.
-    if (-not (Test-Import 'anthropic') -or -not (Test-Import 'rich') -or -not (Test-Import 'httpx')) {
+    if (-not (Test-Import 'anthropic') -or -not (Test-Import 'rich') -or -not (Test-Transport)) {
         $need += 'ai-harness-app\requirements.txt'
     }
 
     if ($need.Count -eq 0) {
         Write-Good 'boto3 is ready (the sandbox app)'
         Write-Good 'anthropic is ready (the harness lessons in Part 1)'
-        Write-Good 'httpx is ready (the HTTPS transport from lesson 04 on)'
+        Write-Good 'the HTTPS transport builds (needed from lesson 04 on)'
         Write-Good 'rich is ready (the terminal UI)'
         if (Test-Part1) {
-            Add-Pass 'Libraries' 'boto3 + anthropic + httpx + rich'
+            Add-Pass 'Libraries' 'boto3 + anthropic + rich + transport'
         }
     } else {
         Write-Bad ("missing libraries from: " + ($need -join ', '))
@@ -632,8 +647,8 @@ if (-not (Test-Path $VPy)) {
                 Write-Cmd "python -m pip install -r $req"
                 & $VPy -m pip install --quiet -r (Join-Path $Project $req)
             }
-            if ((Test-Import 'boto3') -and (Test-Import 'anthropic') -and (Test-Import 'httpx') -and (Test-Import 'rich')) {
-                Write-Good 'boto3, anthropic, httpx and rich all import cleanly'
+            if ((Test-Import 'boto3') -and (Test-Import 'anthropic') -and (Test-Import 'rich') -and (Test-Transport)) {
+                Write-Good 'boto3, anthropic and rich import cleanly, and the transport builds'
                 if (Test-Part1) {
                     Add-Fixed 'Libraries' 'installed'
                 }

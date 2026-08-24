@@ -5,11 +5,12 @@
 # the temporary AWS_* credentials already in your terminal window.
 anthropic[bedrock]>=0.69.0
 
-# config.py imports httpx directly, to hand the SDK a transport with certificate
-# verification off. The anthropic extra above already pulls it in, so this line is
-# belt and braces: it makes the dependency we USE a dependency we ASK FOR, and a
-# damaged environment fails here rather than at lesson 04.
-httpx>=0.25.0
+# NO httpx LINE HERE, ON PURPOSE. config.py builds an httpx client to hand the SDK
+# a transport with certificate verification off, so httpx looks like a dependency we
+# should name. It is not ours to name. anthropic 0.x imports `httpx`, anthropic 1.x
+# imports `httpx2` (httpx 2.x under a new package name), and each one rejects the
+# other's client with a TypeError. Whichever the SDK pulls in is the right one, and
+# config.py._transport_module() asks it rather than guessing.
 
 # The terminal UI for every lesson (ui.py). One pure-Python wheel, no build step.
 # Required, not optional: a fallback renderer would only ever run on the machine

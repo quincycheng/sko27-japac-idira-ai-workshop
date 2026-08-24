@@ -93,6 +93,79 @@ def _hush_tls_warnings() -> None:
         pass
 
 
+def _is_httpx(module) -> bool:
+    """True for httpx and httpx2, false for httpx_aiohttp and anything else.
+
+    Matches the base name plus an optional version number, so httpx3 needs no edit
+    here. `httpx_aiohttp` is an optional anthropic dependency and not a transport
+    we can build a Client from, which is the case this has to exclude.
+    """
+    root = getattr(module, "__name__", "").split(".")[0]
+    if not root.startswith("httpx"):
+        return False
+    suffix = root[len("httpx"):]
+    return suffix == "" or suffix.isdigit()
+
+
+def _transport_module():
+    """The httpx the anthropic SDK imported, which is not always called `httpx`.
+
+    We do not get to choose this one. The SDK type-checks `http_client=` with a
+    strict isinstance against whichever httpx IT imported, so handing it a client
+    built from the other one fails before a single request is made:
+
+        TypeError: Expected an instance of `httpx2.Client` but got `httpx.Client`
+
+    And the name changed under us. httpx 2.x ships on PyPI as `httpx2`, a separate
+    importable package, and anthropic 1.0.0 depends on that instead of `httpx`. So
+    the two installs in the room right now look like this:
+
+        anthropic 0.x   imports httpx    and rejects an httpx2 client
+        anthropic 1.x   imports httpx2   and rejects an httpx client
+
+    Asking the SDK which one it loaded is the only version-proof answer, and this
+    is worth reading twice: pinning our own transport was the bug. A dependency
+    shared with a library is not ours to pick.
+
+    Lessons 01-03 never reach this function -- the legacy tier talks to Llama
+    through boto3 -- so lesson 04 is where a mismatch surfaces.
+    """
+    import importlib
+    import sys
+    import types
+
+    try:
+        # Importing anthropic loads its transport as a side effect, under whatever
+        # name that version uses, and hangs it on _base_client as an attribute.
+        from anthropic import _base_client
+
+        for value in vars(_base_client).values():
+            if isinstance(value, types.ModuleType) and _is_httpx(value):
+                return value
+    except ImportError:
+        pass
+
+    # No anthropic, or a version that stopped exposing it: take whatever is loaded,
+    # then whatever is installed. Newest name first, so a future httpx3 needs one
+    # word here rather than a debugging session.
+    for name in ("httpx3", "httpx2", "httpx"):
+        if name in sys.modules:
+            return sys.modules[name]
+    for name in ("httpx3", "httpx2", "httpx"):
+        try:
+            return importlib.import_module(name)
+        except ImportError:
+            continue
+
+    raise SystemExit(
+        "No httpx package is installed, so this app cannot open an HTTPS "
+        "connection.\n"
+        "It normally arrives with the anthropic SDK. Check your prompt starts with\n"
+        "(.venv), then run:\n"
+        "    python -m pip install -r requirements.txt"
+    )
+
+
 def insecure_http_client(timeout=600.0):
     """An httpx client with verification off, for every SDK that accepts one.
 
@@ -100,20 +173,10 @@ def insecure_http_client(timeout=600.0):
     google-genai indirectly. Returning the client from here rather than building
     one per provider is what keeps `_VERIFY_TLS` a single fact.
 
-    httpx arrives with the anthropic SDK, so a machine that has one and not the
-    other has a half-finished install. Lessons 01-03 never notice, because the
-    legacy tier goes through boto3 -- lesson 04 is the first call that needs it.
-    Hence the message: the fix is to install the requirements again, in the venv.
+    Which httpx it is comes from `_transport_module()`, not from us. Read that
+    docstring before changing this line.
     """
-    try:
-        import httpx
-    except ImportError:
-        raise SystemExit(
-            "httpx is missing, so this app cannot open an HTTPS connection.\n"
-            "It normally arrives with the anthropic SDK, so this environment has a\n"
-            "half-finished install. Check your prompt starts with (.venv), then run:\n"
-            "    python -m pip install -r requirements.txt"
-        ) from None
+    httpx = _transport_module()
 
     _hush_tls_warnings()
     return httpx.Client(verify=_VERIFY_TLS, timeout=timeout, follow_redirects=True)

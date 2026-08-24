@@ -74,7 +74,7 @@ rather than diagnosing from scratch.
 ### 2 · No `(.venv)` in the prompt 🥈
 
 **Tell:** `No module named boto3`, or `ModuleNotFoundError: boto3`, from any `python` command —
-or, in Part 1, `No module named anthropic`, `No module named httpx` or `No module named rich`.
+or, in Part 1, `No module named anthropic` or `No module named rich`.
 
 Look at their prompt before you look at anything else. If it does not start with `(.venv)`,
 that is the whole problem. The virtual environment is **per terminal window**, exactly like the
@@ -93,7 +93,7 @@ cd $HOME\Downloads\sko27-japac-idira-ai-workshop; .\.venv\Scripts\Activate.ps1
 Then `cd` back into the lesson's folder. Prompt shows `(.venv)`, the imports work.
 
 ⚠️ **Part 1 needs a different requirements file from Part 2.** `boto3` is Part 2's;
-`anthropic`, `httpx` and `rich` are Part 1's. Someone whose venv was built before Part 1 existed — or who
+`anthropic` and `rich` are Part 1's. Someone whose venv was built before Part 1 existed — or who
 installed one file by hand — will have one and not the other. One command fixes it either way:
 
 ```
@@ -264,7 +264,7 @@ Everything else, by lesson:
 | 05 | `--remote` cannot reach the playground server | Not an attendee step any more, so they should not be running it. If they are: very likely the venue proxy. Drop the flag and use the local server. |
 | 05 | `/remember` seems to do nothing | It appends to `ai-harness-app/memory.md`. Have them open the file, or `/context`. |
 | any | `No module named anthropic` / `rich` | Top four #2 — and note it is Part 1's requirements file, not Part 2's. |
-| 04 | `httpx is missing` panel, after lessons 01-03 worked | Lessons 01-03 talk to Llama through boto3; lesson 04 is the first call that uses the anthropic SDK, so `httpx` is the first import they have not already exercised. Same fix as top four #2: check `(.venv)`, then reinstall Part 1's requirements file. |
+| 04 | `TypeError: Expected an instance of httpx2.Client` or `No module named httpx`, after lessons 01-03 worked | Their workshop folder predates the fix. `git pull` in the workshop folder, no reinstall needed. Cause: `anthropic` 1.0.0 swapped its transport from `httpx` to `httpx2`, and `config.py` used to name `httpx` itself. Lessons 01-03 reach Llama through boto3, so lesson 04 is the first call that touches the SDK's transport at all. |
 
 ⚠️ **One thing to actually prevent:** attendees editing `ai-harness-app/` files and not putting
 them back. The lessons invite exactly that — change `MAX_ITERATIONS`, widen `_ALLOWED_COMMANDS`,
@@ -459,7 +459,7 @@ typing anything yourself:
 | --- | --- | --- |
 | `idsec: command not found` | Setup step 5 skipped, or `PATH` edited without a new terminal | Run the script. It downloads `idsec` and fixes `PATH`. Then **new terminal**. |
 | `claude: command not found` | Same shape: installed under `~/.local/bin`, not on `PATH` | Run the script, then **new terminal**. The script looks in that folder, so if it is already installed it prints the full path instead of offering to install it again. |
-| `No module named boto3` / `anthropic` / `httpx` / `rich` | No `.venv`, or libraries never installed | Run the script. It builds the venv and installs both requirements files. |
+| `No module named boto3` / `anthropic` / `rich` | No `.venv`, or libraries never installed | Run the script. It builds the venv and installs both requirements files. |
 | A CA bundle variable pointing at a file that is gone | Set by policy on a laptop that has moved networks | Harmless for this workshop now — nothing here reads it. Only chase it if something *else* on the laptop is failing; step 9 of the script names the variable and prints the `unset` line. |
 | No `.venv` folder at all | Setup step 3 skipped | Run the script. Do **not** `pip install --user`. |
 | `idsec configure` never run | Setup step 6 skipped | Their card has the tenant subdomain and username. Two minutes. |
