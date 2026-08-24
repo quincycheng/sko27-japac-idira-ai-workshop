@@ -79,8 +79,14 @@ if you are offered one.
    bash check-prereqs.sh
 
    # Windows PowerShell
+   Get-ChildItem -Recurse | Unblock-File
+   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
    .\check-prereqs.ps1
    ```
+
+   Windows needs those first two lines because the folder came out of a downloaded zip. The first
+   clears the downloaded-file mark, so Windows stops asking you to approve each script. The second
+   allows scripts in that one window. Neither needs admin rights.
 
    It checks everything, offers to fix what it can, and finishes by telling you exactly what is
    left. Most people are done at this point. It touches nothing outside your home folder and this
@@ -89,7 +95,20 @@ if you are offered one.
    into `lab`, and **double-click `0000-setup.html`**. Pick macOS or Windows at the top and the
    whole page adjusts to your machine. It walks through the same nine steps by hand.
 
-4. **Arrange your screen, and leave it that way.** 🪟 Put the **lab guide on one half** of your screen
+4. **On the day, before we start, run one more line.** The guide gets small fixes during the week, so
+   this brings your copy up to date. It takes a few seconds and leaves your Python environment alone.
+
+   ```
+   # macOS
+   bash update.sh
+
+   # Windows PowerShell
+   .\update.ps1
+   ```
+
+   Nothing to do now. We will ask the room to run it at the start of each half.
+
+5. **Arrange your screen, and leave it that way.** 🪟 Put the **lab guide on one half** of your screen
    and a **terminal on the other**, side by side. Every instruction on the day is "read this, then type
    that", and you do not want to be flipping between two full-screen windows to follow it.
 
@@ -146,7 +165,8 @@ See you on `<date>`. Bring a charger. 🔋
 ## Checklist for the sender
 
 - [ ] The workshop folder is distributed as a **git repository** (clone URL, or a zip that still
-      contains `.git/`) — Lesson 08 uses `/security-review`, which needs version control
+      contains `.git/`) — Lesson 08 uses `/security-review`, which needs version control, and
+      `update.sh` cannot update a folder with no history in it
 - [ ] `docs/` is **not** in what attendees receive
 - [ ] Share links or clone URL tested from a device that has never opened them
 - [ ] `idsec` mirrors are on a share that needs **no login**

@@ -61,12 +61,19 @@ bash check-prereqs.sh</code></pre></div>
       <p>Press the <strong>Windows key</strong>, type <strong>PowerShell</strong>, press
       <kbd>Enter</kbd>, <em>not</em> Command Prompt. Then:</p>
       <div class="code"><pre><code>cd $HOME\Downloads\sko27-japac-idira-ai-workshop
+Get-ChildItem -Recurse | Unblock-File
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\check-prereqs.ps1</code></pre></div>
       <div class="note">
-        <p><span class="callout-label">🛑 About that middle line.</span> Managed Windows laptops block
-        scripts by default. That command allows them <strong>in this window only</strong> and needs no
-        admin rights. Close the window and the setting is gone.</p>
+        <p><span class="callout-label">🛑 About the two middle lines.</span> Windows marks every file
+        that came out of a downloaded zip as untrusted. <code>Unblock-File</code> clears that mark on
+        this folder, so you are not asked to approve each script. <code>Set-ExecutionPolicy</code>
+        allows scripts <strong>in this window only</strong>. Neither one needs admin rights.</p>
+      </div>
+      <div class="note">
+        <p><span class="callout-label">🛑 Asked to approve the script anyway?</span> You skipped the
+        <code>Unblock-File</code> line. Answer <kbd>R</kbd> to run it once, or run that line and start
+        again.</p>
       </div>
     </div>
   </li>
@@ -151,6 +158,24 @@ see what you are agreeing to before you agree to it.</p>
       carries that history with it, so there is nothing for you to do. This is the other reason to
       take that file rather than “Source code (zip)”, which leaves the history behind.</p>
     </div>
+    <div class="warn">
+      <p><span class="callout-label">🧰 Did the setup script say git is not installed?</span>
+      Nothing in Part 1 needs git. Two later things do. The update script cannot run without it.
+      Lesson 08 reads this folder's history.</p>
+      <div class="os os-mac">
+        <p>On a Mac, git arrives with the command line tools. Run this:</p>
+        <div class="code"><pre><code>xcode-select --install</code></pre></div>
+        <p>Accept the dialog it opens, then wait for it to finish.</p>
+      </div>
+      <div class="os os-win">
+        <p>On Windows, get the installer from
+        <a href="https://git-scm.com/download/win">git-scm.com/download/win</a>. Take every
+        default. It installs for you only, so it needs no admin rights.</p>
+      </div>
+      <p>Then open a new terminal window and check it:</p>
+      <div class="code"><pre><code>git --version</code></pre></div>
+      <p>It prints a version number, such as <code>git version 2.50.1</code>.</p>
+    </div>
     <div class="note">
       <p>If you are already reading this page <em>from</em> that folder, step 1 is done. These pages
       are just files: no web server needed, and everything except the recording above works with no
@@ -200,10 +225,34 @@ see what you are agreeing to before you agree to it.</p>
       <code>python</code> works.</p>
     </div>
 
-    <div class="warn">
-      <p><span class="callout-label">🆘 No Python at all?</span> Ask in <code>#cybr-japac-ts-all</code>. Do not
-      try to install it yourself, because on a managed laptop that is exactly the step that asks for
-      admin rights. We will sort it out with you before the day.</p>
+    <div class="os os-mac">
+      <div class="warn">
+        <p><span class="callout-label">🆘 No Python at all?</span> Ask in <code>#cybr-japac-ts-all</code>. Do not
+        try to install it yourself, because on a managed laptop that is exactly the step that asks for
+        admin rights. We will sort it out with you before the day.</p>
+      </div>
+    </div>
+
+    <div class="os os-win">
+      <div class="warn">
+        <p><span class="callout-label">🆘 No Python at all?</span> Install it yourself from the
+        official page. It does not need admin rights.</p>
+        <p><a href="https://www.python.org/downloads/windows/">https://www.python.org/downloads/windows/</a></p>
+        <p>Take the latest <strong>Windows installer (64-bit)</strong>. Two choices in the installer
+        matter:</p>
+        <ul>
+          <li>Tick <strong>Add python.exe to PATH</strong> on the first screen. Miss it and no
+          terminal can find Python.</li>
+          <li>Leave <strong>Install for all users</strong> unticked. That one asks for admin rights.</li>
+        </ul>
+        <p>Then close PowerShell and open a new window. A new window is the only way it picks up the
+        changed <code>PATH</code>. Check it:</p>
+        <div class="code"><pre><code>python --version</code></pre></div>
+        <p>It prints <code>Python 3.13.7</code> or another 3.9 or newer number.</p>
+        <p>Did the installer refuse to run, or name a policy or an administrator? That is endpoint
+        application control, not a setup problem. You cannot fix it from your seat. Ask in
+        <code>#cybr-japac-ts-all</code> today.</p>
+      </div>
     </div>
   </div>
 </div>

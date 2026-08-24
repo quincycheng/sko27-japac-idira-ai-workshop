@@ -37,6 +37,20 @@ The break is the full hour from 2:00 to 3:00pm, and the boundary is deliberately
 
 Announce which shape you are in *before* the break, not after.
 
+### Versions, and the one rule for the owner
+
+Attendees run `update.sh` / `update.ps1` twice: at the top of slot 1 (Module 0) and again before
+Lesson 07 (Module 2). Between those two moments the room is on one version, which is what makes "what
+does your screen say" a question a helper can act on.
+
+🚫 **Do not push to `main` while a slot is running.** A push mid-slot puts the room on two versions with
+no announcement, and the version an attendee holds is the one their `.py` files came from. Push during
+the break, then call the Module 2 update. If you have to fix something mid-slot, tell both trainers and
+have them announce the update to the whole room at once.
+
+The updater reports a version like `0.4`, or `0.4-3-g1a2b3c4` for a copy taken after that tag. Tag
+`main` whenever you push during the week, so the number an attendee reads back to you is short.
+
 **Audience:** Idira **Domain Consultants**. They are not just learning to use an agent; they will be
 asked to demo this to customers. That changes the emphasis in four places: Part 1 (they have to be able
 to *explain* an agent, not only drive one), Lesson 06 (the governance questions they will reuse in
@@ -88,8 +102,23 @@ anything here, you are getting sixty people pointed at the same file.
 Close with the one instruction that matters: **open `lab/index.html` by double-clicking it.** Put that
 on a slide and leave it up.
 
-Four things to say and then stop:
+Five things to say and then stop:
 
+- **Everyone run the updater now.** The guide moves during the week, and this is the only moment the
+  whole room lands on the same version. Put it on the slide next to the `lab/index.html` instruction:
+
+  ```
+  # macOS                          # Windows PowerShell
+  bash update.sh                   .\update.ps1
+  ```
+
+  Say what it prints, so nobody reads a normal result as a problem:
+
+  > It says either "you are on the current version" or how many changes you are behind. If it offers,
+  > say yes. If it prints a web address instead, use that address for the guide and tell a helper.
+
+  Do not wait for the room. It is a few seconds for most people, and the ones it fails for are a
+  helper's job, not a reason to hold sixty people.
 - **Arrange your screen now: lab guide on one half, terminal on the other.** The setup page told them to
   do this, so it is a ten-second reminder rather than an exercise — but do it, because the alternative
   is sixty people alt-tabbing for three hours. The instruction is at the top of `lab/index.html` and it
@@ -269,6 +298,14 @@ Close Part 1:
 Attendees work through [Lesson 07](../lab/0007-setup.html). This used to be the highest-risk five
 minutes of the session. It is less risky now, because Part 1 already required the credentials and the
 virtual environment, so most of the breakage has surfaced during slot 1.
+
+**Run the updater again, first, before Lesson 07.** Same command as Module 0. Anything fixed during the
+break reaches the room here, and this is the last chance to get sixty laptops onto one version:
+
+```
+# macOS                          # Windows PowerShell
+bash update.sh                   .\update.ps1
+```
 
 **All helpers are on the floor for this module.** Nobody sits down. If you are running this one *before*
 the break — the preferred shape — helpers keep working through the break on whatever is still red.

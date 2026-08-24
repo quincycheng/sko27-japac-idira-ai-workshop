@@ -33,6 +33,19 @@ failure with completely different responses.
 4. **Never type anyone's password**, and never let a credential end up on the projector.
 5. **Pair people up.** Two attendees sharing one working laptop is a fine outcome. Falling
    behind alone is not.
+6. **If their page does not match yours, check the version before anything else.** The guide changes
+   during the week. A step you cannot find, a filename that is wrong, an output that does not match the
+   page: check this first, because debugging the wrong version wastes both of your two minutes.
+
+   ```
+   # macOS                          # Windows PowerShell
+   bash update.sh                   .\update.ps1
+   ```
+
+   It prints their version and whether it is the current one. If it offers to update, say yes. If it
+   prints a web address instead, git cannot update that folder — send them to the hosted guide at that
+   address and carry on. Their local files stay as they are, which is fine unless the change was to
+   lesson code.
 
 ---
 
@@ -257,6 +270,10 @@ folder answers it in five seconds.
 | `python: command not found` (mac) | Only `python3` exists on that machine | Use `python3` to create the venv. Once it is active, plain `python` works. No alias needed. |
 | `No module named boto3` | Virtual environment not active | Top-four #2. Check the prompt for `(.venv)` first. |
 | `Activate.ps1 cannot be loaded` | PowerShell execution policy | `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`, then activate |
+| Windows `Security warning: run only scripts that you trust`, on every script | The folder came out of a downloaded zip, so every file in it still carries the downloaded-file mark | In the workshop folder: `Get-ChildItem -Recurse \| Unblock-File`. Answer `R` to get past the prompt in front of you |
+| `Unexpected token` from a `.ps1`, with `ðŸ` or `â` in the message | Windows PowerShell 5.1 reads a BOM-less `.ps1` using the machine's ANSI code page. Any non-ASCII character in the file becomes mojibake and it fails to parse. Not their fault and nothing they typed | `.\update.ps1` pulls a fixed copy. If git is not working, hand them a copy from your USB stick. 🚩 tell the trainer: it means a shipped script lost its byte order mark |
+| Setup script says `[CHECK] git not installed` | git is genuinely missing. It is **not** a blocker: everything in Part 1 and nearly all of Part 2 runs without it | Do not stop the lesson for it. Only `update.ps1`/`update.sh` and Lesson 08's `/security-review` need it. Windows: https://git-scm.com/download/win, all defaults, no admin. Mac: `xcode-select --install`. Then a new terminal window |
+| Setup script says `no version history in this folder` | They took GitHub's "Source code (zip)" instead of the workshop package, so `.git` never arrived | `.\update.ps1` / `bash update.sh` offers to repair it. Lesson 08 needs the history, so sort it before then |
 | Agent starts but asks them to log in | `CLAUDE_CODE_USE_BEDROCK` is not set in *this* window | Cheat sheet §1(b) |
 | Claude Code: `self signed certificate in certificate chain` / `UNABLE_TO_VERIFY_LEAF_SIGNATURE` | The network inspects HTTPS. **Part 2 only** — Part 1 does not verify certificates, so this is the first time it bites. Node ignores `AWS_CA_BUNDLE`. | Corporate root CA path on the card → `NODE_EXTRA_CA_CERTS=/path/to/corp-root.pem` in that window. No path and the room is moving → `NODE_TLS_REJECT_UNAUTHORIZED=0`, today only, and say out loud it is the same shortcut Part 1 takes and the same one you would refuse at a client. Several people → 🚩 tell the trainer, it is the venue network. |
 | `cd` fails | Unzipped somewhere other than Downloads | macOS: type `cd ` then drag the folder in. Windows: copy the path from Explorer's address bar. |
@@ -423,11 +440,13 @@ typing anything yourself:
 | Symptom | Almost always | What you say |
 | --- | --- | --- |
 | `idsec: command not found` | Setup step 5 skipped, or `PATH` edited without a new terminal | Run the script. It downloads `idsec` and fixes `PATH`. Then **new terminal**. |
-| `claude: command not found` | Same shape: installed under `~/.local/bin`, not on `PATH` | Run the script, then **new terminal**. |
+| `claude: command not found` | Same shape: installed under `~/.local/bin`, not on `PATH` | Run the script, then **new terminal**. The script looks in that folder, so if it is already installed it prints the full path instead of offering to install it again. |
 | `No module named boto3` / `anthropic` / `rich` | No `.venv`, or libraries never installed | Run the script. It builds the venv and installs both requirements files. |
 | A CA bundle variable pointing at a file that is gone | Set by policy on a laptop that has moved networks | Harmless for this workshop now — nothing here reads it. Only chase it if something *else* on the laptop is failing; step 9 of the script names the variable and prints the `unset` line. |
 | No `.venv` folder at all | Setup step 3 skipped | Run the script. Do **not** `pip install --user`. |
 | `idsec configure` never run | Setup step 6 skipped | Their card has the tenant subdomain and username. Two minutes. |
+| The page in front of them does not match yours | Their copy is behind. They missed the update the trainer called | Run `update.sh` / `update.ps1`, say yes when it offers. Then reload the page in the browser. |
+| `update.sh` prints a web address instead of updating | No `.git` in their folder: they downloaded GitHub's "Source code (zip)" instead of the workshop package | Send them to that address for the guide. Note it down: Lesson 08's `/security-review` needs the history too, and the script offers to repair it. |
 
 ⚠️ **The new-terminal cost.** Any `PATH` fix needs a fresh window, and a fresh window has no AWS
 credentials in it. Tell them that in the same breath, or they will fix `idsec` and immediately break

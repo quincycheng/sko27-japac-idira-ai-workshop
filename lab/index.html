@@ -35,7 +35,7 @@
 
 <h2>Before you start</h2>
 
-<p class="section-intro">Three things, in this order.</p>
+<p class="section-intro">Four things, in this order.</p>
 
 <div class="step">
   <div class="step-head"><div class="step-num">1</div><p class="step-title">Do the setup, before the day</p></div>
@@ -100,6 +100,27 @@ bash check-prereqs.sh</code></pre></div>
     </div>
     <p>Part 1 prints a gauge that wants about 80 columns. If it comes out wrapped, widen the terminal or
     shrink its font.</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-head"><div class="step-num">4</div><p class="step-title">Update your copy, on the day</p></div>
+  <div class="step-body">
+    <p>This guide changes after you download it. One command says whether your copy is the current one,
+    and updates it if not. Your virtual environment is not touched.</p>
+    <div class="os os-mac">
+      <div class="code"><pre><code>cd ~/Downloads/sko27-japac-idira-ai-workshop
+bash update.sh</code></pre></div>
+    </div>
+    <div class="os os-win">
+      <div class="code"><pre><code>cd $HOME\Downloads\sko27-japac-idira-ai-workshop
+.\update.ps1</code></pre></div>
+    </div>
+    <p>It prints either <code>you are on the current version</code> or how many changes you are behind.</p>
+    <div class="note">
+      <p><span class="callout-label">📣 Both halves.</span> Your trainer asks the room to run this at the
+      start of each half. Run it then, not in the middle of a lesson.</p>
+    </div>
   </div>
 </div>
 

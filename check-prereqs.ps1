@@ -1,4 +1,4 @@
-<#
+﻿<#
     SKO27 TechSummit - AI Workshop for Idira DC
     Setup checker for Windows PowerShell.  (macOS/Linux: use check-prereqs.sh)
 
@@ -14,6 +14,34 @@
     system"), allow it for THIS WINDOW ONLY -- no admin rights needed:
 
         Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
+    If Windows asks you to approve this script every time ("Security warning:
+    run only scripts that you trust"), the folder came out of a downloaded zip
+    and every file in it is still marked untrusted.  Clear the mark once:
+
+        Get-ChildItem -Recurse | Unblock-File
+
+    This file is deliberately plain ASCII, and saved with a UTF-8 byte order
+    mark.  Windows PowerShell 5.1 reads a .ps1 with no BOM using the machine's
+    ANSI code page, not UTF-8, so a single non-ASCII character in here becomes
+    mojibake and the script fails to parse before line 1 ever runs.  Keep both
+    properties: no emoji, no em dashes, no box-drawing characters.
+
+    Two rules about quoting, for the same reason.  Windows PowerShell 5.1 hands
+    an argument containing spaces to a native program by wrapping it in double
+    quotes, and it does NOT escape any double quote already inside it.  So:
+
+      1. Never put a double quote inside an argument to python, idsec or jq.
+         Use Python's single quotes instead.  A snippet like
+             -c 'print("hi")'
+         reaches python as print(hi), which is a SyntaxError and an exit code of
+         1.  Nothing prints, so it reads as "that tool is missing" rather than
+         as a bug in this script.
+      2. Never put a newline inside one either.  Write the snippet on one line,
+         or put it in a temp file the way the TLS probe in step 9 does.
+
+    PowerShell 7 fixed both.  Windows PowerShell 5.1 is what the room has, so
+    test any change to a -c argument there, not only in pwsh.
 #>
 
 [CmdletBinding()]
@@ -23,6 +51,15 @@ param(
 )
 
 $ErrorActionPreference = 'Continue'
+
+# Set-StrictMode is inherited from whatever the attendee's PowerShell profile did,
+# and a profile that turns it on turns a harmless read of a missing property into
+# an error that stops this script dead.  That already happened once, in step 7.
+# This is a diagnostic run on sixty laptops we cannot inspect, so it asks for one
+# known mode rather than trusting sixty unknown ones.  Scoped to this script: it
+# does not leak back into the window it was run from.
+Set-StrictMode -Off
+
 $PSDefaultParameterValues['*:Encoding'] = 'utf8'
 try { [Console]::OutputEncoding = [Text.Encoding]::UTF8 } catch { }
 
@@ -36,20 +73,20 @@ $BinDir  = Join-Path $HOME 'bin'
 $Summary = [System.Collections.Generic.List[object]]::new()
 $Todo    = [System.Collections.Generic.List[string]]::new()
 
-function Add-Pass  ($What, $Detail) { $Summary.Add([pscustomobject]@{ Icon='✅'; What=$What; Detail=$Detail }) }
-function Add-Fixed ($What, $Detail) { $Summary.Add([pscustomobject]@{ Icon='🛠️ '; What=$What; Detail=$Detail }) }
-function Add-Manual($What, $Detail) { $Summary.Add([pscustomobject]@{ Icon='👀'; What=$What; Detail=$Detail }) }
+function Add-Pass  ($What, $Detail) { $Summary.Add([pscustomobject]@{ Icon='[ OK ]'; What=$What; Detail=$Detail }) }
+function Add-Fixed ($What, $Detail) { $Summary.Add([pscustomobject]@{ Icon='[FIXED]'; What=$What; Detail=$Detail }) }
+function Add-Manual($What, $Detail) { $Summary.Add([pscustomobject]@{ Icon='[CHECK]'; What=$What; Detail=$Detail }) }
 function Add-Fail  ($What, $Detail, $Next) {
-    $Summary.Add([pscustomobject]@{ Icon='❌'; What=$What; Detail=$Detail })
+    $Summary.Add([pscustomobject]@{ Icon='[FAIL]'; What=$What; Detail=$Detail })
     $Script:Todo.Add($Next)
 }
 
 function Write-Step ($Num, $Text) { Write-Host ''; Write-Host "$Num $Text" -ForegroundColor White }
 function Write-Info ($Text) { Write-Host "   $Text" }
 function Write-Dim  ($Text) { Write-Host "   $Text" -ForegroundColor DarkGray }
-function Write-Good ($Text) { Write-Host "   ✅ $Text" -ForegroundColor Green }
-function Write-Bad  ($Text) { Write-Host "   ❌ $Text" -ForegroundColor Red }
-function Write-Warn ($Text) { Write-Host "   ⚠️  $Text" -ForegroundColor Yellow }
+function Write-Good ($Text) { Write-Host "   [ OK ] $Text" -ForegroundColor Green }
+function Write-Bad  ($Text) { Write-Host "   [FAIL] $Text" -ForegroundColor Red }
+function Write-Warn ($Text) { Write-Host "   [WARN] $Text" -ForegroundColor Yellow }
 function Write-Cmd  ($Text) { Write-Host "   > $Text" -ForegroundColor Cyan }
 
 # Confirm-Action "question" -> $true for yes. Honours -Yes and -CheckOnly.
@@ -59,11 +96,98 @@ function Confirm-Action ($Question) {
         return $false
     }
     if ($Yes) {
-        Write-Host "   🤖 $Question -> yes (-Yes)" -ForegroundColor DarkGray
+        Write-Host "   [auto] $Question -> yes (-Yes)" -ForegroundColor DarkGray
         return $true
     }
-    $reply = Read-Host "   🤔 $Question [y/N]"
+    $reply = Read-Host "   $Question [y/N]"
     return ($reply -match '^(y|yes)$')
+}
+
+# The workshop repo is public, so every git call in this script is anonymous and
+# read-only.  A credential cannot make a fetch succeed that would otherwise fail.
+# Git for Windows disagrees by default.  Its credential manager opens a "Sign in
+# to GitHub" window on any 401, and git asks for a username and a password as two
+# separate questions, so one fetch produces two windows.  On a managed laptop a
+# 401 often comes from the proxy rather than from GitHub, so the attendee is being
+# asked to log in to fix something a login cannot fix.
+#   credential.helper=            an empty value resets the helper list: no window
+#   credential.interactive=false  the same instruction, for GCM 2.x
+#   core.askPass=                 and no askpass GUI either
+# With no helper left, git falls back to asking in the console, which would stop
+# this script dead waiting for an answer.  GIT_TERMINAL_PROMPT=0 makes it fail
+# fast instead, and a failed fetch is already handled: the version line just says
+# it could not reach GitHub.  Everything is per call.  Nothing is written to the
+# attendee's own git config.
+$GitAnon = @('-c', 'credential.helper=', '-c', 'credential.interactive=false', '-c', 'core.askPass=')
+
+function Invoke-GitAnon {
+    param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
+    # $env: here is the window the attendee is sitting in, so both are put back.
+    $oldPrompt  = $env:GIT_TERMINAL_PROMPT
+    $oldAskPass = $env:GIT_ASKPASS
+    $env:GIT_TERMINAL_PROMPT = '0'
+    $env:GIT_ASKPASS         = ''
+    try {
+        & git @GitAnon -C $Project @Arguments *> $null
+        return ($LASTEXITCODE -eq 0)
+    } finally {
+        $env:GIT_TERMINAL_PROMPT = $oldPrompt
+        $env:GIT_ASKPASS         = $oldAskPass
+    }
+}
+
+# Adds $Dir to the user PATH, and leaves the rest of that PATH exactly as it was.
+# $false means it was already there, so nothing was written.
+#
+# Defined up here with the other helpers rather than next to its first caller,
+# because a script runs top to bottom: a function called by step 5 but defined
+# inside step 6 does not exist yet at the moment step 5 needs it.
+#
+# The obvious version of this, [Environment]::GetEnvironmentVariable('Path','User')
+# followed by SetEnvironmentVariable, quietly damages a managed laptop: the getter
+# expands any %LOCALAPPDATA% style entries to their current values, and the setter
+# writes the result back as a plain string. Every variable in the user PATH is then
+# frozen to whatever it meant in this window. So the registry is read and written
+# directly here, with expansion turned off and the value kind preserved.
+function Add-UserPath ($Dir) {
+    # Opened inside the try, and $null first, so that a registry failure lands in
+    # the catch below instead of escaping.  The finally reads $key, and a variable
+    # that never got assigned is its own separate error.
+    $key = $null
+    try {
+        $key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Environment', $true)
+        $userPath = [string]$key.GetValue('Path', '', 'DoNotExpandEnvironmentNames')
+        # A PATH holding %VAR% must stay ExpandString, or the %VAR% becomes literal.
+        $kind = if ($userPath -match '%') { 'ExpandString' } else { 'String' }
+        if (($userPath -split ';' | Where-Object { $_ }) -contains $Dir) { return $false }
+        $joined = if ($userPath) { "$userPath;$Dir" } else { $Dir }
+        # 'User' scope, not 'Machine' -- this is why no admin prompt appears.
+        $key.SetValue('Path', $joined, $kind)
+    } catch {
+        # No registry for some reason. Fall back rather than leave PATH untouched.
+        $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
+        [Environment]::SetEnvironmentVariable('Path', "$userPath;$Dir".TrimStart(';'), 'User')
+    } finally {
+        if ($key) { $key.Close() }
+    }
+    $env:Path = "$env:Path;$Dir"
+    return $true
+}
+
+# Is $Dir already in the PATH that new windows will get?  This is the saved user
+# PATH, not $env:Path, so it answers "will a new window find this?" rather than
+# "does this window find it?"  Those two differ for the whole of the window that
+# ran an installer, which is the case this exists for.
+function Test-InUserPath ($Dir) {
+    $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
+    if (-not $userPath) { return $false }
+    # An entry may or may not carry a trailing slash, so both sides lose theirs
+    # before the comparison.  Without this, a PATH holding the folder with a
+    # trailing backslash reads as absent and a second copy gets appended.
+    # -contains is case-insensitive, which is what Windows wants.
+    $want = ([string]$Dir).TrimEnd('\', '/')
+    $have = @($userPath -split ';' | Where-Object { $_ } | ForEach-Object { $_.TrimEnd('\', '/') })
+    return ($have -contains $want)
 }
 
 function Have-Command ($Name) {
@@ -85,23 +209,29 @@ function Test-Runs ($Exe, [string[]]$Arguments) {
 # Printed when a program is on PATH but will not execute. Deliberately does not
 # suggest a workaround: routing around application control is the opposite of
 # what this workshop teaches.
-function Write-Blocked ($Name) {
-    Write-Bad "'$Name' is on your PATH but will not run"
+# $Where names the file when it was found somewhere other than the PATH, so the
+# first line does not claim a PATH the program is not actually on.
+function Write-Blocked ($Name, $Where) {
+    if ($Where) {
+        Write-Bad "'$Name' is at $Where but will not run"
+    } else {
+        Write-Bad "'$Name' is on your PATH but will not run"
+    }
     Write-Info 'That is endpoint application control, not a PATH problem. It decides'
     Write-Info 'which programs may run on a managed laptop. Please do not work around it.'
     Write-Info "Offered a 'Request for authorization' button? Use it. Otherwise ask in"
-    Write-Info 'the 💬 #cybr-japac-ts-all Slack channel TODAY.'
+    Write-Info 'the #cybr-japac-ts-all Slack channel TODAY.'
 }
 
 Write-Host ''
-Write-Host '🚀 SKO27 TechSummit - AI Workshop for Idira DC' -ForegroundColor White
-Write-Host '   Setup checker · Windows · nothing here needs admin rights' -ForegroundColor DarkGray
+Write-Host 'SKO27 TechSummit - AI Workshop for Idira DC' -ForegroundColor White
+Write-Host '   Setup checker | Windows | nothing here needs admin rights' -ForegroundColor DarkGray
 Write-Host ''
 Write-Host "   Project folder : $Project"
 
-# ------------------------------------------------------- 1 · workshop folder
+# ------------------------------------------------------- 1 - workshop folder
 
-Write-Step '1️⃣ ' 'The workshop folder'
+Write-Step '1.' 'The workshop folder'
 
 $missing = @('lab', 'sandbox-app', 'ai-harness-app', 'skills') |
     Where-Object { -not (Test-Path (Join-Path $Project $_)) }
@@ -111,22 +241,88 @@ if ($missing.Count -eq 0) {
     Add-Pass 'Workshop folder' 'complete'
 } else {
     Write-Bad ("missing: " + ($missing -join ', '))
-    Write-Info 'Run this script from inside the workshop folder — the one linked in'
+    Write-Info 'Run this script from inside the workshop folder -- the one linked in'
     Write-Info '#cybr-japac-ts-all. Nothing else here will work without it.'
     Add-Fail 'Workshop folder' ("missing " + ($missing -join ', ')) `
              'Re-download the workshop folder and run this script from inside it'
 }
 
-# --------------------------------------------------------------- 2 · python
+# git reports and never gates.  Every lesson in Part 1 and nearly all of Part 2
+# runs without it, so a missing git is a [CHECK] rather than a [FAIL].  Two things
+# do need it, and both have a lead time: update.ps1 cannot run at all without it,
+# and Lesson 08's /security-review reads this folder's history.  Before this
+# check existed git was used here silently, so an attendee with no git got no
+# version line, no summary row and no explanation of either.
+$HasGit = $false
+if (-not (Have-Command 'git')) {
+    Write-Warn 'git is not installed'
+    Write-Info 'Nothing in Part 1 needs it. Two later things do: .\update.ps1, which'
+    Write-Info "the trainer asks the room to run on the day, and Lesson 08, which"
+    Write-Info 'reads this folder history. Install it from:'
+    Write-Info '   https://git-scm.com/download/win'
+    Write-Info 'Take every default. It installs for you only and needs no admin rights.'
+    Write-Info 'Then open a NEW PowerShell window and run this script again.'
+    Add-Manual 'git' 'not installed -- install from https://git-scm.com/download/win, then re-run this script'
+} elseif (-not (Test-Runs 'git' @('--version'))) {
+    Write-Blocked 'git'
+    Add-Manual 'git' 'on PATH but will not run -- ask in #cybr-japac-ts-all TODAY'
+} else {
+    $HasGit = $true
+    $gitVer = (& git --version 2>$null | Select-Object -First 1)
+    Write-Good $(if ($gitVer) { $gitVer } else { 'git runs' })
+}
 
-Write-Step '2️⃣ ' 'Python 3.9 or newer 🐍'
+# Is the copy current?  The guide changes after people download it, so a version
+# that was right last week can be wrong today.  This only reports; update.ps1 is
+# what applies an update, and it is the trainer who calls for one on the day.
+# Anything unusual here is left to update.ps1 to explain rather than duplicated.
+if ($HasGit) {
+    & git -C $Project rev-parse --git-dir *> $null
+    if ($LASTEXITCODE -eq 0) {
+        $localVer = (& git -C $Project describe --tags --always 2>$null | Select-Object -First 1)
+        if (-not $localVer) { $localVer = 'unknown' }
+
+        if (Invoke-GitAnon 'fetch' '--tags' '--quiet' 'origin' '+refs/heads/main:refs/remotes/origin/main') {
+            $behind = [int]((& git -C $Project rev-list --count HEAD..origin/main 2>$null |
+                             Select-Object -First 1))
+            if ($behind -eq 0) {
+                Write-Good "version $localVer, which is the current one"
+                Add-Pass 'Workshop version' "$localVer, current"
+            } else {
+                Write-Warn "version $localVer -- $behind change(s) behind. One command fixes it:"
+                Write-Cmd '.\update.ps1'
+                Add-Manual 'Workshop version' "$behind behind -- run: .\update.ps1"
+            }
+        } else {
+            Write-Dim "version $localVer -- could not reach GitHub to check for a newer one"
+        }
+    } else {
+        # No .git here.  This is what a plain "Source code (zip)" download gives
+        # you, rather than the workshop package.  update.ps1 offers to repair it,
+        # so this only names the problem and points there.
+        Write-Warn 'this folder has no version history, so its version is unknown'
+        Write-Info 'Lesson 08 reads that history, and .\update.ps1 needs it to update you.'
+        Write-Info 'One command offers to repair it:'
+        Write-Cmd '.\update.ps1'
+        Add-Manual 'Workshop version' 'no history in this folder -- run: .\update.ps1'
+    }
+}
+
+# --------------------------------------------------------------- 2 - python
+
+Write-Step '2.' 'Python 3.9 or newer'
 
 $Py = $null
 foreach ($cand in @('python', 'py', 'python3')) {
     if (-not (Have-Command $cand)) { continue }
     # A bare `python` on Windows is often the Microsoft Store stub, which exits
     # non-zero and prints nothing useful. Checking the version filters it out.
-    $ver = & $cand -c 'import sys; print("%d.%d.%d" % sys.version_info[:3])' 2>$null
+    #
+    # No double quote anywhere in that -c argument, on purpose. See the note on
+    # quoting at the top of this file: a double quote here silently breaks the
+    # check on Windows PowerShell 5.1, and this line decides whether the whole
+    # script believes Python exists.
+    $ver = & $cand -c 'import platform; print(platform.python_version())' 2>$null
     if ($LASTEXITCODE -eq 0 -and $ver -match '^(\d+)\.(\d+)') {
         if ([int]$Matches[1] -gt 3 -or ([int]$Matches[1] -eq 3 -and [int]$Matches[2] -ge 9)) {
             $Py = $cand
@@ -145,19 +341,24 @@ if ($Py) {
     }
 } else {
     Write-Bad 'no Python 3.9+ found'
-    Write-Info 'Please do NOT install Python yourself — on a managed laptop that is'
-    Write-Info 'exactly the step that asks for admin rights. 💬 Ask in the'
-    Write-Info '#cybr-japac-ts-all Slack channel and we will sort it out before the day.'
-    Add-Fail 'Python' 'not found' 'Ask in #cybr-japac-ts-all about Python — do not install it yourself'
+    Write-Info 'Install it from the official page:'
+    Write-Info '   https://www.python.org/downloads/windows/'
+    Write-Info 'Take the latest "Windows installer (64-bit)". Two choices in it matter:'
+    Write-Info '  - tick "Add python.exe to PATH" on the first screen'
+    Write-Info '  - leave "Install for all users" unticked, because that one needs admin'
+    Write-Info 'Then open a NEW PowerShell window and run this script again.'
+    Write-Dim 'Stopped by your endpoint policy? That is not a setup problem and you'
+    Write-Dim 'cannot fix it from your seat. Ask in #cybr-japac-ts-all TODAY.'
+    Add-Fail 'Python' 'not found' 'Install Python from https://www.python.org/downloads/windows/ (tick "Add python.exe to PATH"), open a new window, then re-run this script'
 }
 
-# ------------------------------------------------- 3 · virtual environment
+# ------------------------------------------------- 3 - virtual environment
 
-Write-Step '3️⃣ ' 'A virtual environment in this folder'
+Write-Step '3.' 'A virtual environment in this folder'
 
 if (Test-Path $VPy) {
-    $v = & $VPy -c 'import sys; print("Python %d.%d.%d" % sys.version_info[:3])' 2>$null
-    Write-Good ".venv exists ($v)"
+    $v = & $VPy -c 'import platform; print(platform.python_version())' 2>$null
+    Write-Good ".venv exists (Python $v)"
     Add-Pass 'Virtual environment' '.venv ready'
 } elseif (-not $Py) {
     Write-Bad 'cannot create one without Python'
@@ -181,9 +382,9 @@ if (Test-Path $VPy) {
     }
 }
 
-# --------------------------------------------------------- 4 · dependencies
+# --------------------------------------------------------- 4 - dependencies
 
-Write-Step '4️⃣ ' 'The libraries the workshop needs 📦'
+Write-Step '4.' 'The libraries the workshop needs'
 
 function Test-Import ($Module) {
     if (-not (Test-Path $VPy)) { return $false }
@@ -196,8 +397,16 @@ function Test-Import ($Module) {
 # parses them and then refuses to run them. That shows up as one error message
 # on the first lesson, in the room. So import what the lessons import.
 # Library modules only: importing 01_bare_call.py would fire a real model call.
-function Test-Part1 {  # -> $true if Part 1 will start.  Records its own ❌ row if not.
-    Push-Location (Join-Path $Project 'ai-harness-app')
+function Test-Part1 {  # -> $true if Part 1 will start.  Records its own [FAIL] row if not.
+    # Guarded: a folder checked out without ai-harness-app would make Push-Location
+    # throw, and the Pop-Location in the finally would then unwind the wrong folder.
+    $harness = Join-Path $Project 'ai-harness-app'
+    if (-not (Test-Path $harness)) {
+        Write-Bad 'the ai-harness-app folder is missing, so Part 1 cannot be tested'
+        Add-Fail 'Libraries' 'ai-harness-app missing' 'Re-download the workshop folder and run this script from inside it'
+        return $false
+    }
+    Push-Location $harness
     try {
         $out = & $VPy -c 'import ui, tools, session, agent, harness' 2>&1
         $ok = ($LASTEXITCODE -eq 0)
@@ -217,7 +426,7 @@ function Test-Part1 {  # -> $true if Part 1 will start.  Records its own ❌ row
 }
 
 if (-not (Test-Path $VPy)) {
-    Write-Bad 'skipped — no virtual environment yet'
+    Write-Bad 'skipped -- no virtual environment yet'
     Add-Fail 'Libraries' 'blocked by .venv' 'Create the virtual environment, then re-run this script'
 } else {
     $need = @()
@@ -259,9 +468,56 @@ if (-not (Test-Path $VPy)) {
     }
 }
 
-# --------------------------------------------------------- 5 · claude code
+# --------------------------------------------------------- 5 - claude code
 
-Write-Step '5️⃣ ' 'Claude Code 🤖'
+Write-Step '5.' 'Claude Code'
+
+# The installer puts claude.exe in $HOME\.local\bin and adds that folder to the
+# user PATH.  A PATH change only reaches windows opened after it, so in the window
+# that ran the installer 'claude' is still not a command.  Checking the PATH alone
+# reads that as "not installed" and offers to install it again, which is a loop:
+# the installer succeeds every time and the check fails every time.  So the known
+# locations are looked at before giving up.
+function Find-ClaudeExe {
+    $candidates = @(
+        (Join-Path $HOME '.local\bin\claude.exe'),   # the official installer
+        (Join-Path $BinDir 'claude.exe')             # next to idsec, if put there by hand
+    )
+    # npm -g leaves a .cmd shim rather than an .exe.  $env:APPDATA is checked
+    # first because Join-Path throws on a null second argument.
+    if ($env:APPDATA) { $candidates += (Join-Path $env:APPDATA 'npm\claude.cmd') }
+    foreach ($c in $candidates) { if (Test-Path $c) { return $c } }
+    return $null
+}
+
+# Reports what happened to a claude found outside the PATH, and fixes the PATH
+# when that is what is missing.  Called after an install too, so a fresh install
+# gets the same accurate message.
+function Resolve-ClaudeOffPath ($Exe) {
+    $dir = Split-Path $Exe -Parent
+    if (Test-InUserPath $dir) {
+        # Nothing to change: a new window will find it. Saying "not installed"
+        # here, or offering to edit a PATH that is already correct, is the bug.
+        Write-Good "Claude Code is installed at $Exe"
+        Write-Info "$dir is already in your user PATH, so only this window is out of date."
+        Write-Info 'Open a NEW PowerShell window, then check it:'
+        Write-Cmd 'claude --version'
+        Add-Manual 'Claude Code' 'installed -- open a new PowerShell window'
+        return
+    }
+    Write-Warn "Claude Code is at $Exe but $dir is not on your PATH"
+    if (Confirm-Action "Add $dir to your user PATH?") {
+        Add-UserPath $dir | Out-Null
+        Write-Good "added $dir to your user PATH"
+        Write-Info 'Open a NEW PowerShell window, then check it:'
+        Write-Cmd 'claude --version'
+        Add-Fixed 'Claude Code' 'PATH fixed (new window needed)'
+    } else {
+        Add-Fail 'Claude Code' 'installed, not on PATH' "Add $dir to your user PATH"
+    }
+}
+
+$ClaudeExe = Find-ClaudeExe
 
 if ((Have-Command 'claude') -and (Test-Runs 'claude' @('--version'))) {
     $cv = (& claude --version 2>$null | Select-Object -First 1)
@@ -270,7 +526,15 @@ if ((Have-Command 'claude') -and (Test-Runs 'claude' @('--version'))) {
 } elseif (Have-Command 'claude') {
     Write-Blocked 'claude'
     Add-Fail 'Claude Code' 'found but will not run' `
-             'Get Claude Code allowed by your endpoint policy — ask in #cybr-japac-ts-all'
+             'Get Claude Code allowed by your endpoint policy -- ask in #cybr-japac-ts-all'
+} elseif ($ClaudeExe -and (Test-Runs $ClaudeExe @('--version'))) {
+    Resolve-ClaudeOffPath $ClaudeExe
+} elseif ($ClaudeExe) {
+    # The file is there and will not start, which is application control rather
+    # than a PATH problem. Installing it again cannot help.
+    Write-Blocked 'claude' $ClaudeExe
+    Add-Fail 'Claude Code' 'found but will not run' `
+             'Get Claude Code allowed by your endpoint policy -- ask in #cybr-japac-ts-all'
 } else {
     Write-Bad "the 'claude' command was not found"
     Write-Dim 'It installs into your home folder. No admin rights, no Node.js.'
@@ -278,8 +542,15 @@ if ((Have-Command 'claude') -and (Test-Runs 'claude' @('--version'))) {
         Write-Cmd 'irm https://claude.ai/install.ps1 | iex'
         try {
             Invoke-RestMethod https://claude.ai/install.ps1 | Invoke-Expression
-            Write-Good 'installed — open a NEW PowerShell window, then run: claude --version'
-            Add-Fixed 'Claude Code' 'installed (new window needed)'
+            # The installer edits the PATH, which this window will not see, so the
+            # file is looked for directly rather than trusted to be a command now.
+            $ClaudeExe = Find-ClaudeExe
+            if ($ClaudeExe) {
+                Resolve-ClaudeOffPath $ClaudeExe
+            } else {
+                Write-Good 'installed -- open a NEW PowerShell window, then run: claude --version'
+                Add-Fixed 'Claude Code' 'installed (new window needed)'
+            }
         } catch {
             Write-Bad "the installer failed: $($_.Exception.Message)"
             Add-Fail 'Claude Code' 'install failed' 'Try again on a network without a proxy, or ask in #cybr-japac-ts-all'
@@ -289,9 +560,9 @@ if ((Have-Command 'claude') -and (Test-Runs 'claude' @('--version'))) {
     }
 }
 
-# ---------------------------------------------------------- 6 · idsec and jq
+# ---------------------------------------------------------- 6 - idsec and jq
 
-Write-Step '6️⃣ ' 'The idsec CLI and jq ⌨️'
+Write-Step '6.' 'The idsec CLI and jq'
 
 function Get-IdsecUrl {
     # Newest release, the asset for 64-bit Windows.
@@ -307,15 +578,6 @@ function Get-IdsecUrl {
     return $null
 }
 
-function Add-UserPath ($Dir) {
-    $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
-    if ($userPath -split ';' -contains $Dir) { return $false }
-    # 'User' scope, not 'Machine' — this is why no admin prompt appears.
-    [Environment]::SetEnvironmentVariable('Path', "$userPath;$Dir", 'User')
-    $env:Path = "$env:Path;$Dir"
-    return $true
-}
-
 $idsecExe = Join-Path $BinDir 'idsec.exe'
 
 if ((Have-Command 'idsec') -and (Test-Runs 'idsec' @('version'))) {
@@ -325,26 +587,26 @@ if ((Have-Command 'idsec') -and (Test-Runs 'idsec' @('version'))) {
 } elseif (Have-Command 'idsec') {
     Write-Blocked 'idsec'
     Add-Fail 'idsec CLI' 'found but will not run' `
-             'Get idsec allowed by your endpoint policy — ask in #cybr-japac-ts-all'
+             'Get idsec allowed by your endpoint policy -- ask in #cybr-japac-ts-all'
 } elseif (Test-Path $idsecExe) {
     Write-Warn "idsec is at $idsecExe but not on your PATH in this window"
     if (Confirm-Action "Add $BinDir to your user PATH?") {
         Add-UserPath $BinDir | Out-Null
-        Write-Good 'added — open a new PowerShell window, then run: idsec version'
+        Write-Good 'added -- open a new PowerShell window, then run: idsec version'
         Add-Fixed 'idsec CLI' 'PATH fixed (new window needed)'
     } else {
         Add-Fail 'idsec CLI' 'not on PATH' "Add $BinDir to your user PATH"
     }
 } else {
     Write-Bad "the 'idsec' command was not found"
-    Write-Dim 'It is a single file — no installer, nothing registered with Windows.'
+    Write-Dim 'It is a single file -- no installer, nothing registered with Windows.'
     if (Confirm-Action "Download the latest idsec into $BinDir and set it up?") {
         $url = Get-IdsecUrl
         if (-not $url) {
             Write-Bad 'could not work out which release file to download'
-            Write-Info 'Do it by hand — the lab page walks you through it:'
-            Write-Info '🔗 https://github.com/cyberark/idsec-cli-golang/releases'
-            Add-Fail 'idsec CLI' 'auto-download failed' 'Install idsec by hand — see setup step 5 in the lab guide'
+            Write-Info 'Do it by hand -- the lab page walks you through it:'
+            Write-Info 'https://github.com/cyberark/idsec-cli-golang/releases'
+            Add-Fail 'idsec CLI' 'auto-download failed' 'Install idsec by hand -- see setup step 5 in the lab guide'
         } else {
             $tmp = Join-Path ([IO.Path]::GetTempPath()) ("idsec-" + [guid]::NewGuid().ToString('N'))
             New-Item -ItemType Directory -Force -Path $tmp, $BinDir | Out-Null
@@ -357,8 +619,8 @@ if ((Have-Command 'idsec') -and (Test-Runs 'idsec' @('version'))) {
                 } else {
                     & tar -xzf $file -C $tmp
                 }
-                # The archive names the binary after its platform — on Windows
-                # that is idsec-windows.exe — and ships a LICENSE.txt and a
+                # The archive names the binary after its platform -- on Windows
+                # that is idsec-windows.exe -- and ships a LICENSE.txt and a
                 # README.md beside it. Match the prefix rather than an exact
                 # name, so a release that renames again still installs. It
                 # becomes plain idsec.exe on the Copy-Item below.
@@ -372,22 +634,22 @@ if ((Have-Command 'idsec') -and (Test-Runs 'idsec' @('version'))) {
                     Write-Good "installed to $idsecExe"
                     if (Confirm-Action "Add $BinDir to your user PATH?") {
                         Add-UserPath $BinDir | Out-Null
-                        Write-Good 'added — open a new PowerShell window afterwards'
+                        Write-Good 'added -- open a new PowerShell window afterwards'
                     }
                     Add-Fixed 'idsec CLI' 'installed (new window needed)'
                 } else {
                     Write-Bad 'downloaded the archive, but found no idsec binary inside it'
-                    Add-Fail 'idsec CLI' 'unexpected archive' 'Install idsec by hand — see setup step 5 in the lab guide'
+                    Add-Fail 'idsec CLI' 'unexpected archive' 'Install idsec by hand -- see setup step 5 in the lab guide'
                 }
             } catch {
                 Write-Bad "the download failed: $($_.Exception.Message)"
-                Add-Fail 'idsec CLI' 'download failed' 'Install idsec by hand — see setup step 5 in the lab guide'
+                Add-Fail 'idsec CLI' 'download failed' 'Install idsec by hand -- see setup step 5 in the lab guide'
             } finally {
                 Remove-Item $tmp -Recurse -Force -ErrorAction SilentlyContinue
             }
         }
     } else {
-        Add-Fail 'idsec CLI' 'not installed' 'Install idsec — see setup step 5 in the lab guide'
+        Add-Fail 'idsec CLI' 'not installed' 'Install idsec -- see setup step 5 in the lab guide'
     }
 }
 
@@ -406,12 +668,12 @@ if ((Have-Command 'jq') -and (Test-Runs 'jq' @('--version'))) {
 } elseif (Have-Command 'jq') {
     Write-Blocked 'jq'
     Add-Fail 'jq' 'found but will not run' `
-             'Get jq allowed by your endpoint policy — ask in #cybr-japac-ts-all'
+             'Get jq allowed by your endpoint policy -- ask in #cybr-japac-ts-all'
 } elseif (Test-Path $jqExe) {
     Write-Warn "jq is at $jqExe but not on your PATH in this window"
     if (Confirm-Action "Add $BinDir to your user PATH?") {
         Add-UserPath $BinDir | Out-Null
-        Write-Good 'added — open a new PowerShell window, then run: jq --version'
+        Write-Good 'added -- open a new PowerShell window, then run: jq --version'
         Add-Fixed 'jq' 'PATH fixed (new window needed)'
     } else {
         Add-Fail 'jq' 'not on PATH' "Add $BinDir to your user PATH"
@@ -428,22 +690,22 @@ if ((Have-Command 'jq') -and (Test-Runs 'jq' @('--version'))) {
             Write-Good "installed to $jqExe"
             if (Confirm-Action "Add $BinDir to your user PATH?") {
                 Add-UserPath $BinDir | Out-Null
-                Write-Good 'added — open a new PowerShell window afterwards'
+                Write-Good 'added -- open a new PowerShell window afterwards'
             }
             Add-Fixed 'jq' 'installed (new window needed)'
         } catch {
             Remove-Item $jqExe -Force -ErrorAction SilentlyContinue
             Write-Bad "the download failed: $($_.Exception.Message)"
-            Add-Fail 'jq' 'download failed' 'Install jq by hand — see setup step 5 in the lab guide'
+            Add-Fail 'jq' 'download failed' 'Install jq by hand -- see setup step 5 in the lab guide'
         }
     } else {
-        Add-Fail 'jq' 'not installed' 'Install jq — see setup step 5 in the lab guide'
+        Add-Fail 'jq' 'not installed' 'Install jq -- see setup step 5 in the lab guide'
     }
 }
 
-# ------------------------------------------------------- 7 · idsec profile
+# ------------------------------------------------------- 7 - idsec profile
 
-Write-Step '7️⃣ ' 'An idsec profile, and a login that works 🔐'
+Write-Step '7.' 'An idsec profile, and a login that works'
 
 $Idsec = $null
 if ((Have-Command 'idsec') -and (Test-Runs 'idsec' @('version'))) {
@@ -516,7 +778,7 @@ function Invoke-IdsecLogin {
     Show-CybrWorldValues
     Write-Info ''
     Show-DefaultProfileAdvice
-    Write-Info 'Still failing? Ask in the 💬 #cybr-japac-ts-all Slack channel.'
+    Write-Info 'Still failing? Ask in the #cybr-japac-ts-all Slack channel.'
     Write-Info 'Do it this week, not on the day.'
     return $false
 }
@@ -525,15 +787,20 @@ function Invoke-IdsecLogin {
 # profile the lab commands will actually use?" The old version accepted any
 # profile, so an attendee with one named profile for another tenant was told
 # everything was fine and then watched the login fail for no stated reason.
-$Profiles = @()
+# The @() around the call is load-bearing, not decoration. A PowerShell function
+# that returns an empty array hands the caller $null, because an empty array
+# written to the output stream is nothing at all, and a one-element array arrives
+# as a bare string. So without the @() this line produced $null for the attendee
+# who had idsec working but no profiles yet, and $Profiles.Count below then died
+# with "The property 'Count' cannot be found on this object".
+$Profiles = @(Get-IdsecProfileNames)
 $HasDefaultProfile = $false
 if ($Idsec) {
-    $Profiles = Get-IdsecProfileNames
     $HasDefaultProfile = [bool]($Profiles -contains 'idsec')
 }
 
 if (-not $Idsec) {
-    Write-Bad 'skipped — idsec does not run in this window yet'
+    Write-Bad 'skipped -- idsec does not run in this window yet'
     Add-Fail 'idsec login' 'blocked by idsec' 'Finish step 6, open a new PowerShell window, then re-run this script'
 } elseif ($HasDefaultProfile) {
     Write-Good "the default profile, 'idsec', exists"
@@ -541,7 +808,7 @@ if (-not $Idsec) {
         if (Invoke-IdsecLogin) {
             Add-Pass 'idsec login' 'signed in to CYBRWorld'
         } else {
-            Add-Fail 'idsec login' 'login failed' 'Fix your idsec profile: idsec configure — then: idsec login'
+            Add-Fail 'idsec login' 'login failed' 'Fix your idsec profile: idsec configure -- then: idsec login'
         }
     } else {
         Add-Manual 'idsec login' 'run it by hand: idsec login'
@@ -562,14 +829,14 @@ if (-not $Idsec) {
             if (Invoke-IdsecLogin) {
                 Add-Fixed 'idsec login' 'CYBRWorld on the default profile, signed in'
             } else {
-                Add-Fail 'idsec login' 'configured, login failed' 'Fix the values: idsec configure — then: idsec login'
+                Add-Fail 'idsec login' 'configured, login failed' 'Fix the values: idsec configure -- then: idsec login'
             }
         } else {
             Write-Bad 'configure did not complete'
             Add-Fail 'idsec login' 'no default profile' 'Run: idsec configure (CYBRWorld, as the default profile)'
         }
     } else {
-        Add-Fail 'idsec login' 'no default profile' "Run: idsec configure — CYBRWorld must be the default profile, 'idsec'"
+        Add-Fail 'idsec login' 'no default profile' "Run: idsec configure -- CYBRWorld must be the default profile, 'idsec'"
     }
 } else {
     Write-Bad 'no idsec profile found'
@@ -583,20 +850,20 @@ if (-not $Idsec) {
             if (Invoke-IdsecLogin) {
                 Add-Fixed 'idsec login' 'configured and signed in'
             } else {
-                Add-Fail 'idsec login' 'configured, login failed' 'Fix the values: idsec configure — then: idsec login'
+                Add-Fail 'idsec login' 'configured, login failed' 'Fix the values: idsec configure -- then: idsec login'
             }
         } else {
             Write-Bad 'configure did not complete'
             Add-Fail 'idsec login' 'not configured' 'Run: idsec configure'
         }
     } else {
-        Add-Fail 'idsec login' 'not configured' 'Run: idsec configure (once — a second run overwrites it)'
+        Add-Fail 'idsec login' 'not configured' 'Run: idsec configure (once -- a second run overwrites it)'
     }
 }
 
-# ------------------------------------------------------------ 8 · AWS access
+# ------------------------------------------------------------ 8 - AWS access
 
-Write-Step '8️⃣ ' 'Short-lived AWS credentials from idsec ☁️'
+Write-Step '8.' 'Short-lived AWS credentials from idsec'
 
 $AwsWorkspace = '409556437035'
 $AwsRole      = 'arn:aws:iam::409556437035:role/CW-SCA-AdminAccess'
@@ -619,11 +886,17 @@ function Invoke-WithTimeout ($Exe, [string[]]$Arguments, [int]$Seconds) {
     $psi.RedirectStandardError  = $true
     $psi.UseShellExecute        = $false
     $proc   = [System.Diagnostics.Process]::Start($psi)
+    # Both pipes are drained, not just stdout. A redirected pipe nobody reads holds
+    # about 4 KB, and the child blocks for good once it is full. idsec writing a
+    # progress line or a warning to stderr would then look like a timeout here, and
+    # send the attendee off to chase an approval that was never pending.
     $stdout = $proc.StandardOutput.ReadToEndAsync()
+    $stderr = $proc.StandardError.ReadToEndAsync()
     if (-not $proc.WaitForExit($Seconds * 1000)) {
         try { $proc.Kill() } catch { }
         return $null
     }
+    $stderr.Wait(5000) | Out-Null
     return $stdout.Result
 }
 
@@ -631,15 +904,15 @@ function Invoke-WithTimeout ($Exe, [string[]]$Arguments, [int]$Seconds) {
 # The credentials live in this window's environment for a few seconds. Nothing is
 # printed and nothing is written to a file, and they are cleared at the end.
 function Invoke-AwsRehearsal {
-    Write-Info 'asking Idira for credentials — this can take a moment'
+    Write-Info 'asking Idira for credentials -- this can take a moment'
     $raw = Invoke-WithTimeout $Idsec @(
         'exec', 'sca', 'cloud-access', 'elevate', '--csp', 'aws',
         '--workspace-id', $AwsWorkspace, '--roleIds', $AwsRole, '--raw'
     ) 120
     if ($null -eq $raw) {
         Write-Bad 'the elevate call did not finish in two minutes'
-        Write-Info 'It may be waiting on an approval. Run it by hand — setup step 7.'
-        Add-Manual 'AWS credentials' 'elevate timed out — run it by hand, setup step 7'
+        Write-Info 'It may be waiting on an approval. Run it by hand -- setup step 7.'
+        Add-Manual 'AWS credentials' 'elevate timed out -- run it by hand, setup step 7'
         return
     }
     $filter = '.response.results[0].accessCredentials | fromjson | "$env:AWS_ACCESS_KEY_ID=\"\(.aws_access_key)\"\n$env:AWS_SECRET_ACCESS_KEY=\"\(.aws_secret_access_key)\"\n$env:AWS_SESSION_TOKEN=\"\(.aws_session_token)\""'
@@ -648,8 +921,8 @@ function Invoke-AwsRehearsal {
     if (-not $creds.Trim()) {
         Write-Bad 'no credentials came back'
         Write-Info 'The role exists, so this is usually a policy on the role itself.'
-        Write-Info '💬 Ask in #cybr-japac-ts-all today and paste in what you ran.'
-        Add-Fail 'AWS credentials' 'elevate returned nothing' '💬 Ask in #cybr-japac-ts-all — elevate gave no credentials'
+        Write-Info 'Ask in #cybr-japac-ts-all today and paste in what you ran.'
+        Add-Fail 'AWS credentials' 'elevate returned nothing' 'Ask in #cybr-japac-ts-all -- elevate gave no credentials'
         return
     }
     Write-Good 'credentials received'
@@ -658,17 +931,20 @@ function Invoke-AwsRehearsal {
         # verify=False for the same reason ai-harness-app/config.py sets it: a TLS-inspecting
         # proxy would otherwise fail this call and be reported as "AWS rejected them", which
         # sends the attendee after the wrong problem. Step 9 below is where TLS gets judged.
-        $arn = & $VPy -c 'import boto3, urllib3
-urllib3.disable_warnings()
-print(boto3.client("sts", verify=False).get_caller_identity()["Arn"])' 2>$null
+        # One physical line, and Python's single quotes rather than double, both on
+        # purpose. See the note on quoting at the top of this file: a newline or a
+        # double quote in a -c argument does not survive Windows PowerShell 5.1.
+        # The outer PowerShell quotes have to be double here so the inner ones can
+        # be single, which is safe only because there is no $ left to interpolate.
+        $arn = & $VPy -c "import boto3, urllib3; urllib3.disable_warnings(); print(boto3.client('sts', verify=False).get_caller_identity()['Arn'])" 2>$null
         if ($arn) {
             Write-Good "AWS accepted them: $arn"
             Write-Dim 'They are gone now. This script never saved them anywhere.'
             Add-Pass 'AWS credentials' 'elevate and AWS both worked'
         } else {
             Write-Bad 'the credentials came back, but AWS did not accept them'
-            Write-Info 'Do the two commands by hand — setup step 7 explains every error.'
-            Add-Fail 'AWS credentials' 'AWS rejected them' 'Run setup step 7 by hand, then 💬 ask in #cybr-japac-ts-all'
+            Write-Info 'Do the two commands by hand -- setup step 7 explains every error.'
+            Add-Fail 'AWS credentials' 'AWS rejected them' 'Run setup step 7 by hand, then ask in #cybr-japac-ts-all'
         }
     } finally {
         Remove-Item Env:AWS_ACCESS_KEY_ID, Env:AWS_SECRET_ACCESS_KEY, Env:AWS_SESSION_TOKEN -ErrorAction SilentlyContinue
@@ -676,7 +952,7 @@ print(boto3.client("sts", verify=False).get_caller_identity()["Arn"])' 2>$null
 }
 
 if (-not $Idsec) {
-    Write-Bad 'skipped — idsec does not run in this window yet'
+    Write-Bad 'skipped -- idsec does not run in this window yet'
     Add-Fail 'AWS credentials' 'idsec unavailable' 'Finish step 6, open a new PowerShell window, then re-run this script'
 } else {
     Write-Cmd "$Idsec exec sca cloud-access list-targets --csp aws"
@@ -691,12 +967,12 @@ if (-not $Idsec) {
         if (-not $HasDefaultProfile) {
             Write-Warn 'the default profile is not CYBRWorld, so this asked the wrong tenant'
             Show-DefaultProfileAdvice
-            Add-Fail 'AWS credentials' 'wrong tenant' 'Put CYBRWorld on the default profile: idsec configure — then re-run this script'
+            Add-Fail 'AWS credentials' 'wrong tenant' 'Put CYBRWorld on the default profile: idsec configure -- then re-run this script'
         } else {
             Write-Dim 'This is an access entitlement. It cannot be fixed from your seat, and'
-            Write-Dim 'it takes days. 💬 Ask in #cybr-japac-ts-all TODAY.'
+            Write-Dim 'it takes days. Ask in #cybr-japac-ts-all TODAY.'
             Write-Dim 'Logged in to a tenant other than CYBRWorld? Check with: idsec profiles show'
-            Add-Fail 'AWS credentials' 'no entitlement' '💬 Ask in #cybr-japac-ts-all today — you have no AWS role yet'
+            Add-Fail 'AWS credentials' 'no entitlement' 'Ask in #cybr-japac-ts-all today -- you have no AWS role yet'
         }
     } else {
         Write-Good "$targetCount AWS role(s) available to you"
@@ -709,12 +985,12 @@ if (-not $Idsec) {
         } elseif (Confirm-Action 'Run the full rehearsal now? It gets real credentials and throws them away.') {
             Invoke-AwsRehearsal
         } else {
-            Add-Manual 'AWS credentials' 'run the elevate one-liner by hand — setup step 7'
+            Add-Manual 'AWS credentials' 'run the elevate one-liner by hand -- setup step 7'
         }
     }
 }
 
-# ------------------------------------------------------- 9 · TLS to Bedrock
+# ------------------------------------------------------- 9 - TLS to Bedrock
 
 # Every model call in this workshop is HTTPS to Bedrock, from Python in Part 1 and
 # from Claude Code in Part 2. A network that re-signs certificates breaks both, in
@@ -729,7 +1005,7 @@ if (-not $Idsec) {
 # It stays in the script because the ANSWER is still worth having: knowing that the
 # venue network re-signs certificates tells the workshop owner what to expect from
 # Claude Code in Part 2, which does verify. Kept as a warning, not a gate.
-Write-Step '9️⃣ ' 'How this network treats HTTPS 🔐 (information only)'
+Write-Step '9.' 'How this network treats HTTPS (information only)'
 
 $TlsPy = if (Test-Path $VPy) { $VPy } elseif (Have-Command 'python') { 'python' } elseif (Have-Command 'py') { 'py' } else { $null }
 
@@ -747,10 +1023,10 @@ if ($staleBundle) {
     Write-Dim  'Nothing in this workshop reads it, so the lessons will run regardless.'
     Write-Dim  'It will break other tools on this laptop, though, so worth tidying:'
     Write-Cmd  'Remove-Item Env:AWS_CA_BUNDLE, Env:REQUESTS_CA_BUNDLE, Env:CURL_CA_BUNDLE, Env:SSL_CERT_FILE -ErrorAction SilentlyContinue'
-    Add-Manual 'HTTPS to Bedrock' "$staleBundle is stale — harmless here, worth tidying"
+    Add-Manual 'HTTPS to Bedrock' "$staleBundle is stale -- harmless here, worth tidying"
 } elseif (-not $TlsPy) {
-    Write-Dim 'skipped — no Python to test with yet, and nothing depends on the answer'
-    Add-Manual 'HTTPS to Bedrock' 'not checked — needs Python, but the lessons do not need this'
+    Write-Dim 'skipped -- no Python to test with yet, and nothing depends on the answer'
+    Add-Manual 'HTTPS to Bedrock' 'not checked -- needs Python, but the lessons do not need this'
 } else {
     # Written to a temp file rather than passed with -c: the script contains quotes
     # and newlines, and PowerShell's argument quoting mangles both.
@@ -820,63 +1096,63 @@ except Exception as error:
     switch ($kind) {
         'OK' {
             if ($detail -eq 'Amazon') {
-                Write-Good 'reached AWS, certificate issued by Amazon — a clean path'
+                Write-Good 'reached AWS, certificate issued by Amazon -- a clean path'
                 Add-Pass 'HTTPS to Bedrock' 'clean path (Amazon)'
             } else {
-                Write-Good "reached AWS — but the certificate was issued by: $detail"
+                Write-Good "reached AWS -- but the certificate was issued by: $detail"
                 Write-Dim  'Not Amazon, so something on this network is inspecting HTTPS. Part 1'
                 Write-Dim  'does not care: it does not verify certificates. Claude Code in Part 2'
-                Write-Dim  'does, so mention it in #cybr-japac-ts-all. Useful for us to know. 💬'
-                Add-Manual 'HTTPS to Bedrock' "inspected by $detail — fine for Part 1"
+                Write-Dim  'does, so mention it in #cybr-japac-ts-all. Useful for us to know.'
+                Add-Manual 'HTTPS to Bedrock' "inspected by $detail -- fine for Part 1"
             }
         }
         { $_ -in 'BUNDLE', 'INTERCEPT' } {
-            Write-Good 'reached AWS — the certificate did not verify on this machine'
+            Write-Good 'reached AWS -- the certificate did not verify on this machine'
             Write-Dim $detail
             Write-Dim 'Either a proxy is re-signing certificates, or a CA bundle variable here'
-            Write-Dim 'does not cover AWS. Part 1 runs anyway — it does not verify at all, on'
+            Write-Dim 'does not cover AWS. Part 1 runs anyway -- it does not verify at all, on'
             Write-Dim 'purpose (ai-harness-app/config.py explains why, and why you should not'
             Write-Dim 'copy that choice). Claude Code in Part 2 DOES verify, so a reply telling'
             Write-Dim 'us this is genuinely useful, and a corporate root CA path even more so:'
             Write-Cmd  '$env:NODE_EXTRA_CA_CERTS="C:\path\to\corp-root.pem"'
-            Add-Manual 'HTTPS to Bedrock' 'inspected — fine for Part 1, may affect Part 2'
+            Add-Manual 'HTTPS to Bedrock' 'inspected -- fine for Part 1, may affect Part 2'
         }
         'NET' {
             Write-Warn 'could not reach Bedrock at all'
             Write-Dim $detail
             Write-Dim 'Offline, a VPN, or egress filtering. This one WOULD stop the workshop, so'
             Write-Dim 're-run it on the network you will actually use on the day.'
-            Add-Manual 'HTTPS to Bedrock' "no route from here — re-test on the day's network"
+            Add-Manual 'HTTPS to Bedrock' "no route from here -- re-test on the day's network"
         }
         default {
             Write-Dim 'the check did not produce a usable answer, and nothing depends on it'
-            Add-Manual 'HTTPS to Bedrock' 'inconclusive — mention it if the day goes wrong'
+            Add-Manual 'HTTPS to Bedrock' 'inconclusive -- mention it if the day goes wrong'
         }
     }
 }
 
-# ------------------------------------------------- 10 · console sign-in
+# ------------------------------------------------- 10 - console sign-in
 
 # Lessons 09 and 10 read the console in a browser: the same CYBRWorld tenant idsec
 # uses, reached the other way. Nothing to install, and this script cannot test it,
 # because it needs a real sign-in with a real MFA prompt. It is printed as a
 # reminder and never as a gate, the same treatment as the HTTPS step above.
-Write-Step '🔟 ' 'A browser sign-in to the console 🪪 (information only)'
+Write-Step '10.' 'A browser sign-in to the console (information only)'
 
 Write-Info 'Lesson 10 opens https://demo.cyberark.cloud/ in a browser. That is the same'
 Write-Info 'tenant idsec uses, and this script cannot test the browser half.'
 Write-Info 'Open it now and sign in with your own account. If the console loads, you are'
 Write-Info 'done. Note which browser you used: lesson 10 opens a sign-in page from the'
 Write-Info 'terminal, and it uses whichever browser is your default.'
-Add-Manual 'console sign-in' 'check it in a browser — setup step 9'
+Add-Manual 'console sign-in' 'check it in a browser -- setup step 9'
 
 # --------------------------------------------------------------- summary
 
 Write-Host ''
-Write-Host '────────────────────────  Summary  ────────────────────────' -ForegroundColor White
+Write-Host '------------------------  Summary  ------------------------' -ForegroundColor White
 Write-Host ''
 foreach ($row in $Summary) {
-    Write-Host ("  {0}  {1,-24} " -f $row.Icon, $row.What) -NoNewline
+    Write-Host ("  {0,-7} {1,-24} " -f $row.Icon, $row.What) -NoNewline
     Write-Host $row.Detail -ForegroundColor DarkGray
 }
 
@@ -886,7 +1162,7 @@ foreach ($row in $Summary) {
 # and the fail path, because the pass path is the one people actually read.
 function Show-OnlyYou {
     Write-Host ''
-    Write-Host '  ──────────  One thing that needs days, not minutes  ──────────' -ForegroundColor Yellow
+    Write-Host '  ----------  One thing that needs days, not minutes  ----------' -ForegroundColor Yellow
     Write-Host ''
     Write-Host '  Did this script say a program is blocked rather than missing?' -ForegroundColor White
     Write-Host '  A message about a policy, an administrator, ''this application is blocked'','
@@ -894,23 +1170,23 @@ function Show-OnlyYou {
     Write-Host '  This script cannot fix it and neither can a helper on the day: it needs an'
     Write-Host '  endpoint policy change, and that takes days.'
     Write-Host ''
-    Write-Host '  💬 Ask in the #cybr-japac-ts-all Slack channel TODAY.' -NoNewline -ForegroundColor White
+    Write-Host '  Ask in the #cybr-japac-ts-all Slack channel TODAY.' -NoNewline -ForegroundColor White
     Write-Host ' If a Request for'
     Write-Host '  authorization prompt appears, use it too.'
 }
 
 if ($Todo.Count -eq 0) {
     Write-Host ''
-    Write-Host '  🎉 Every check this script can make has passed.' -ForegroundColor Green
+    Write-Host '  Every check this script can make has passed.' -ForegroundColor Green
     Show-OnlyYou
     Write-Host ''
     Write-Host '  Bring: this laptop and a charger. Questions go to #cybr-japac-ts-all.'
-    Write-Host '  See you there! 👋'
+    Write-Host '  See you there!'
     exit 0
 }
 
 Write-Host ''
-Write-Host '  ⚠️  Still to do:' -ForegroundColor Yellow
+Write-Host '  Still to do:' -ForegroundColor Yellow
 Write-Host ''
 # One failure often cascades into the next check, so the same instruction can be
 # queued twice. Print each one once.
@@ -924,7 +1200,7 @@ Write-Host '  Re-run this script when you have worked through those:'
 Write-Host ''
 Write-Host '      .\check-prereqs.ps1' -ForegroundColor Cyan
 Write-Host ''
-Write-Host '  Stuck on any of them? 💬 Ask in #cybr-japac-ts-all this week — we would'
+Write-Host '  Stuck on any of them? Ask in #cybr-japac-ts-all this week -- we would'
 Write-Host '  much rather fix it now than on the day.'
 Show-OnlyYou
 exit 1

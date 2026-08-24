@@ -64,6 +64,8 @@ sko27-japac-idira-ai-workshop/
 ├── CONTEXT.md          Domain glossary — the vocabulary this workshop uses
 ├── check-prereqs.sh    Setup checker for macOS/Linux — checks, then offers to fix
 ├── check-prereqs.ps1   The same for Windows PowerShell
+├── update.sh           Day-of updater for macOS/Linux — is this copy current?
+├── update.ps1          The same for Windows PowerShell
 ├── lab/                Attendee-facing guide. Plain HTML, opened by double-click.
 │   ├── index.html          Entry point
 │   ├── 0000-setup.html     Before the session: installs, venv, access checks

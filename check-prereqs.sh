@@ -72,6 +72,17 @@ ask() {
 
 have() { command -v "$1" >/dev/null 2>&1; }
 
+# The workshop repo is public, so the fetch below is anonymous and read-only, and
+# a credential cannot make it succeed when it would otherwise fail. Left to
+# itself git will still ask for one whenever it meets a 401, which on a managed
+# laptop often comes from the proxy rather than from GitHub. An empty
+# credential.helper resets the helper list, so nothing pops up asking to sign in,
+# and GIT_TERMINAL_PROMPT=0 stops git asking in the terminal instead, which would
+# stall this script. A failed fetch is already handled below. Per call: the
+# attendee's own git config is not touched.
+git_anon() { GIT_TERMINAL_PROMPT=0 GIT_ASKPASS='' \
+  git -c credential.helper= -c credential.interactive=false -c core.askPass= "$@"; }
+
 # `command -v` only proves a file is on PATH. On a managed laptop the file can be
 # there and still refuse to start, because application control decides which
 # programs may run. So every tool below is checked by actually running it.
@@ -114,6 +125,60 @@ else
   info "#cybr-japac-ts-all. Nothing else here will work without it."
   fail "Workshop folder" "missing ${MISSING_DIRS[*]}" \
        "Re-download the workshop folder and run this script from inside it"
+fi
+
+# git reports and never gates.  Every lesson in Part 1 and nearly all of Part 2
+# runs without it, so a missing git is a 👀 rather than a ❌.  Two things do need
+# it, and both have a lead time: update.sh cannot run at all without it, and
+# Lesson 08's /security-review reads this folder's history.  Before this check
+# existed git was used here silently, so anyone without it got no version line,
+# no summary row and no explanation of either.
+HAS_GIT=0
+if ! have git; then
+  warn "git is not installed"
+  info "Nothing in Part 1 needs it. Two later things do: update.sh, which the"
+  info "trainer asks the room to run on the day, and Lesson 08, which reads this"
+  info "folder's history. On a Mac git arrives with the command line tools:"
+  run "xcode-select --install"
+  info "Accept the dialog it opens, wait for it to finish, then re-run this script."
+  manual "git" "not installed — run: xcode-select --install"
+elif ! runs git --version; then
+  blocked "git"
+  manual "git" "on PATH but will not run — ask in 💬 #cybr-japac-ts-all TODAY"
+else
+  HAS_GIT=1
+  good "$(git --version 2>/dev/null | head -1)"
+fi
+
+# Is the copy current?  The guide changes after people download it, so a version
+# that was right last week can be wrong today.  This only reports; update.sh is
+# what applies an update, and it is the trainer who calls for one on the day.
+# Anything unusual here is left to update.sh to explain rather than duplicated.
+if [ "$HAS_GIT" = 1 ] && ! git -C "$PROJECT" rev-parse --git-dir >/dev/null 2>&1; then
+  # No .git here.  This is what a plain "Source code (zip)" download gives you,
+  # rather than the workshop package.  update.sh offers to repair it, so this
+  # only names the problem and points there.
+  warn "this folder has no version history, so its version is unknown"
+  info "Lesson 08 reads that history, and update.sh needs it to update you."
+  info "One command offers to repair it:"
+  run "bash update.sh"
+  manual "Workshop version" "no history in this folder — run: bash update.sh"
+elif [ "$HAS_GIT" = 1 ]; then
+  LOCAL_VER="$(git -C "$PROJECT" describe --tags --always 2>/dev/null || echo unknown)"
+  if git_anon -C "$PROJECT" fetch --tags --quiet origin \
+       '+refs/heads/main:refs/remotes/origin/main' 2>/dev/null; then
+    BEHIND="$(git -C "$PROJECT" rev-list --count HEAD..origin/main 2>/dev/null || echo 0)"
+    if [ "${BEHIND:-0}" = 0 ]; then
+      good "version $LOCAL_VER, which is the current one"
+      pass "Workshop version" "$LOCAL_VER, current"
+    else
+      warn "version $LOCAL_VER — $BEHIND change(s) behind. One command fixes it:"
+      run "bash update.sh"
+      manual "Workshop version" "$BEHIND behind — run: bash update.sh"
+    fi
+  else
+    dim "version $LOCAL_VER — could not reach GitHub to check for a newer one"
+  fi
 fi
 
 # --------------------------------------------------------------- 2 · python
@@ -252,11 +317,37 @@ fi
 
 step "5️⃣ " "Claude Code 🤖"
 
+# The installer puts claude in ~/.local/bin and adds that folder to the PATH in
+# your shell profile. A profile change only reaches terminals opened after it, so
+# in the terminal that ran the installer `claude` is still not a command. Checking
+# the PATH alone reads that as "not installed" and offers to install it again,
+# which is a loop: the installer succeeds every time and the check fails every
+# time. So the known location is looked at before giving up.
+CLAUDE_EXE=''
+for c in "$HOME/.local/bin/claude" "$BINDIR/claude"; do
+  [ -x "$c" ] && { CLAUDE_EXE="$c"; break; }
+done
+
 if have claude && runs claude --version; then
   good "claude $(claude --version 2>/dev/null | head -1)"
   pass "Claude Code" "runs"
 elif have claude; then
   blocked claude
+  fail "Claude Code" "found but will not run" \
+       "Get Claude Code allowed by your endpoint policy — ask in #cybr-japac-ts-all"
+elif [ -n "$CLAUDE_EXE" ] && runs "$CLAUDE_EXE" --version; then
+  good "Claude Code is installed at $CLAUDE_EXE"
+  info "It is not on your PATH in this window yet. Open a NEW terminal, then:"
+  run "claude --version"
+  manual "Claude Code" "installed — open a new terminal"
+elif [ -n "$CLAUDE_EXE" ]; then
+  # The file is there and will not start. That is application control, not a PATH
+  # problem, and installing it again cannot help.
+  bad "'claude' is at $CLAUDE_EXE but will not run"
+  info "That is endpoint application control, not a PATH problem. It decides"
+  info "which programs may run on a managed laptop. Please do not work around it."
+  info "Offered a 'Request for authorization' button? Use it. Otherwise ask in"
+  info "the 💬 #cybr-japac-ts-all Slack channel TODAY."
   fail "Claude Code" "found but will not run" \
        "Get Claude Code allowed by your endpoint policy — ask in #cybr-japac-ts-all"
 else

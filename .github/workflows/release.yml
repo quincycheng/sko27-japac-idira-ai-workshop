@@ -37,6 +37,11 @@ jobs:
         with:
           ref: ${{ steps.tag.outputs.name }}
           fetch-depth: 0          # full history — a shallow clone is not much use to /security-review
+          # By default checkout writes an `http.<host>.extraheader` credential into
+          # .git/config, and this job zips .git up and ships it to sixty laptops.
+          # The token is dead by the time anyone unpacks it, which is worse than
+          # useless: `git fetch` in update.sh gets a 401 instead of an update.
+          persist-credentials: false
 
       - name: Leave a named branch rather than a detached HEAD
         # Checking out a tag detaches HEAD, and "HEAD detached at 0.1" reads as
@@ -44,6 +49,65 @@ jobs:
         run: |
           git checkout -B main
           git gc --quiet --aggressive --prune=now
+
+      - name: Fail if a PowerShell script is not plain ASCII with a BOM
+        # Windows PowerShell 5.1 is what the Windows half of the room actually has,
+        # and it reads a .ps1 with no byte order mark using the machine's ANSI code
+        # page rather than UTF-8.  One emoji or em dash in the file then decodes to
+        # mojibake and the script dies with "Unexpected token" before its first line
+        # runs.  There is no way for an attendee to work around that, so it is
+        # checked here rather than discovered at a desk.  Belt and braces: the BOM
+        # makes PowerShell decode correctly, ASCII-only makes the decoding moot, and
+        # ASCII is also the only thing a legacy console window can render.
+        run: |
+          bad=0
+          for f in *.ps1; do
+            if [ "$(head -c3 "$f" | od -An -tx1 | tr -d ' \n')" != "efbbbf" ]; then
+              echo "::error file=$f::no UTF-8 BOM. Windows PowerShell 5.1 will read this as ANSI."
+              bad=1
+            fi
+            # tail -c +4 drops the BOM, which is itself non-ASCII by design.  The
+            # hits are captured rather than piped, so that grep's exit status is not
+            # swallowed by whatever would come after it in a pipeline.
+            hits=$(tail -c +4 "$f" | LC_ALL=C grep -n '[^[:print:][:space:]]' | head -5)
+            if [ -n "$hits" ]; then
+              echo "$hits"
+              echo "::error file=$f::non-ASCII characters (listed above). Use plain ASCII in .ps1."
+              bad=1
+            fi
+          done
+          [ $bad -eq 0 ] && echo "all .ps1 files are ASCII with a BOM"
+          exit $bad
+
+      - name: Fail if a PowerShell script quotes a native argument unsafely
+        # Windows PowerShell 5.1 wraps a native-command argument containing spaces
+        # in double quotes and does not escape the double quotes already inside it,
+        # and it will not carry a newline through either.  So `python -c 'print("x")'`
+        # reaches python as print(x): a SyntaxError, exit code 1, nothing on stdout.
+        # That reads as "python is missing" rather than as a bug here, which is
+        # exactly how it slipped through once already.  PowerShell 7 fixed it, so a
+        # pwsh smoke test cannot catch this.  Hence a lint.
+        #
+        # Only lines that actually invoke something are checked, so that the worked
+        # example in the check-prereqs.ps1 header does not trip it.
+        run: |
+          bad=0
+          for f in *.ps1; do
+            hits=$(grep -nE "&.*-c '[^']*\"" "$f") || true
+            if [ -n "$hits" ]; then
+              echo "$hits"
+              echo "::error file=$f::double quote inside a -c argument. Use Python's single quotes."
+              bad=1
+            fi
+            hits=$(grep -nE "&.*-c '[^']*$" "$f") || true
+            if [ -n "$hits" ]; then
+              echo "$hits"
+              echo "::error file=$f::newline inside a -c argument. Put it on one line or in a temp file."
+              bad=1
+            fi
+          done
+          [ $bad -eq 0 ] && echo "no unsafe native-command quoting"
+          exit $bad
 
       - name: Build the zip
         run: |
@@ -62,6 +126,17 @@ jobs:
           unzip -Z1 ../sko27-japac-idira-ai-workshop.zip \
             | grep -q '^sko27-japac-idira-ai-workshop/\.git/HEAD$' \
             || { echo "::error::.git is missing from the package"; exit 1; }
+
+      - name: Fail if a credential or the wrong remote is baked into the package
+        # update.sh fetches from origin, so the packaged .git/config has to point at
+        # the public repo and carry no credential of ours.
+        run: |
+          cfg=../package/sko27-japac-idira-ai-workshop/.git/config
+          if grep -qi 'extraheader' "$cfg"; then
+            echo "::error::a credential is in the packaged .git/config"; exit 1
+          fi
+          grep -q 'url = https://github.com/${{ github.repository }}' "$cfg" \
+            || { echo "::error::packaged .git/config has no origin pointing at this repo"; cat "$cfg"; exit 1; }
 
       - name: Attach it to the release
         env:
