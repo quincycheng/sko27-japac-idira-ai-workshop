@@ -164,6 +164,22 @@ $env:Path = "$env:Path;$HOME\bin"
 Also check they are in **PowerShell**, not Command Prompt. `$env:` syntax silently does
 nothing useful in `cmd.exe`, which is a nasty way to lose five minutes.
 
+**A brand-new window still cannot find it.** Writing the user `PATH` into the registry is only half
+of a `PATH` change: Windows tells `explorer.exe` about it when something broadcasts
+`WM_SETTINGCHANGE`, and not otherwise. Miss that and every window explorer opens — Start menu,
+taskbar, Windows Terminal — keeps handing out the `PATH` it captured at sign-in, so "open a new
+window" changes nothing. `check-prereqs.ps1` does the broadcast itself now, so this should only turn
+up with an older copy of the scripts. To confirm it is what they hit:
+
+```
+[Environment]::GetEnvironmentVariable('Path','User') -split ';' | Select-String 'bin'
+$env:Path -split ';' | Select-String 'bin'
+```
+
+The folder present in the first list and absent from the second, in a window opened *after* the fix,
+is this. Signing out of Windows and back in clears it. Faster, for the day: the session-only line
+above, or `.\update.ps1` followed by `.\check-prereqs.ps1`.
+
 **Blocked is not the same as missing.** 🖥️ If the file *is* on `PATH` and the shell finds it but the
 program will not start — a message about a policy, an administrator, "this application is blocked",
 or **Idira EPM** — that is endpoint **application control**, not a `PATH` problem. There is no

@@ -189,6 +189,34 @@ function Repair-PackagedGit {
     }
 }
 
+# Tells the rest of Windows that the user environment changed.
+#
+# Writing the registry is only half of a PATH change. Nothing watches that key.
+# A program picks the new value up when someone broadcasts WM_SETTINGCHANGE for
+# 'Environment', which is exactly what Microsoft's own guidance says to do after
+# the write. Skip it and explorer.exe carries on handing out the environment
+# block it captured at sign-in, and since the Start menu, the taskbar and Windows
+# Terminal all launch from explorer, a NEW window still gets the OLD PATH. That
+# is what made a freshly installed idsec unreachable: the folder was in the
+# registry, spelled correctly, and no new window could see it.
+#
+# The broadcast needs a window message and PowerShell has no cmdlet for one. But
+# [Environment]::SetEnvironmentVariable does it internally, for any user
+# variable, straight after its own registry write. So a throwaway variable is set
+# and removed here purely to trigger it. Path itself must not go through that
+# call, for the reason in Add-UserPath below. The direct route, a P/Invoke of
+# SendMessageTimeout, needs Add-Type to compile an assembly at runtime, which
+# application control on a managed laptop may refuse to load.
+function Publish-EnvChange {
+    try {
+        [Environment]::SetEnvironmentVariable('IDIRA_SETUP_REFRESH', '1', 'User')
+        [Environment]::SetEnvironmentVariable('IDIRA_SETUP_REFRESH', $null, 'User')
+    } catch {
+        # The PATH itself is still correct. Worst case a new window does not see
+        # it until the attendee signs out and back in.
+    }
+}
+
 # Adds $Dir to the user PATH, and leaves the rest of that PATH exactly as it was.
 # $false means it was already there, so nothing was written.
 #
@@ -203,28 +231,45 @@ function Repair-PackagedGit {
 # frozen to whatever it meant in this window. So the registry is read and written
 # directly here, with expansion turned off and the value kind preserved.
 function Add-UserPath ($Dir) {
+    $want = ([string]$Dir).TrimEnd('\', '/')
     # Opened inside the try, and $null first, so that a registry failure lands in
     # the catch below instead of escaping.  The finally reads $key, and a variable
     # that never got assigned is its own separate error.
     $key = $null
+    $wrote = $false
     try {
         $key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Environment', $true)
         $userPath = [string]$key.GetValue('Path', '', 'DoNotExpandEnvironmentNames')
         # A PATH holding %VAR% must stay ExpandString, or the %VAR% becomes literal.
         $kind = if ($userPath -match '%') { 'ExpandString' } else { 'String' }
-        if (($userPath -split ';' | Where-Object { $_ }) -contains $Dir) { return $false }
-        $joined = if ($userPath) { "$userPath;$Dir" } else { $Dir }
-        # 'User' scope, not 'Machine' -- this is why no admin prompt appears.
-        $key.SetValue('Path', $joined, $kind)
+        # Trailing slashes off both sides, the way Test-InUserPath does it.
+        # Comparing the raw strings read an entry that ends in a backslash as
+        # absent, and appended a second copy of the same folder.
+        $have = @($userPath -split ';' | Where-Object { $_ } | ForEach-Object { $_.TrimEnd('\', '/') })
+        if ($have -notcontains $want) {
+            $joined = if ($userPath) { "$userPath;$Dir" } else { $Dir }
+            # 'User' scope, not 'Machine' -- this is why no admin prompt appears.
+            $key.SetValue('Path', $joined, $kind)
+            $wrote = $true
+        }
     } catch {
         # No registry for some reason. Fall back rather than leave PATH untouched.
+        # This call broadcasts by itself, so the Publish-EnvChange below is a
+        # second one. Harmless: it only makes listeners re-read a key twice.
         $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
         [Environment]::SetEnvironmentVariable('Path', "$userPath;$Dir".TrimStart(';'), 'User')
+        $wrote = $true
     } finally {
         if ($key) { $key.Close() }
     }
-    $env:Path = "$env:Path;$Dir"
-    return $true
+    if ($wrote) { Publish-EnvChange }
+    # And this window, so the steps after this one can run the tool that was just
+    # installed. Done whether or not the saved PATH needed changing: the case
+    # this exists for is a saved PATH that is already right and a window that
+    # opened before it was.
+    $here = @($env:Path -split ';' | Where-Object { $_ } | ForEach-Object { $_.TrimEnd('\', '/') })
+    if ($here -notcontains $want) { $env:Path = "$env:Path;$Dir" }
+    return $wrote
 }
 
 # Is $Dir already in the PATH that new windows will get?  This is the saved user
@@ -274,6 +319,43 @@ function Write-Blocked ($Name, $Where) {
     Write-Info 'which programs may run on a managed laptop. Please do not work around it.'
     Write-Info "Offered a 'Request for authorization' button? Use it. Otherwise ask in"
     Write-Info 'the #cybr-japac-ts-all Slack channel TODAY.'
+}
+
+# idsec and jq are both a single .exe in $BinDir, and both arrive here the same
+# way: the file exists, the command does not. There are three real answers, and
+# the old code gave one message for all of them. It offered to add a folder the
+# PATH already had, wrote nothing, said 'added', and recorded the tool as fixed
+# even when the attendee answered no. So a tool nobody could reach read as sorted
+# in the summary, and a PATH that was never the problem got the blame.
+function Resolve-BinDirTool ($Name, $Label, $Exe, [string[]]$VersionArgs) {
+    $dir = Split-Path $Exe -Parent
+    # Run it before saying anything about the PATH. On a managed laptop the file
+    # can be there and refuse to start, and that has no PATH fix.
+    if (-not (Test-Runs $Exe $VersionArgs)) {
+        Write-Blocked $Name $Exe
+        Add-Fail $Label 'found but will not run' `
+                 "Get $Name allowed by your endpoint policy -- ask in #cybr-japac-ts-all"
+        return
+    }
+    Write-Good "$Name runs from $Exe"
+    if (Test-InUserPath $dir) {
+        Write-Info "$dir is already in your user PATH, so only this window is out of date."
+        Write-Info 'Open a NEW PowerShell window, then check it:'
+        Write-Cmd "$Name $($VersionArgs -join ' ')"
+        Add-Manual $Label 'installed -- open a new PowerShell window'
+        return
+    }
+    Write-Warn "$dir is not in your user PATH, so no new window will find $Name"
+    if (Confirm-Action "Add $dir to your user PATH?") {
+        Add-UserPath $dir | Out-Null
+        Write-Good "added $dir to your user PATH"
+        Write-Info 'Open a NEW PowerShell window, then check it:'
+        Write-Cmd "$Name $($VersionArgs -join ' ')"
+        Write-Dim 'Not found there either? Close every PowerShell window and open one again.'
+        Add-Fixed $Label 'PATH fixed (new window needed)'
+    } else {
+        Add-Fail $Label 'installed, not on PATH' "Add $dir to your user PATH"
+    }
 }
 
 Write-Host ''
@@ -645,14 +727,7 @@ if ((Have-Command 'idsec') -and (Test-Runs 'idsec' @('version'))) {
     Add-Fail 'idsec CLI' 'found but will not run' `
              'Get idsec allowed by your endpoint policy -- ask in #cybr-japac-ts-all'
 } elseif (Test-Path $idsecExe) {
-    Write-Warn "idsec is at $idsecExe but not on your PATH in this window"
-    if (Confirm-Action "Add $BinDir to your user PATH?") {
-        Add-UserPath $BinDir | Out-Null
-        Write-Good 'added -- open a new PowerShell window, then run: idsec version'
-        Add-Fixed 'idsec CLI' 'PATH fixed (new window needed)'
-    } else {
-        Add-Fail 'idsec CLI' 'not on PATH' "Add $BinDir to your user PATH"
-    }
+    Resolve-BinDirTool 'idsec' 'idsec CLI' $idsecExe @('version')
 } else {
     Write-Bad "the 'idsec' command was not found"
     Write-Dim 'It is a single file -- no installer, nothing registered with Windows.'
@@ -668,6 +743,7 @@ if ((Have-Command 'idsec') -and (Test-Runs 'idsec' @('version'))) {
             New-Item -ItemType Directory -Force -Path $tmp, $BinDir | Out-Null
             $file = Join-Path $tmp (Split-Path $url -Leaf)
             Write-Cmd "download $url"
+            $installed = $false
             try {
                 Invoke-WebRequest -Uri $url -OutFile $file -UseBasicParsing
                 if ($file -match '\.zip$') {
@@ -688,11 +764,7 @@ if ((Have-Command 'idsec') -and (Test-Runs 'idsec' @('version'))) {
                     # the binary is not blocked on first run.
                     Unblock-File $idsecExe -ErrorAction SilentlyContinue
                     Write-Good "installed to $idsecExe"
-                    if (Confirm-Action "Add $BinDir to your user PATH?") {
-                        Add-UserPath $BinDir | Out-Null
-                        Write-Good 'added -- open a new PowerShell window afterwards'
-                    }
-                    Add-Fixed 'idsec CLI' 'installed (new window needed)'
+                    $installed = $true
                 } else {
                     Write-Bad 'downloaded the archive, but found no idsec binary inside it'
                     Add-Fail 'idsec CLI' 'unexpected archive' 'Install idsec by hand -- see setup step 5 in the lab guide'
@@ -702,6 +774,15 @@ if ((Have-Command 'idsec') -and (Test-Runs 'idsec' @('version'))) {
                 Add-Fail 'idsec CLI' 'download failed' 'Install idsec by hand -- see setup step 5 in the lab guide'
             } finally {
                 Remove-Item $tmp -Recurse -Force -ErrorAction SilentlyContinue
+            }
+            # Outside the try on purpose. This asks a question and edits the PATH,
+            # and anything going wrong in there is not a failed download.
+            # A file arriving is not the same as a command working, so the fresh
+            # install gets the same three-way check as one that was already there:
+            # it runs and the PATH is fine, it runs and the PATH needs the folder,
+            # or it will not start at all.
+            if ($installed) {
+                Resolve-BinDirTool 'idsec' 'idsec CLI' $idsecExe @('version')
             }
         }
     } else {
@@ -726,34 +807,27 @@ if ((Have-Command 'jq') -and (Test-Runs 'jq' @('--version'))) {
     Add-Fail 'jq' 'found but will not run' `
              'Get jq allowed by your endpoint policy -- ask in #cybr-japac-ts-all'
 } elseif (Test-Path $jqExe) {
-    Write-Warn "jq is at $jqExe but not on your PATH in this window"
-    if (Confirm-Action "Add $BinDir to your user PATH?") {
-        Add-UserPath $BinDir | Out-Null
-        Write-Good 'added -- open a new PowerShell window, then run: jq --version'
-        Add-Fixed 'jq' 'PATH fixed (new window needed)'
-    } else {
-        Add-Fail 'jq' 'not on PATH' "Add $BinDir to your user PATH"
-    }
+    Resolve-BinDirTool 'jq' 'jq' $jqExe @('--version')
 } else {
     Write-Bad "the 'jq' command was not found"
     Write-Dim "Also a single file. It reads your AWS credentials out of Idira's answer."
     if (Confirm-Action "Download jq into $BinDir and set it up?") {
         New-Item -ItemType Directory -Force -Path $BinDir | Out-Null
         Write-Cmd "download $jqUrl"
+        $installed = $false
         try {
             Invoke-WebRequest -Uri $jqUrl -OutFile $jqExe -UseBasicParsing
             Unblock-File $jqExe -ErrorAction SilentlyContinue
             Write-Good "installed to $jqExe"
-            if (Confirm-Action "Add $BinDir to your user PATH?") {
-                Add-UserPath $BinDir | Out-Null
-                Write-Good 'added -- open a new PowerShell window afterwards'
-            }
-            Add-Fixed 'jq' 'installed (new window needed)'
+            $installed = $true
         } catch {
             Remove-Item $jqExe -Force -ErrorAction SilentlyContinue
             Write-Bad "the download failed: $($_.Exception.Message)"
             Add-Fail 'jq' 'download failed' 'Install jq by hand -- see setup step 5 in the lab guide'
         }
+        # Outside the try, or the catch above deletes a jq that downloaded
+        # perfectly well the moment anything in the PATH question goes wrong.
+        if ($installed) { Resolve-BinDirTool 'jq' 'jq' $jqExe @('--version') }
     } else {
         Add-Fail 'jq' 'not installed' 'Install jq -- see setup step 5 in the lab guide'
     }

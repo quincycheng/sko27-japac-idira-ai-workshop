@@ -124,6 +124,30 @@ jobs:
           [ $bad -eq 0 ] && echo "no unsafe native-command quoting"
           exit $bad
 
+      - name: Fail if a PowerShell script does not parse
+        # This repo is written on a Mac, where pwsh is often not installed at all,
+        # so a syntax error in a .ps1 can reach a tag without the file having been
+        # parsed once. The runner has pwsh, so the parser is free here. It is
+        # PowerShell 7's parser, not 5.1's, so it catches an unbalanced brace or a
+        # stray token rather than a 5.1-only behaviour. The two lints above cover
+        # the 5.1 traps this script has actually hit.
+        shell: pwsh
+        run: |
+          $bad = 0
+          foreach ($f in Get-ChildItem -Filter *.ps1) {
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              $f.FullName, [ref]$null, [ref]$errors) | Out-Null
+            if ($errors) {
+              $bad = 1
+              foreach ($e in $errors) {
+                Write-Host "::error file=$($f.Name),line=$($e.Extent.StartLineNumber)::$($e.Message)"
+              }
+            }
+          }
+          if ($bad -eq 0) { Write-Host 'all .ps1 files parse' }
+          exit $bad
+
       - name: Build the zip
         run: |
           mkdir -p ../package/sko27-japac-idira-ai-workshop

@@ -135,8 +135,12 @@ runs() { "$@" >/dev/null 2>&1; }
 # Printed when a program is on PATH but will not execute. Deliberately does not
 # suggest a workaround: routing around application control is the opposite of
 # what this workshop teaches.
-blocked() {  # blocked <command name>
-  bad "'$1' is on your PATH but will not run"
+blocked() {  # blocked <command name> [path it was found at]
+  if [ -n "${2:-}" ]; then
+    bad "'$1' is at $2 but will not run"
+  else
+    bad "'$1' is on your PATH but will not run"
+  fi
   info "That is endpoint application control, not a PATH problem. It decides"
   info "which programs may run on a managed laptop. Please do not work around it."
   info "Offered a 'Request for authorization' button? Use it. Otherwise ask in"
@@ -441,6 +445,57 @@ idsec_release_url() {  # echo a download URL for this machine, or nothing
     | grep -Ei '\.(tar\.gz|tgz|zip)$' | head -1
 }
 
+# idsec and jq are both a single binary in $BINDIR, and both arrive here the same
+# way: the file exists, the command does not. There are three real answers, and
+# one message used to cover all of them. It appended the PATH line without
+# looking for a copy already there, and it recorded the tool as fixed even when
+# the attendee answered no. So a tool nobody could reach read as sorted in the
+# summary. Defined above its callers: a shell reads top to bottom, so a function
+# called by the idsec block but written below it does not exist yet.
+resolve_bindir_tool() {  # resolve_bindir_tool <command> <label> <path> [version args...]
+  local name="$1" label="$2" exe="$3"
+  shift 3
+  # Run it before saying anything about the PATH. On a managed laptop the file
+  # can be there and refuse to start, and that has no PATH fix.
+  if ! runs "$exe" "$@"; then
+    blocked "$name" "$exe"
+    fail "$label" "found but will not run" \
+         "Get $name allowed by your endpoint policy — ask in #cybr-japac-ts-all"
+    return
+  fi
+  good "$name runs from $exe"
+  # Two ways a new terminal already finds it, and neither needs ~/.zshrc touched.
+  # $BINDIR on this PATH means the shell config every terminal reads puts it
+  # there; the marker means the line is in ~/.zshrc waiting for the next one.
+  # hash -r is for this terminal: zsh remembers that the command was missing.
+  case ":$PATH:" in
+    *":$BINDIR:"*)
+      hash -r 2>/dev/null || true
+      dim "$BINDIR is already on your PATH, so only this terminal was out of date"
+      info "Open a NEW terminal, then check it:"
+      run "$name $*"
+      manual "$label" "installed — open a new terminal"
+      return ;;
+  esac
+  if grep -q 'SKO27 Idira AI workshop prework checker' "$HOME/.zshrc" 2>/dev/null; then
+    dim "the PATH line is already in ~/.zshrc, so only this terminal is out of date"
+    info "Open a NEW terminal, then check it:"
+    run "$name $*"
+    manual "$label" "installed — open a new terminal"
+    return
+  fi
+  warn "$BINDIR is not on the PATH a new terminal gets, so $name will not be found"
+  if ask "Add $BINDIR to your PATH in ~/.zshrc?"; then
+    printf '\n# Added by the SKO27 Idira AI workshop prework checker\nexport PATH="$HOME/bin:$PATH"\n' >> "$HOME/.zshrc"
+    good "added to ~/.zshrc"
+    info "Open a NEW terminal, then check it:"
+    run "$name $*"
+    fixed "$label" "PATH fixed (new terminal needed)"
+  else
+    fail "$label" "installed, not on PATH" 'Add to ~/.zshrc: export PATH="$HOME/bin:$PATH"'
+  fi
+}
+
 if have idsec && runs idsec version; then
   good "idsec $(idsec version 2>/dev/null | head -1)"
   pass "idsec CLI" "runs"
@@ -449,14 +504,7 @@ elif have idsec; then
   fail "idsec CLI" "found but will not run" \
        "Get idsec allowed by your endpoint policy — ask in #cybr-japac-ts-all"
 elif [ -x "$BINDIR/idsec" ]; then
-  warn "idsec is at $BINDIR/idsec but not on your PATH in this window"
-  if ask "Add $BINDIR to your PATH in ~/.zshrc?"; then
-    printf '\n# Added by the SKO27 Idira AI workshop prework checker\nexport PATH="$HOME/bin:$PATH"\n' >> "$HOME/.zshrc"
-    good "added — open a new terminal, then run: idsec version"
-    fixed "idsec CLI" "PATH fixed (new terminal needed)"
-  else
-    fail "idsec CLI" "not on PATH" 'Add to ~/.zshrc: export PATH="$HOME/bin:$PATH"'
-  fi
+  resolve_bindir_tool idsec "idsec CLI" "$BINDIR/idsec" version
 else
   bad "the 'idsec' command was not found"
   dim "It is a single file — no installer, nothing registered with macOS."
@@ -494,14 +542,9 @@ else
           # macOS quarantines anything downloaded by a browser or curl.
           xattr -d com.apple.quarantine "$BINDIR/idsec" 2>/dev/null || true
           good "installed to $BINDIR/idsec"
-          case ":$PATH:" in
-            *":$BINDIR:"*) : ;;
-            *) if ask "Add $BINDIR to your PATH in ~/.zshrc?"; then
-                 printf '\n# Added by the SKO27 Idira AI workshop prework checker\nexport PATH="$HOME/bin:$PATH"\n' >> "$HOME/.zshrc"
-                 good "added — open a new terminal afterwards"
-               fi ;;
-          esac
-          fixed "idsec CLI" "installed (new terminal needed)"
+          # A file arriving is not the same as a command working, so the fresh
+          # install gets the same three-way check as one that was already there.
+          resolve_bindir_tool idsec "idsec CLI" "$BINDIR/idsec" version
         else
           bad "downloaded the archive, but found no idsec binary inside it"
           fail "idsec CLI" "unexpected archive" "Install idsec by hand — see setup step 5 in the lab guide"
@@ -536,21 +579,6 @@ jq_release_url() {  # echo a download URL for this machine, or nothing
   printf 'https://github.com/jqlang/jq/releases/latest/download/jq-%s-%s\n' "$os" "$arch"
 }
 
-# The idsec branches above each append the PATH line in their own arm, which is
-# safe because they are mutually exclusive. jq is a third caller, so it checks
-# for the marker first rather than writing a second copy of the same line.
-ensure_bindir_path() {
-  case ":$PATH:" in *":$BINDIR:"*) return 0 ;; esac
-  if grep -q 'SKO27 Idira AI workshop prework checker' "$HOME/.zshrc" 2>/dev/null; then
-    dim "the PATH line is already in ~/.zshrc — open a new terminal to pick it up"
-    return 0
-  fi
-  if ask "Add $BINDIR to your PATH in ~/.zshrc?"; then
-    printf '\n# Added by the SKO27 Idira AI workshop prework checker\nexport PATH="$HOME/bin:$PATH"\n' >> "$HOME/.zshrc"
-    good "added — open a new terminal afterwards"
-  fi
-}
-
 if have jq && runs jq --version; then
   good "jq $(jq --version 2>/dev/null | head -1)"
   pass "jq" "runs"
@@ -559,9 +587,7 @@ elif have jq; then
   fail "jq" "found but will not run" \
        "Get jq allowed by your endpoint policy — ask in #cybr-japac-ts-all"
 elif [ -x "$BINDIR/jq" ]; then
-  warn "jq is at $BINDIR/jq but not on your PATH in this window"
-  ensure_bindir_path
-  fixed "jq" "PATH fixed (new terminal needed)"
+  resolve_bindir_tool jq jq "$BINDIR/jq" --version
 else
   bad "the 'jq' command was not found"
   dim "Also a single file. It reads your AWS credentials out of Idira's answer."
@@ -578,8 +604,7 @@ else
         chmod +x "$BINDIR/jq"
         xattr -d com.apple.quarantine "$BINDIR/jq" 2>/dev/null || true
         good "installed to $BINDIR/jq"
-        ensure_bindir_path
-        fixed "jq" "installed (new terminal needed)"
+        resolve_bindir_tool jq jq "$BINDIR/jq" --version
       else
         rm -f "$BINDIR/jq"
         bad "the download failed"
