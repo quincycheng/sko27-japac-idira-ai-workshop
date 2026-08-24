@@ -471,7 +471,15 @@ resolve_bindir_tool() {  # resolve_bindir_tool <command> <label> <path> [version
   case ":$PATH:" in
     *":$BINDIR:"*)
       hash -r 2>/dev/null || true
-      dim "$BINDIR is already on your PATH, so only this terminal was out of date"
+      # hash -r was the whole fix, so check rather than assume: telling somebody
+      # to open a new terminal for a command that works in this one reads as a
+      # script that does not know what it just did.
+      if have "$name"; then
+        good "$name is on your PATH, in this terminal and in new ones"
+        pass "$label" "runs"
+        return
+      fi
+      dim "$BINDIR is on your PATH, so only this terminal is out of date"
       info "Open a NEW terminal, then check it:"
       run "$name $*"
       manual "$label" "installed — open a new terminal"
@@ -479,6 +487,16 @@ resolve_bindir_tool() {  # resolve_bindir_tool <command> <label> <path> [version
   esac
   if grep -q 'SKO27 Idira AI workshop prework checker' "$HOME/.zshrc" 2>/dev/null; then
     dim "the PATH line is already in ~/.zshrc, so only this terminal is out of date"
+    # ~/.zshrc is read by new terminals only, so this one is fixed by hand. The
+    # steps below run idsec, and so does the attendee, in the terminal they are
+    # already looking at.
+    export PATH="$BINDIR:$PATH"
+    hash -r 2>/dev/null || true
+    if have "$name"; then
+      good "$name is on your PATH, in this terminal and in new ones"
+      pass "$label" "runs"
+      return
+    fi
     info "Open a NEW terminal, then check it:"
     run "$name $*"
     manual "$label" "installed — open a new terminal"
@@ -488,9 +506,17 @@ resolve_bindir_tool() {  # resolve_bindir_tool <command> <label> <path> [version
   if ask "Add $BINDIR to your PATH in ~/.zshrc?"; then
     printf '\n# Added by the SKO27 Idira AI workshop prework checker\nexport PATH="$HOME/bin:$PATH"\n' >> "$HOME/.zshrc"
     good "added to ~/.zshrc"
-    info "Open a NEW terminal, then check it:"
-    run "$name $*"
-    fixed "$label" "PATH fixed (new terminal needed)"
+    # And this terminal, which will never read the line that was just written.
+    export PATH="$BINDIR:$PATH"
+    hash -r 2>/dev/null || true
+    if have "$name"; then
+      good "$name is on your PATH, in this terminal and in new ones"
+      fixed "$label" "PATH fixed"
+    else
+      info "Open a NEW terminal, then check it:"
+      run "$name $*"
+      fixed "$label" "PATH fixed (new terminal needed)"
+    fi
   else
     fail "$label" "installed, not on PATH" 'Add to ~/.zshrc: export PATH="$HOME/bin:$PATH"'
   fi

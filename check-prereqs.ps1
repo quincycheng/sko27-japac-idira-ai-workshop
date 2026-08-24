@@ -208,6 +208,11 @@ function Repair-PackagedGit {
 # SendMessageTimeout, needs Add-Type to compile an assembly at runtime, which
 # application control on a managed laptop may refuse to load.
 function Publish-EnvChange {
+    # -CheckOnly promises to change nothing, and the trick below writes a registry
+    # value. Callers that fix a PATH are already behind Confirm-Action, which
+    # returns false under -CheckOnly. The caller in Resolve-BinDirTool is not: it
+    # broadcasts a PATH somebody else wrote, so the guard belongs here.
+    if ($CheckOnly) { return }
     try {
         [Environment]::SetEnvironmentVariable('IDIRA_SETUP_REFRESH', '1', 'User')
         [Environment]::SetEnvironmentVariable('IDIRA_SETUP_REFRESH', $null, 'User')
@@ -215,6 +220,16 @@ function Publish-EnvChange {
         # The PATH itself is still correct. Worst case a new window does not see
         # it until the attendee signs out and back in.
     }
+}
+
+# Makes THIS window see $Dir. A window keeps the environment it started with, so
+# a saved PATH that is already correct still leaves the current window unable to
+# run the tool. Rebuilding $env:Path from the registry would throw away whatever
+# this session added, so the one folder is appended instead.
+function Add-SessionPath ($Dir) {
+    $want = ([string]$Dir).TrimEnd('\', '/')
+    $here = @($env:Path -split ';' | Where-Object { $_ } | ForEach-Object { $_.TrimEnd('\', '/') })
+    if ($here -notcontains $want) { $env:Path = "$env:Path;$Dir" }
 }
 
 # Adds $Dir to the user PATH, and leaves the rest of that PATH exactly as it was.
@@ -267,8 +282,7 @@ function Add-UserPath ($Dir) {
     # installed. Done whether or not the saved PATH needed changing: the case
     # this exists for is a saved PATH that is already right and a window that
     # opened before it was.
-    $here = @($env:Path -split ';' | Where-Object { $_ } | ForEach-Object { $_.TrimEnd('\', '/') })
-    if ($here -notcontains $want) { $env:Path = "$env:Path;$Dir" }
+    Add-SessionPath $Dir
     return $wrote
 }
 
@@ -339,7 +353,22 @@ function Resolve-BinDirTool ($Name, $Label, $Exe, [string[]]$VersionArgs) {
     }
     Write-Good "$Name runs from $Exe"
     if (Test-InUserPath $dir) {
-        Write-Info "$dir is already in your user PATH, so only this window is out of date."
+        # The saved PATH is right, so this is only a stale window. Fix the window
+        # rather than send the attendee off to open a new one and find out: the
+        # old code printed 'OK', left '$Name' still not a command in the window
+        # they were looking at, and read as a script that lies.
+        Add-SessionPath $dir
+        # Whoever wrote $dir into the user PATH may have been an installer that
+        # never broadcast the change. Then explorer.exe is still handing out its
+        # sign-in copy of the environment, and a NEW window is stale too. One
+        # broadcast here rules that out.
+        Publish-EnvChange
+        if (Have-Command $Name) {
+            Write-Good "$Name is on your PATH, in this window and in new ones"
+            Add-Pass $Label 'runs'
+            return
+        }
+        Write-Info "$dir is in your user PATH, so only this window is out of date."
         Write-Info 'Open a NEW PowerShell window, then check it:'
         Write-Cmd "$Name $($VersionArgs -join ' ')"
         Add-Manual $Label 'installed -- open a new PowerShell window'
@@ -349,10 +378,18 @@ function Resolve-BinDirTool ($Name, $Label, $Exe, [string[]]$VersionArgs) {
     if (Confirm-Action "Add $dir to your user PATH?") {
         Add-UserPath $dir | Out-Null
         Write-Good "added $dir to your user PATH"
-        Write-Info 'Open a NEW PowerShell window, then check it:'
-        Write-Cmd "$Name $($VersionArgs -join ' ')"
-        Write-Dim 'Not found there either? Close every PowerShell window and open one again.'
-        Add-Fixed $Label 'PATH fixed (new window needed)'
+        # Add-UserPath patched this window too, so the bare command should work
+        # here and now. Say so, and only fall back to 'open a new window' when it
+        # does not.
+        if (Have-Command $Name) {
+            Write-Good "$Name is on your PATH, in this window and in new ones"
+            Add-Fixed $Label 'PATH fixed'
+        } else {
+            Write-Info 'Open a NEW PowerShell window, then check it:'
+            Write-Cmd "$Name $($VersionArgs -join ' ')"
+            Write-Dim 'Not found there either? Close every PowerShell window and open one again.'
+            Add-Fixed $Label 'PATH fixed (new window needed)'
+        }
     } else {
         Add-Fail $Label 'installed, not on PATH' "Add $dir to your user PATH"
     }
@@ -634,10 +671,19 @@ function Find-ClaudeExe {
 function Resolve-ClaudeOffPath ($Exe) {
     $dir = Split-Path $Exe -Parent
     if (Test-InUserPath $dir) {
-        # Nothing to change: a new window will find it. Saying "not installed"
-        # here, or offering to edit a PATH that is already correct, is the bug.
+        # The saved PATH needs nothing: a new window will find it. Saying "not
+        # installed" here, or offering to edit a PATH that is already correct, is
+        # the bug. This window is still stale though, so patch it, and broadcast
+        # in case the installer that wrote the PATH never did.
         Write-Good "Claude Code is installed at $Exe"
-        Write-Info "$dir is already in your user PATH, so only this window is out of date."
+        Add-SessionPath $dir
+        Publish-EnvChange
+        if (Have-Command 'claude') {
+            Write-Good 'claude is on your PATH, in this window and in new ones'
+            Add-Pass 'Claude Code' 'runs'
+            return
+        }
+        Write-Info "$dir is in your user PATH, so only this window is out of date."
         Write-Info 'Open a NEW PowerShell window, then check it:'
         Write-Cmd 'claude --version'
         Add-Manual 'Claude Code' 'installed -- open a new PowerShell window'
@@ -647,9 +693,14 @@ function Resolve-ClaudeOffPath ($Exe) {
     if (Confirm-Action "Add $dir to your user PATH?") {
         Add-UserPath $dir | Out-Null
         Write-Good "added $dir to your user PATH"
-        Write-Info 'Open a NEW PowerShell window, then check it:'
-        Write-Cmd 'claude --version'
-        Add-Fixed 'Claude Code' 'PATH fixed (new window needed)'
+        if (Have-Command 'claude') {
+            Write-Good 'claude is on your PATH, in this window and in new ones'
+            Add-Fixed 'Claude Code' 'PATH fixed'
+        } else {
+            Write-Info 'Open a NEW PowerShell window, then check it:'
+            Write-Cmd 'claude --version'
+            Add-Fixed 'Claude Code' 'PATH fixed (new window needed)'
+        }
     } else {
         Add-Fail 'Claude Code' 'installed, not on PATH' "Add $dir to your user PATH"
     }

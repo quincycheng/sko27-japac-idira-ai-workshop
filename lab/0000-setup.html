@@ -93,6 +93,21 @@ to rehearse step 7, your AWS access, for real: say yes to that one.</p>
     <span class="os os-inline os-win"><code>.\check-prereqs.ps1 -Yes</code></span></li>
 </ul>
 
+<div class="os os-win">
+  <div class="warn">
+    <p><span class="callout-label">🛑 Does <code>idsec</code> say “is not recognized”?</span> A
+    PowerShell window keeps the <code>PATH</code> it started with. The script puts <code>idsec</code>
+    on your <code>PATH</code>. A window opened before that does not have it. Close every PowerShell
+    window, open one, then check it:</p>
+    <div class="code"><pre><code>idsec version</code></pre></div>
+    <p>It prints a version number. Still not recognized? Load the saved <code>PATH</code> into the
+    window you are in:</p>
+    <div class="code"><pre><code>$env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')</code></pre></div>
+    <p>Nothing prints. Run <code>idsec version</code> again and it works. The same fix applies to
+    <code>claude</code> and <code>jq</code>.</p>
+  </div>
+</div>
+
 <h3>What it looks like</h3>
 
 <script src="https://asciinema.org/a/4398Ci3PFvKN1sAX.js" id="asciicast-4398Ci3PFvKN1sAX" async data-rows="24"></script>
