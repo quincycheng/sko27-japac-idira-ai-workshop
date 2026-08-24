@@ -509,6 +509,22 @@ Relevant property for this workshop: it ships as a **single prebuilt binary** fo
 Windows and Linux, so it can be extracted and run without an installer and without admin
 rights.
 
+### Profiles folder
+
+The directory holding one file per **profile**, and the answer to "am I logged in?" — a login
+the CLI cannot find a profile for is a login it cannot use. The CLI resolves it from
+`IDSEC_PROFILES_FOLDER`, falling back to `HOME` joined with `.idsec/profiles`.
+
+Workshop vocabulary because that fallback reads the `HOME` *environment variable*, which
+Windows PowerShell does not set, making the path **relative to the current folder** there. So
+on Windows the phrase "logged in" has no meaning on its own: it is logged in *from a folder*,
+until the variable is pinned. Setup pins it, which is what makes "logged in" a property of the
+attendee rather than of their working directory.
+
+Distinct from the **log** location, which the CLI resolves from the operating system's home
+directory instead. The two disagreeing is the recognisable symptom: a `.idsec` directory
+holding only `logs`.
+
 ### Endpoint Privilege Manager (EPM)
 
 The Idira product that enforces least privilege, **application control** and credential theft

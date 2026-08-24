@@ -21,7 +21,7 @@ than guessing, then either use the full path or help them add it to `PATH`.
 application being blocked, or **Idira EPM** (Endpoint Privilege Manager) is not a `PATH` problem:
 it is endpoint application control deciding which executables may run on that machine. `idsec` is a
 privileged tool — whoever can run it can request elevation — so this is a deliberate control, and
-it is the layer beneath the one this CLI operates in. Report it and stop. See rule 5.
+it is the layer beneath the one this CLI operates in. Report it and stop. See rule 6.
 
 ## Every command has the same shape
 
@@ -63,7 +63,16 @@ actually offers and ask.
 
 ## Profiles and login
 
-Authentication lives in profiles, stored at `~/.idsec/profiles`.
+Authentication lives in profiles, stored in the **profiles folder**. The CLI resolves that
+folder in one order, and there is no flag for it:
+
+1. the `IDSEC_PROFILES_FOLDER` environment variable, if it is set
+2. otherwise `HOME` joined with `.idsec/profiles`
+
+Step 2 reads the `HOME` *environment variable*. **Windows PowerShell does not set one** —
+`$HOME` there is a PowerShell variable, not an environment variable — so the fallback becomes
+`.idsec\profiles` **relative to the current folder**. A profile created in one folder is
+invisible from another, and the CLI says `No profile found` rather than naming a path.
 
 ```
 idsec configure                          # interactive; creates a profile
@@ -79,6 +88,26 @@ else — tokens expire, and an expired token is by far the most common cause.
 When a profile file has been provided for the user, do **not** run `idsec configure` — it
 would overwrite it. Go straight to `idsec login`.
 
+### "No profile found"
+
+This nearly always means the profile is somewhere else, not that it is absent. Before you
+conclude anything, report the three facts that tell them apart:
+
+- the value of `IDSEC_PROFILES_FOLDER`, and whether a profile exists there
+- whether `.idsec/profiles` exists in the current folder, or in a folder above it
+- whether the home `.idsec` directory holds only `logs`
+
+That last one is the signature of the Windows case. The log path is resolved from the OS home
+directory rather than from `HOME`, so on a machine where the two disagree the logs are in the
+real home and the profiles are not.
+
+The fix is to set `IDSEC_PROFILES_FOLDER` to the folder that holds the profile, which the user
+does in their own terminal. Do not fix it by moving or writing a profile yourself.
+
+**Do not run `idsec configure`, and do not suggest it.** A user who reached you already has a
+profile, so `configure` overwrites rather than repairs, and it needs an interactive terminal
+you do not have.
+
 ## Rules
 
 1. **Never print a credential.** If a command returns a secret, an access key, a password
@@ -90,7 +119,10 @@ would overwrite it. Go straight to `idsec login`.
    creates, updates or deletes. Confirm with the user before any write.
 4. **Diagnose with the log.** Detailed output goes to `~/.idsec/logs/idsec-cli.log`
    regardless of terminal verbosity. Read it when a command fails opaquely.
-5. **Never route around an endpoint control.** If the CLI is blocked from running by application
+5. **Never create or overwrite a profile.** `idsec configure` is the user's command, not
+   yours, and a missing profile is a location problem far more often than a real absence.
+   See "No profile found" above.
+6. **Never route around an endpoint control.** If the CLI is blocked from running by application
    control (Idira EPM or equivalent), do not copy the binary elsewhere, rename it, change its
    permissions, or look for another way to execute it. Tell the user what blocked it and that it
    needs a policy change or an authorization request from whoever administers their endpoints.

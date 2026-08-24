@@ -23,8 +23,13 @@ directory, and Idira has recorded who asked for it.
 idsec login
 ```
 
-A profile should already exist at `~/.idsec/profiles`. If one has been provided, do **not**
-run `idsec configure` — it would overwrite it.
+A profile should already exist. If one has been provided, do **not** run `idsec configure` —
+it would overwrite it.
+
+If this reports `No profile found`, the profile is almost certainly in another folder rather
+than missing: the CLI reads `IDSEC_PROFILES_FOLDER`, and falls back to a path that is relative
+to the current folder on Windows. Read the "No profile found" section of the `idsec` skill and
+stop there. Do not configure a profile and do not guess at targets.
 
 ## Step 2 — Find what the user is allowed to activate
 

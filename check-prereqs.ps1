@@ -302,6 +302,102 @@ function Test-InUserPath ($Dir) {
     return ($have -contains $want)
 }
 
+# Where the idsec profile lives, and why this script has to decide it.
+#
+# The CLI resolves its profiles folder in the SDK, at
+# idsec-sdk-golang/pkg/profiles/idsec_profile_loader.go:126 -- the
+# IDSEC_PROFILES_FOLDER environment variable if set, otherwise HOME joined with
+# .idsec\profiles. That is the HOME *environment variable*, and PowerShell does not
+# have one: $HOME there is a PowerShell variable, so $env:HOME is empty and the
+# join produces the RELATIVE path .idsec\profiles.
+#
+# So on Windows the profile is written to, and looked for in, whatever folder is
+# current. This script runs from the workshop folder, so 'idsec configure' put the
+# profile there. Lesson 09 works inside sandbox-app, where there is none, and every
+# idsec command in that folder answers 'No profile found' -- including the ones the
+# agent runs, which then cannot list a single target. The log path is resolved
+# differently, from the OS home directory, which is why a .idsec folder holding
+# only 'logs' is the signature of this.
+#
+# IDSEC_PROFILES_FOLDER wins over HOME, so pinning it once ends the whole class of
+# problem: the current folder stops mattering, in this window, in a new one, and in
+# the Git Bash that Claude Code runs its own commands through.
+#
+# The value is %USERPROFILE%\.idsec\profiles for two reasons. It is where idsec
+# already writes its logs, so one .idsec folder holds everything. And it is what
+# $HOME means in PowerShell and what ~ means on macOS, so '~/.idsec/profiles' in the
+# lab guide and in the skills stays a true statement on both platforms.
+$IdsecProfilesVar    = 'IDSEC_PROFILES_FOLDER'
+$IdsecProfilesTmpl   = '%USERPROFILE%\.idsec\profiles'
+$IdsecProfilesFolder = Join-Path $(if ($env:USERPROFILE) { $env:USERPROFILE } else { $HOME }) '.idsec\profiles'
+
+# Pins IDSEC_PROFILES_FOLDER for new windows. $false means it was already set to
+# something, and an attendee who chose their own value keeps it.
+#
+# Written straight to the registry with expansion off, for the reason Add-UserPath
+# gives: the getter expands %VAR% style entries and writing the result back freezes
+# them. Kept as an ExpandString here so a profile folder that moves with
+# USERPROFILE keeps following it.
+function Set-IdsecProfilesVar {
+    $key = $null
+    try {
+        $key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Environment', $true)
+        $existing = [string]$key.GetValue($IdsecProfilesVar, '', 'DoNotExpandEnvironmentNames')
+        if ($existing.Trim()) { return $false }
+        $key.SetValue($IdsecProfilesVar, $IdsecProfilesTmpl, 'ExpandString')
+    } catch {
+        # No registry for some reason. The plain setter cannot write an ExpandString,
+        # so the expanded path goes in instead: correct today, and it stops following
+        # USERPROFILE if that ever changes.
+        $existing = [string][Environment]::GetEnvironmentVariable($IdsecProfilesVar, 'User')
+        if ($existing.Trim()) { return $false }
+        [Environment]::SetEnvironmentVariable($IdsecProfilesVar, $IdsecProfilesFolder, 'User')
+    } finally {
+        if ($key) { $key.Close() }
+    }
+    Publish-EnvChange
+    return $true
+}
+
+# Moves profiles written before the variable was pinned. They are in the folder
+# 'idsec configure' ran from, which for anyone who used this script is the workshop
+# folder. Never overwrites: a file already at the destination stays, and the copy it
+# came from is left where it is so nothing disappears silently.
+#
+# The login survives this. On Windows the token is in Credential Manager, not in the
+# profiles folder -- idsec-sdk-golang/pkg/common/keyring/idsec_keyring.go:117 picks
+# the OS keyring there -- so moving the profile does not cost a fresh sign-in.
+function Get-IdsecProfileFiles ($Dir) {
+    return @(Get-ChildItem -File $Dir -ErrorAction SilentlyContinue |
+             Where-Object { $_.Name -notlike '.*' })
+}
+
+function Move-IdsecProfile ($From) {
+    $files = Get-IdsecProfileFiles $From
+    if (-not $files) { return $false }
+    if (-not (Test-Path $IdsecProfilesFolder)) {
+        New-Item -ItemType Directory -Force $IdsecProfilesFolder | Out-Null
+    }
+    $moved = 0
+    foreach ($f in $files) {
+        $dest = Join-Path $IdsecProfilesFolder $f.Name
+        if (Test-Path $dest) {
+            Write-Dim "left $($f.Name) alone -- there is already one of those in the pinned folder"
+            continue
+        }
+        Move-Item $f.FullName $dest
+        $moved++
+    }
+    if ($moved -gt 0) { Write-Good "moved $moved profile file(s) to $IdsecProfilesFolder" }
+    # Nothing but the CLI's own bookkeeping dotfiles left, so the empty folder goes.
+    # Only this one folder: its parent .idsec may hold a cache, and that is not ours
+    # to delete.
+    if (-not (Get-IdsecProfileFiles $From)) {
+        Remove-Item -Recurse -Force $From -ErrorAction SilentlyContinue
+    }
+    return ($moved -gt 0)
+}
+
 function Have-Command ($Name) {
     return [bool](Get-Command $Name -ErrorAction SilentlyContinue)
 }
@@ -1058,6 +1154,55 @@ if ((Have-Command 'jq') -and (Test-Runs 'jq' @('--version'))) {
 
 Write-Step '7.' 'An idsec profile, and a login that works'
 
+# Pin the profiles folder before anything looks for a profile, because until it is
+# pinned the answer depends on which folder the attendee happens to be in. The
+# mechanism is in the comment above Set-IdsecProfilesVar.
+if (-not $env:IDSEC_PROFILES_FOLDER) {
+    # The getter expands %USERPROFILE% for us, so a saved value can go straight into
+    # this window. A window that opened before the pin is the same stale-window case
+    # Add-SessionPath exists for.
+    $saved = [string][Environment]::GetEnvironmentVariable($IdsecProfilesVar, 'User')
+    if ($saved.Trim()) { $env:IDSEC_PROFILES_FOLDER = $saved }
+}
+
+if ($env:IDSEC_PROFILES_FOLDER) {
+    Write-Good "profiles folder is pinned: $env:IDSEC_PROFILES_FOLDER"
+    Add-Pass 'idsec profiles folder' 'pinned, so the current folder does not matter'
+} else {
+    Write-Warn 'which folder idsec keeps its profile in depends on where you run it'
+    Write-Dim 'PowerShell sets no HOME variable, so idsec falls back to a path relative to'
+    Write-Dim 'the current folder. A profile made here is then invisible from sandbox-app,'
+    Write-Dim 'which is where lesson 09 works, and the agent there cannot log in at all.'
+    if (Confirm-Action "Pin the profiles folder to $IdsecProfilesFolder?") {
+        Set-IdsecProfilesVar | Out-Null
+        $env:IDSEC_PROFILES_FOLDER = $IdsecProfilesFolder
+        Write-Good "$IdsecProfilesVar is set, in this window and in new ones"
+        Add-Fixed 'idsec profiles folder' 'pinned, so the current folder does not matter'
+    } else {
+        Add-Fail 'idsec profiles folder' 'not pinned' `
+                 "Set $IdsecProfilesVar to $IdsecProfilesFolder -- without it lesson 09 fails inside sandbox-app"
+    }
+}
+
+# A profile made before the pin is in the folder configure ran from, which for
+# anyone who used this script is this one. Moving it beats asking for the three
+# tenant values again, and the lab guide tells attendees never to re-run configure.
+if ($env:IDSEC_PROFILES_FOLDER -and
+    -not (Test-Path (Join-Path $env:IDSEC_PROFILES_FOLDER 'idsec'))) {
+    $StrayProfiles = Join-Path $Project '.idsec\profiles'
+    if (Test-Path (Join-Path $StrayProfiles 'idsec')) {
+        Write-Warn 'your profile is in the workshop folder, so only commands run from here can see it'
+        if (Confirm-Action 'Move it to the pinned folder? (your login is kept)') {
+            if (Move-IdsecProfile $StrayProfiles) {
+                Add-Fixed 'idsec profile location' 'moved out of the workshop folder'
+            }
+        } else {
+            Add-Fail 'idsec profile location' 'in the workshop folder' `
+                     "Move $StrayProfiles\idsec into $IdsecProfilesFolder"
+        }
+    }
+}
+
 $Idsec = $null
 if ((Have-Command 'idsec') -and (Test-Runs 'idsec' @('version'))) {
     $Idsec = 'idsec'
@@ -1094,8 +1239,11 @@ function Show-DefaultProfileAdvice {
 # commas and quotes come off here rather than through jq, which may not be
 # installed yet at this point in the script.
 #
-# The fallback is $HOME\.idsec\profiles, a DIRECTORY holding one file per profile,
+# The fallback is the profiles folder, a DIRECTORY holding one file per profile,
 # named after the profile. Its dotfiles are bookkeeping, not profiles.
+#
+# It has to read IDSEC_PROFILES_FOLDER, not just $HOME\.idsec\profiles, or it looks
+# somewhere the CLI does not: the pin above is what makes those two the same folder.
 function Get-IdsecProfileNames {
     if (-not $Idsec) { return @() }
     $out = & $Idsec profiles list 2>$null
@@ -1104,7 +1252,8 @@ function Get-IdsecProfileNames {
             ForEach-Object { ($_ -replace '[\[\]",]', '').Trim() } |
             Where-Object { $_ })
     }
-    $dir = Join-Path $HOME '.idsec\profiles'
+    $dir = if ($env:IDSEC_PROFILES_FOLDER) { $env:IDSEC_PROFILES_FOLDER }
+           else { Join-Path $HOME '.idsec\profiles' }
     if (Test-Path $dir) {
         return @(Get-ChildItem -File $dir |
             Where-Object { $_.Name -notlike '.*' } |

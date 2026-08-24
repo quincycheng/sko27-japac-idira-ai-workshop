@@ -221,6 +221,21 @@ bash check-prereqs.sh</code></pre></div>
       <p>Then add <code>--profile-name cybrworld</code> to every <code>idsec</code> command on this page.
       <code>idsec profiles list</code> shows what you have.</p>
     </div>
+    <div class="os os-win">
+      <div class="warn">
+        <p><span class="callout-label">“No profile found”?</span> Your profile is in another
+        folder. On Windows, <code>idsec</code> looks for its profile in the folder you are
+        standing in, unless <code>IDSEC_PROFILES_FOLDER</code> is set. Setup sets it for you. If
+        your setup ran before that, run the setup script again from the workshop folder.</p>
+        <div class="code"><pre><code>cd $HOME\Downloads\sko27-japac-idira-ai-workshop
+.\check-prereqs.ps1</code></pre></div>
+        <p>It moves your profile to one fixed folder and keeps your login. Then come back and
+        check it:</p>
+        <div class="code"><pre><code>cd sandbox-app
+idsec profiles list</code></pre></div>
+        <p>The list includes <code>idsec</code>.</p>
+      </div>
+    </div>
     <div class="warn">
       <p><span class="callout-label">Do not run <code>idsec configure</code></span> again on your
       existing profile. You did that during setup, and running it again would overwrite your
