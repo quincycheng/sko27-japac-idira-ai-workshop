@@ -31,6 +31,14 @@ native English speakers, and their AI knowledge varies from none to expert. Writ
   load-bearing.
 - Do not bold filenames, paths or variables. `<code>` carries those. Bold is for jargon on first use
   and for the one word in a step you cannot afford to misread.
+- **Anything the attendee types gets its own `.code` block**, including one-word ones like `/exit` and
+  `/mcp`. Only a `.code` block carries a Copy button, and a command buried in a sentence is a command
+  the room skips. Inline `<code>` is for naming a thing: a file, a flag, a value, a command being
+  discussed rather than run. This holds inside `warn` and `note` boxes too.
+- **A key you press is `<kbd>`, never `<code>`.** One `<kbd>` per physical key, joined by ` + `:
+  `<kbd>Shift</kbd> + <kbd>Tab</kbd>`, `<kbd>Ctrl</kbd> + <kbd>C</kbd>`, `<kbd>⌘</kbd> +
+  <kbd>Space</kbd>`. The raised cap says press me, so a shortcut never gets mistaken for something to
+  copy. Mac and Windows key names go in paired `os os-inline` spans.
 
 These apply to prose an attendee reads between commands. `warn`, `stop` and knowledge-check `why`
 boxes are exempt from the word cap: they are safety and teaching text, and they are already short.

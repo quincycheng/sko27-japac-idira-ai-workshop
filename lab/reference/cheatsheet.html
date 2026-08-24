@@ -94,13 +94,13 @@ traffic. Do not copy that switch into real code.</p>
 <p class="section-intro">The commands worth knowing inside the agent, plus the one line that connects it to the Broker.</p>
 
 <table>
-  <tr><th>Command</th><th>What it does</th></tr>
+  <tr><th>Command or key</th><th>What it does</th></tr>
   <tr><td><code>claude</code></td><td>Start the agent in the current folder</td></tr>
   <tr><td><code>claude --version</code></td><td>Check it is installed</td></tr>
-  <tr><td><code>Shift+Tab</code></td><td>Cycle the permission modes. Stop at <strong>auto</strong> for today, and keep pressing if you go past it</td></tr>
+  <tr><td><kbd>Shift</kbd> + <kbd>Tab</kbd></td><td>Cycle the permission modes. Stop at <strong>auto</strong> for today, and keep pressing if you go past it</td></tr>
   <tr><td><code>/exit</code></td><td>Leave the agent, back to the terminal</td></tr>
-  <tr><td><code>Ctrl-C</code> twice</td><td>The same thing, without typing a command</td></tr>
-  <tr><td><code>Esc</code></td><td>Interrupt it mid-answer</td></tr>
+  <tr><td><kbd>Ctrl</kbd> + <kbd>C</kbd> twice</td><td>The same thing, without typing a command</td></tr>
+  <tr><td><kbd>Esc</kbd></td><td>Interrupt it mid-answer</td></tr>
   <tr><td><code>/plugin</code></td><td>Browse and install plugins from the marketplace</td></tr>
   <tr><td><code>/mcp</code></td><td>Connect to, authenticate against and inspect MCP servers</td></tr>
   <tr><td><code>/security-review</code></td><td>Built-in security review of your changes</td></tr>
@@ -112,7 +112,7 @@ on one line:</p>
 <div class="code"><pre><code>claude mcp add --transport http --scope user idira-ai-broker-entrasonar https://demo.data.aigw.cyberark.cloud/mcp/entrasonarmcp --client-id 04e6ab3b-de59-4d1d-a73c-c283f48713b8 --callback-port 8080</code></pre></div>
 <p>There is no secret: this agent is registered as a public client. Then run <code>/mcp</code> inside
 the agent, select the server with the arrow keys, and choose <strong>Authenticate</strong>. Wrong
-browser? Press <code>c</code> to copy the URL. Port 8080 busy? Re-add with another
+browser? Press <kbd>c</kbd> to copy the URL. Port 8080 busy? Re-add with another
 <code>--callback-port</code>.</p>
 
 <h2>4 · idsec, the Idira CLI</h2>

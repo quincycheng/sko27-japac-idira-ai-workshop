@@ -96,7 +96,7 @@ environment. That is where your temporary, expiring, audited credentials already
   <div class="step-head"><div class="step-num">1</div><p class="step-title">Ask the agent to remove them</p></div>
   <div class="step-body">
     <div class="code"><pre><code>claude</code></pre></div>
-    <p>Press <code>Shift+Tab</code> a few times until the bottom line says <strong>auto</strong>.
+    <p>Press <kbd>Shift</kbd> + <kbd>Tab</kbd> a few times until the bottom line says <strong>auto</strong>.
     Then:</p>
     <div class="code"><pre><code>I now have short-lived AWS credentials in my environment. Remove the hardcoded AWS credentials from this project so the app uses the environment instead. Then show me exactly what you changed.</code></pre></div>
     <p>The <code>zsp-aws</code> skill you installed in Lesson 09 covers this step too, so the agent
@@ -122,15 +122,17 @@ environment. That is where your temporary, expiring, audited credentials already
 <div class="step">
   <div class="step-head"><div class="step-num">2</div><p class="step-title">Run it, for real this time</p></div>
   <div class="step-body">
-    <p>Leave the agent (<code>/exit</code>) and run:</p>
+    <p>Leave the agent:</p>
+    <div class="code"><pre><code>/exit</code></pre></div>
+    <p>Then run:</p>
     <div class="code"><pre><code>python summarize.py</code></pre></div>
     <p>You should get three bullet points about the incident, then the single most urgent action.</p>
     <div class="warn">
       <p><span class="callout-label">💥 <code>ImportError: cannot import name
       'AWS_ACCESS_KEY_ID'</code>?</span> The agent deleted the credentials but left the
-      <code>import</code> that asks for them. Go back into the agent and say: <em>“summarize.py still
-      imports the constants you deleted. Remove them from the import and run the app to prove it
-      works.”</em> This is the most common way this lesson goes wrong.</p>
+      <code>import</code> that asks for them. Go back into the agent and say:</p>
+      <div class="code"><pre><code>summarize.py still imports the constants you deleted. Remove them from the import and run the app to prove it works.</code></pre></div>
+      <p>This is the most common way this lesson goes wrong.</p>
     </div>
     <div class="win">
       <p><span class="callout-label">✅ Stop and appreciate this.</span> The app just authenticated

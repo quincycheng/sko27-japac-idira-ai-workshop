@@ -53,13 +53,13 @@
     <code>Downloads/sko27-japac-idira-ai-workshop</code>.</li>
   <li><strong>Open a terminal, go to that folder, and run the script.</strong>
     <div class="os os-mac">
-      <p>Press <code>⌘ Space</code>, type <strong>Terminal</strong>, press <code>Return</code>. Then:</p>
+      <p>Press <kbd>⌘</kbd> + <kbd>Space</kbd>, type <strong>Terminal</strong>, press <kbd>Return</kbd>. Then:</p>
       <div class="code"><pre><code>cd ~/Downloads/sko27-japac-idira-ai-workshop
 bash check-prereqs.sh</code></pre></div>
     </div>
     <div class="os os-win">
       <p>Press the <strong>Windows key</strong>, type <strong>PowerShell</strong>, press
-      <code>Enter</code>, <em>not</em> Command Prompt. Then:</p>
+      <kbd>Enter</kbd>, <em>not</em> Command Prompt. Then:</p>
       <div class="code"><pre><code>cd $HOME\Downloads\sko27-japac-idira-ai-workshop
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\check-prereqs.ps1</code></pre></div>
@@ -72,7 +72,7 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
   </li>
 </ol>
 
-<p>Every offer is a <code>[y/N]</code> question. Answer <code>n</code> and it changes nothing. It offers
+<p>Every offer is a <code>[y/N]</code> question. Answer <kbd>n</kbd> and it changes nothing. It offers
 to rehearse step 7, your AWS access, for real: say yes to that one.</p>
 
 <p>Two extra options:</p>
@@ -158,11 +158,11 @@ see what you are agreeing to before you agree to it.</p>
     </div>
     <p>Now open a terminal:</p>
     <div class="os os-mac">
-      <p>Press <code>⌘ Space</code>, type <strong>Terminal</strong>, press <code>Return</code>.</p>
+      <p>Press <kbd>⌘</kbd> + <kbd>Space</kbd>, type <strong>Terminal</strong>, press <kbd>Return</kbd>.</p>
     </div>
     <div class="os os-win">
       <p>Press the <strong>Windows key</strong>, type <strong>PowerShell</strong>, press
-      <code>Enter</code>. Use <strong>Windows PowerShell</strong> or <strong>PowerShell 7</strong>,
+      <kbd>Enter</kbd>. Use <strong>Windows PowerShell</strong> or <strong>PowerShell 7</strong>,
       <em>not</em> Command Prompt. Every command on this page is PowerShell.</p>
     </div>
     <p>Then move into the folder:</p>
@@ -311,10 +311,14 @@ source .venv/bin/activate</code></pre></div>
       <tr><td>Mac with an Intel chip</td><td><code>darwin</code> and <code>amd64</code></td></tr>
       <tr><td>Windows</td><td><code>windows</code> and <code>amd64</code></td></tr>
     </table>
-    <p>Not sure which Mac you have?
-    <span class="os os-inline os-mac">Run <code>uname -m</code>. <code>arm64</code> means Apple
-    silicon, <code>x86_64</code> means Intel.</span>
-    <span class="os os-inline os-win">Switch this page to macOS if you are on a Mac.</span></p>
+    <p>Not sure which Mac you have?</p>
+    <div class="os os-mac">
+      <div class="code"><pre><code>uname -m</code></pre></div>
+      <p><code>arm64</code> means Apple silicon. <code>x86_64</code> means Intel.</p>
+    </div>
+    <div class="os os-win">
+      <p>Switch this page to macOS if you are on a Mac.</p>
+    </div>
 
     <div class="note">
       <p><span class="callout-label">📛 The file inside is not called <code>idsec</code>.</span> The
@@ -337,8 +341,9 @@ echo 'export PATH="$HOME/bin:$PATH"' &gt;&gt; ~/.zshrc</code></pre></div>
       <code>idsec_*.tar.gz</code>.</p>
       <p>Close the terminal, open a new one, then check:</p>
       <div class="code"><pre><code>idsec version</code></pre></div>
-      <p>If macOS refuses to run it (“cannot be opened because the developer cannot be verified”),
-      run <code>xattr -d com.apple.quarantine ~/bin/idsec</code> and try again.</p>
+      <p>If macOS refuses to run it (“cannot be opened because the developer cannot be verified”), run
+      this and try again:</p>
+      <div class="code"><pre><code>xattr -d com.apple.quarantine ~/bin/idsec</code></pre></div>
     </div>
 
     <div class="os os-win">
@@ -411,7 +416,7 @@ jq --version</code></pre></div>
       <tr><td>Username</td><td>your own, ending in <code>@cyberarklab.com</code></td></tr>
     </table>
     <p>Where a question shows a default in brackets, press
-    <span class="os os-inline os-mac"><code>Return</code></span><span class="os os-inline os-win"><code>Enter</code></span>
+    <span class="os os-inline os-mac"><kbd>Return</kbd></span><span class="os os-inline os-win"><kbd>Enter</kbd></span>
     to accept it.</p>
     <p>Then log in:</p>
     <div class="code"><pre><code>idsec login</code></pre></div>
@@ -437,8 +442,9 @@ jq --version</code></pre></div>
       <p>Now save the old tenant under its own name. It asks the same questions again, so have that
       tenant's values to hand:</p>
       <div class="code"><pre><code>idsec configure --profile-name &lt;that-tenant&gt;</code></pre></div>
-      <p>Then run <code>idsec configure</code> with no name, and give it the three CYBRWorld answers
-      above. That writes the default profile. Check the names with:</p>
+      <p>Then run it with no name, and give it the three CYBRWorld answers above:</p>
+      <div class="code"><pre><code>idsec configure</code></pre></div>
+      <p>That writes the default profile. Check the names with:</p>
       <div class="code"><pre><code>idsec profiles list</code></pre></div>
     </div>
     <div class="warn">

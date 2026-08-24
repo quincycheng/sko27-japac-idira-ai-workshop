@@ -110,10 +110,10 @@ from Part 1.</p>
   <div class="step-head"><div class="step-num">1</div><p class="step-title">Open a terminal</p></div>
   <div class="step-body">
     <div class="os os-mac">
-      <p>Press <code>⌘ Space</code>, type <strong>Terminal</strong>, press <code>Return</code>.</p>
+      <p>Press <kbd>⌘</kbd> + <kbd>Space</kbd>, type <strong>Terminal</strong>, press <kbd>Return</kbd>.</p>
     </div>
     <div class="os os-win">
-      <p>Press the <strong>Windows key</strong>, type <strong>PowerShell</strong>, press <code>Enter</code>.
+      <p>Press the <strong>Windows key</strong>, type <strong>PowerShell</strong>, press <kbd>Enter</kbd>.
       Use <strong>Windows PowerShell</strong> or <strong>PowerShell 7</strong>, not Command Prompt.</p>
     </div>
     <p>Check Claude Code is installed:</p>
@@ -243,11 +243,11 @@ source .venv/bin/activate</code></pre></div>
   <div class="step-head"><div class="step-num">5</div><p class="step-title">Start the agent and say hello</p></div>
   <div class="step-body">
     <div class="code"><pre><code>claude</code></pre></div>
-    <p>The terminal turns into a chat window. Now press <code>Shift+Tab</code> a few times. Watch the
+    <p>The terminal turns into a chat window. Now press <kbd>Shift</kbd> + <kbd>Tab</kbd> a few times. Watch the
     bottom line of the window and stop when it says <strong>auto</strong>. Went past it? Keep pressing
-    <code>Shift+Tab</code>. It cycles round again.</p>
+    <kbd>Shift</kbd> + <kbd>Tab</kbd>. It cycles round again.</p>
     <p>In <strong>auto mode</strong> the agent runs commands without asking you first. Type this and
-    press <code>Return</code>:</p>
+    press <kbd>Return</kbd>:</p>
     <div class="code"><pre><code>In one sentence, what does this app do?</code></pre></div>
     <p>It will read the files around you and answer. <strong>You are vibe coding.</strong> You did not
     open a single file yourself.</p>
@@ -255,8 +255,10 @@ source .venv/bin/activate</code></pre></div>
       <p><span class="callout-label">⚠️ Auto mode is for today.</span> It is on so the room keeps pace.
       On Monday, in a repo that matters, do not use it. Read each command before you approve it.</p>
     </div>
-    <p>Now leave the agent. Type <code>/exit</code>, or press <code>Ctrl-C</code> twice. You are back at
-    your normal terminal prompt.</p>
+    <p>Now leave the agent:</p>
+    <div class="code"><pre><code>/exit</code></pre></div>
+    <p>Pressing <kbd>Ctrl</kbd> + <kbd>C</kbd> twice does the same thing. You are back at your normal terminal
+    prompt.</p>
     <div class="win">
       <p><span class="callout-label">✅ You are ready when</span> the agent gives you a sentence
       about summarising incident reports. If it does, wait here. Do not run ahead into Lesson 08 until

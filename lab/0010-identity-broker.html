@@ -177,7 +177,7 @@ read the audit trail it left behind.</p>
     <div class="code"><pre><code>claude</code></pre></div>
     <div class="code"><pre><code>/mcp</code></pre></div>
     <p>Use the up and down arrow keys to select <code>idira-ai-broker-entrasonar</code>, then press
-    Enter. Choose <strong>Authenticate</strong>. Your browser opens. Sign in to CYBRWorld as your own
+    <kbd>Enter</kbd>. Choose <strong>Authenticate</strong>. Your browser opens. Sign in to CYBRWorld as your own
     account and approve.</p>
     <p>The browser says:</p>
     <div class="code"><pre><code>Connected
@@ -193,9 +193,12 @@ You can close this tab and return to Claude Code.</code></pre></div>
     </div>
     <div class="warn">
       <p><span class="callout-label">🧭 If the wrong browser opens</span>, or the wrong profile in it,
-      press <code>c</code> in the terminal to copy the sign-in URL. Paste it into the browser that has
+      press <kbd>c</kbd> in the terminal to copy the sign-in URL. Paste it into the browser that has
       your CYBRWorld session. The error will not tell you that this is the problem. If the terminal
-      hangs, run <code>/exit</code>, start <code>claude</code> again, and retry <code>/mcp</code>.</p>
+      hangs, restart the agent and try again:</p>
+      <div class="code"><pre><code>/exit</code></pre></div>
+      <div class="code"><pre><code>claude</code></pre></div>
+      <div class="code"><pre><code>/mcp</code></pre></div>
     </div>
   </div>
 </div>
@@ -226,9 +229,10 @@ You can close this tab and return to Claude Code.</code></pre></div>
     </div>
     <div class="warn">
       <p><span class="callout-label">🧭 If the agent says the server needs re-authorization</span>,
-      your token has expired. Run <code>/mcp</code> and sign in again. Your agent holds a
-      <strong>short-lived token</strong>, and it stops working on its own. A credential in a config
-      file does not.</p>
+      your token has expired. Run this and sign in again:</p>
+      <div class="code"><pre><code>/mcp</code></pre></div>
+      <p>Your agent holds a <strong>short-lived token</strong>, and it stops working on its own. A
+      credential in a config file does not.</p>
     </div>
   </div>
 </div>

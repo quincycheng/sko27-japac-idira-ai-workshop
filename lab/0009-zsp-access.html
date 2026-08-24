@@ -157,7 +157,7 @@ dir .claude\skills</code></pre></div>
 <div class="step">
   <div class="step-head"><div class="step-num">2</div><p class="step-title">Read the skills</p></div>
   <div class="step-body">
-    <p>Have a quick look at all three. Press the space bar to page down, and <code>q</code> to quit.</p>
+    <p>Have a quick look at all three. Press <kbd>Space</kbd> to page down, and <kbd>q</kbd> to quit.</p>
     <div class="os os-mac">
       <div class="code"><pre><code>more .claude/skills/idsec/SKILL.md
 more .claude/skills/zsp-aws/SKILL.md
@@ -238,7 +238,7 @@ bash check-prereqs.sh</code></pre></div>
   <div class="step-body">
     <p>Start the agent:</p>
     <div class="code"><pre><code>claude</code></pre></div>
-    <p>Press <code>Shift+Tab</code> a few times until the bottom line says <strong>auto</strong>. Went
+    <p>Press <kbd>Shift</kbd> + <kbd>Tab</kbd> a few times until the bottom line says <strong>auto</strong>. Went
     past it? Keep pressing. It cycles round again.</p>
     <p>Then ask, in plain English:</p>
     <div class="code"><pre><code>Use the zsp-aws skill. Show me which AWS targets I am allowed, then print the one command I should run myself to get credentials for the target with most privileges. Do not run that command.</code></pre></div>
@@ -268,10 +268,11 @@ bash check-prereqs.sh</code></pre></div>
 <div class="step">
   <div class="step-head"><div class="step-num">6</div><p class="step-title">Run the command yourself</p></div>
   <div class="step-body">
-    <p>Leave the agent with <code>/exit</code>. Environment variables have to be set in the terminal
-    itself, and the agent cannot do it for you.</p>
+    <p>Leave the agent:</p>
+    <div class="code"><pre><code>/exit</code></pre></div>
+    <p>Environment variables have to be set in the terminal itself. The agent cannot do it for you.</p>
     <p>Now paste the command the agent printed and press
-    <span class="os os-inline os-mac"><code>Return</code></span><span class="os os-inline os-win"><code>Enter</code></span>.
+    <span class="os os-inline os-mac"><kbd>Return</kbd></span><span class="os os-inline os-win"><kbd>Enter</kbd></span>.
     It looks like this:</p>
     <div class="os os-mac">
       <div class="code"><pre><code>eval "$(idsec exec sca cloud-access elevate --csp aws --workspace-id &lt;account&gt; --roleIds &lt;role-arn&gt; --raw | jq -r '.response.results[0].accessCredentials | fromjson | "export AWS_ACCESS_KEY_ID=\(.aws_access_key)\nexport AWS_SECRET_ACCESS_KEY=\(.aws_secret_access_key)\nexport AWS_SESSION_TOKEN=\(.aws_session_token)"')"</code></pre></div>
