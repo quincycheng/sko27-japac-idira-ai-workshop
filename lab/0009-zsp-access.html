@@ -224,13 +224,14 @@ bash check-prereqs.sh</code></pre></div>
     <div class="os os-win">
       <div class="warn">
         <p><span class="callout-label">“No profile found”?</span> Your profile is in another
-        folder. On Windows, <code>idsec</code> looks for its profile in the folder you are
-        standing in, unless <code>IDSEC_PROFILES_FOLDER</code> is set. Setup sets it for you. If
-        your setup ran before that, run the setup script again from the workshop folder.</p>
+        folder. On Windows, <code>idsec</code> looks for its profile and your login in the folder
+        you are standing in, unless <code>IDSEC_PROFILES_FOLDER</code> and
+        <code>IDSEC_KEYRING_FOLDER</code> are set. Setup sets both for you. If your setup ran
+        before that, run the setup script again from the workshop folder.</p>
         <div class="code"><pre><code>cd $HOME\Downloads\sko27-japac-idira-ai-workshop
 .\check-prereqs.ps1</code></pre></div>
-        <p>It moves your profile to one fixed folder and keeps your login. Then come back and
-        check it:</p>
+        <p>It moves your profile and your login to two fixed folders. Then come back and check
+        it:</p>
         <div class="code"><pre><code>cd sandbox-app
 idsec profiles list</code></pre></div>
         <p>The list includes <code>idsec</code>.</p>
@@ -266,6 +267,21 @@ idsec profiles list</code></pre></div>
         stop there</li>
     </ol>
     <p>Read that command before you go on. Copy it.</p>
+    <div class="os os-win">
+      <div class="warn">
+        <p><span class="callout-label">Agent says your login expired?</span> Your login is in
+        another folder, not gone. On Windows <code>idsec</code> remembers a login per folder,
+        unless <code>IDSEC_KEYRING_FOLDER</code> is set. Leave the agent with <code>/exit</code>,
+        then run setup again from the workshop folder.</p>
+        <div class="code"><pre><code>cd $HOME\Downloads\sko27-japac-idira-ai-workshop
+.\check-prereqs.ps1</code></pre></div>
+        <p>Say yes when it offers to pin the folders and to log you in. Then start the agent again
+        from that same window, so it inherits the two folders:</p>
+        <div class="code"><pre><code>cd sandbox-app
+claude</code></pre></div>
+        <p>Ask again. The agent lists your targets.</p>
+      </div>
+    </div>
     <div class="note">
       <p><span class="callout-label">💡 Notice.</span> You never learned the flag names, the account
       number or the role ARN. The skill knew the shape of the commands and the CLI supplied the

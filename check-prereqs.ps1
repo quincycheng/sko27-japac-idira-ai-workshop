@@ -302,7 +302,8 @@ function Test-InUserPath ($Dir) {
     return ($have -contains $want)
 }
 
-# Where the idsec profile lives, and why this script has to decide it.
+# Where the idsec profile and the cached token live, and why this script has to
+# decide both.
 #
 # The CLI resolves its profiles folder in the SDK, at
 # idsec-sdk-golang/pkg/profiles/idsec_profile_loader.go:126 -- the
@@ -319,39 +320,54 @@ function Test-InUserPath ($Dir) {
 # differently, from the OS home directory, which is why a .idsec folder holding
 # only 'logs' is the signature of this.
 #
-# IDSEC_PROFILES_FOLDER wins over HOME, so pinning it once ends the whole class of
+# The cached login token has the same defect, one folder deeper. On Windows the SDK
+# asks Credential Manager first (idsec_keyring.go:117), but Credential Manager
+# refuses a blob over about 2.5 KB and an idsec token is a JWT, so the write often
+# fails and the SDK falls back to its own encrypted file. The read path falls back
+# the same way, and on Windows it does so even when the entry is simply absent --
+# the SDK's own comment at idsec_os_provided_keyring.go:145 says the creds may be
+# 'too long for windows cred manager'. That file lives in HOME joined with
+# .idsec\cache\keyring (idsec_basic_keyring.go:88), so it is relative to the current
+# folder too. A login done in one folder then reads as expired in another. That is
+# the second half of the lesson 09 failure: profile found, token nowhere.
+#
+# Both variables win over HOME, so pinning them once ends the whole class of
 # problem: the current folder stops mattering, in this window, in a new one, and in
 # the Git Bash that Claude Code runs its own commands through.
 #
-# The value is %USERPROFILE%\.idsec\profiles for two reasons. It is where idsec
+# The values sit under %USERPROFILE%\.idsec for two reasons. It is where idsec
 # already writes its logs, so one .idsec folder holds everything. And it is what
 # $HOME means in PowerShell and what ~ means on macOS, so '~/.idsec/profiles' in the
 # lab guide and in the skills stays a true statement on both platforms.
+$IdsecHome           = $(if ($env:USERPROFILE) { $env:USERPROFILE } else { $HOME })
 $IdsecProfilesVar    = 'IDSEC_PROFILES_FOLDER'
 $IdsecProfilesTmpl   = '%USERPROFILE%\.idsec\profiles'
-$IdsecProfilesFolder = Join-Path $(if ($env:USERPROFILE) { $env:USERPROFILE } else { $HOME }) '.idsec\profiles'
+$IdsecProfilesFolder = Join-Path $IdsecHome '.idsec\profiles'
+$IdsecKeyringVar     = 'IDSEC_KEYRING_FOLDER'
+$IdsecKeyringTmpl    = '%USERPROFILE%\.idsec\cache\keyring'
+$IdsecKeyringFolder  = Join-Path $IdsecHome '.idsec\cache\keyring'
 
-# Pins IDSEC_PROFILES_FOLDER for new windows. $false means it was already set to
+# Pins one of those variables for new windows. $false means it was already set to
 # something, and an attendee who chose their own value keeps it.
 #
 # Written straight to the registry with expansion off, for the reason Add-UserPath
 # gives: the getter expands %VAR% style entries and writing the result back freezes
-# them. Kept as an ExpandString here so a profile folder that moves with
-# USERPROFILE keeps following it.
-function Set-IdsecProfilesVar {
+# them. Kept as an ExpandString here so a folder that moves with USERPROFILE keeps
+# following it.
+function Set-IdsecFolderVar ($Name, $Template, $Expanded) {
     $key = $null
     try {
         $key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Environment', $true)
-        $existing = [string]$key.GetValue($IdsecProfilesVar, '', 'DoNotExpandEnvironmentNames')
+        $existing = [string]$key.GetValue($Name, '', 'DoNotExpandEnvironmentNames')
         if ($existing.Trim()) { return $false }
-        $key.SetValue($IdsecProfilesVar, $IdsecProfilesTmpl, 'ExpandString')
+        $key.SetValue($Name, $Template, 'ExpandString')
     } catch {
         # No registry for some reason. The plain setter cannot write an ExpandString,
         # so the expanded path goes in instead: correct today, and it stops following
         # USERPROFILE if that ever changes.
-        $existing = [string][Environment]::GetEnvironmentVariable($IdsecProfilesVar, 'User')
+        $existing = [string][Environment]::GetEnvironmentVariable($Name, 'User')
         if ($existing.Trim()) { return $false }
-        [Environment]::SetEnvironmentVariable($IdsecProfilesVar, $IdsecProfilesFolder, 'User')
+        [Environment]::SetEnvironmentVariable($Name, $Expanded, 'User')
     } finally {
         if ($key) { $key.Close() }
     }
@@ -363,10 +379,6 @@ function Set-IdsecProfilesVar {
 # 'idsec configure' ran from, which for anyone who used this script is the workshop
 # folder. Never overwrites: a file already at the destination stays, and the copy it
 # came from is left where it is so nothing disappears silently.
-#
-# The login survives this. On Windows the token is in Credential Manager, not in the
-# profiles folder -- idsec-sdk-golang/pkg/common/keyring/idsec_keyring.go:117 picks
-# the OS keyring there -- so moving the profile does not cost a fresh sign-in.
 function Get-IdsecProfileFiles ($Dir) {
     return @(Get-ChildItem -File $Dir -ErrorAction SilentlyContinue |
              Where-Object { $_.Name -notlike '.*' })
@@ -396,6 +408,40 @@ function Move-IdsecProfile ($From) {
         Remove-Item -Recurse -Force $From -ErrorAction SilentlyContinue
     }
     return ($moved -gt 0)
+}
+
+# Moves a token cache written before the variable was pinned, so the attendee keeps
+# the login they already did.
+#
+# The two files move together or not at all. 'mac' holds a SHA256 of 'keyring' and
+# the SDK rejects the pair if they disagree (idsec_basic_keyring.go:165), so half a
+# move is a keyring the CLI refuses to read. Neither file is path-bound otherwise:
+# the encryption key is the hostname, so the pair still decrypts in its new folder.
+#
+# A cache already in the pinned folder is never overwritten. It may hold a working
+# token, and one encrypted file cannot be merged into another. The stray one is left
+# in place and reported instead.
+function Move-IdsecKeyring ($From) {
+    $names = @('keyring', 'mac')
+    foreach ($n in $names) {
+        if (-not (Test-Path (Join-Path $From $n))) {
+            Write-Dim "left the token cache in $From alone -- it has no '$n' file, so it is unreadable anyway"
+            return $false
+        }
+        if (Test-Path (Join-Path $IdsecKeyringFolder $n)) {
+            Write-Dim "left the token cache in $From alone -- the pinned folder has one already"
+            return $false
+        }
+    }
+    if (-not (Test-Path $IdsecKeyringFolder)) {
+        New-Item -ItemType Directory -Force $IdsecKeyringFolder | Out-Null
+    }
+    foreach ($n in $names) {
+        Move-Item (Join-Path $From $n) (Join-Path $IdsecKeyringFolder $n)
+    }
+    Write-Good "moved your cached login to $IdsecKeyringFolder"
+    Remove-Item -Recurse -Force $From -ErrorAction SilentlyContinue
+    return $true
 }
 
 function Have-Command ($Name) {
@@ -1154,33 +1200,53 @@ if ((Have-Command 'jq') -and (Test-Runs 'jq' @('--version'))) {
 
 Write-Step '7.' 'An idsec profile, and a login that works'
 
-# Pin the profiles folder before anything looks for a profile, because until it is
-# pinned the answer depends on which folder the attendee happens to be in. The
-# mechanism is in the comment above Set-IdsecProfilesVar.
-if (-not $env:IDSEC_PROFILES_FOLDER) {
-    # The getter expands %USERPROFILE% for us, so a saved value can go straight into
-    # this window. A window that opened before the pin is the same stale-window case
-    # Add-SessionPath exists for.
-    $saved = [string][Environment]::GetEnvironmentVariable($IdsecProfilesVar, 'User')
-    if ($saved.Trim()) { $env:IDSEC_PROFILES_FOLDER = $saved }
+# Pin both folders before anything looks for a profile or a token, because until
+# they are pinned the answer depends on which folder the attendee happens to be in.
+# The mechanism is in the comment above Set-IdsecFolderVar.
+#
+# The getter expands %USERPROFILE% for us, so a saved value can go straight into
+# this window. A window that opened before the pin is the same stale-window case
+# Add-SessionPath exists for.
+foreach ($v in @($IdsecProfilesVar, $IdsecKeyringVar)) {
+    if (-not [Environment]::GetEnvironmentVariable($v, 'Process')) {
+        $saved = [string][Environment]::GetEnvironmentVariable($v, 'User')
+        if ($saved.Trim()) { [Environment]::SetEnvironmentVariable($v, $saved, 'Process') }
+    }
 }
 
-if ($env:IDSEC_PROFILES_FOLDER) {
+# Checked separately, because an attendee who ran an earlier version of this script
+# has the profiles variable pinned and the keyring one still missing. The @() is the
+# same load-bearing one as on $Profiles below: a one-element result from
+# Where-Object arrives as a bare hashtable, and .Count on it means nothing.
+$UnpinnedVars = @(
+    @(
+        @{ Name = $IdsecProfilesVar; Template = $IdsecProfilesTmpl; Folder = $IdsecProfilesFolder }
+        @{ Name = $IdsecKeyringVar;  Template = $IdsecKeyringTmpl;  Folder = $IdsecKeyringFolder  }
+    ) | Where-Object { -not [Environment]::GetEnvironmentVariable($_.Name, 'Process') }
+)
+
+if (-not $UnpinnedVars) {
     Write-Good "profiles folder is pinned: $env:IDSEC_PROFILES_FOLDER"
-    Add-Pass 'idsec profiles folder' 'pinned, so the current folder does not matter'
+    Write-Good "token folder is pinned:    $env:IDSEC_KEYRING_FOLDER"
+    Add-Pass 'idsec folders' 'pinned, so the current folder does not matter'
 } else {
-    Write-Warn 'which folder idsec keeps its profile in depends on where you run it'
-    Write-Dim 'PowerShell sets no HOME variable, so idsec falls back to a path relative to'
-    Write-Dim 'the current folder. A profile made here is then invisible from sandbox-app,'
-    Write-Dim 'which is where lesson 09 works, and the agent there cannot log in at all.'
-    if (Confirm-Action "Pin the profiles folder to $IdsecProfilesFolder?") {
-        Set-IdsecProfilesVar | Out-Null
-        $env:IDSEC_PROFILES_FOLDER = $IdsecProfilesFolder
-        Write-Good "$IdsecProfilesVar is set, in this window and in new ones"
-        Add-Fixed 'idsec profiles folder' 'pinned, so the current folder does not matter'
+    Write-Warn 'where idsec keeps its profile and your login depends on where you run it'
+    Write-Dim 'PowerShell sets no HOME variable, so idsec falls back to paths relative to'
+    Write-Dim 'the current folder. A profile and a login made here are then invisible from'
+    Write-Dim 'sandbox-app, which is where lesson 09 works. The agent there sees no profile,'
+    Write-Dim 'or sees one and is told your login expired, and can list no targets at all.'
+    # Named rather than counted, because the returning attendee has one of the two
+    # pinned already and 'pin both' would be a lie to them.
+    if (Confirm-Action "Pin $(($UnpinnedVars.Name) -join ' and ') under $(Join-Path $IdsecHome '.idsec')?") {
+        foreach ($v in $UnpinnedVars) {
+            Set-IdsecFolderVar $v.Name $v.Template $v.Folder | Out-Null
+            [Environment]::SetEnvironmentVariable($v.Name, $v.Folder, 'Process')
+            Write-Good "$($v.Name) is set, in this window and in new ones"
+        }
+        Add-Fixed 'idsec folders' 'pinned, so the current folder does not matter'
     } else {
-        Add-Fail 'idsec profiles folder' 'not pinned' `
-                 "Set $IdsecProfilesVar to $IdsecProfilesFolder -- without it lesson 09 fails inside sandbox-app"
+        Add-Fail 'idsec folders' 'not pinned' `
+                 "Set $(($UnpinnedVars.Name) -join ' and ') under $(Join-Path $IdsecHome '.idsec') -- without them lesson 09 fails inside sandbox-app"
     }
 }
 
@@ -1192,13 +1258,32 @@ if ($env:IDSEC_PROFILES_FOLDER -and
     $StrayProfiles = Join-Path $Project '.idsec\profiles'
     if (Test-Path (Join-Path $StrayProfiles 'idsec')) {
         Write-Warn 'your profile is in the workshop folder, so only commands run from here can see it'
-        if (Confirm-Action 'Move it to the pinned folder? (your login is kept)') {
+        if (Confirm-Action 'Move it to the pinned folder?') {
             if (Move-IdsecProfile $StrayProfiles) {
                 Add-Fixed 'idsec profile location' 'moved out of the workshop folder'
             }
         } else {
             Add-Fail 'idsec profile location' 'in the workshop folder' `
                      "Move $StrayProfiles\idsec into $IdsecProfilesFolder"
+        }
+    }
+}
+
+# Same for the cached login. Moving it keeps a login the attendee already did, and
+# it takes a token out of a folder it has no business being in. If it stays there,
+# the login below writes a fresh one to the pinned folder anyway, so this is a
+# convenience, not a repair.
+if ($env:IDSEC_KEYRING_FOLDER -and
+    -not (Test-Path (Join-Path $env:IDSEC_KEYRING_FOLDER 'keyring'))) {
+    $StrayKeyring = Join-Path $Project '.idsec\cache\keyring'
+    if (Test-Path (Join-Path $StrayKeyring 'keyring')) {
+        Write-Warn 'your cached login is in the workshop folder, where nothing else can find it'
+        if (Confirm-Action 'Move it to the pinned folder, so you do not log in twice?') {
+            if (Move-IdsecKeyring $StrayKeyring) {
+                Add-Fixed 'idsec token cache' 'moved out of the workshop folder'
+            }
+        } else {
+            Add-Manual 'idsec token cache' "in the workshop folder -- log in again to write one to $IdsecKeyringFolder"
         }
     }
 }

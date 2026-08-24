@@ -74,6 +74,17 @@ Step 2 reads the `HOME` *environment variable*. **Windows PowerShell does not se
 `.idsec\profiles` **relative to the current folder**. A profile created in one folder is
 invisible from another, and the CLI says `No profile found` rather than naming a path.
 
+The **token cache**, the file that remembers a login, is resolved the same way and has the
+same defect:
+
+1. the `IDSEC_KEYRING_FOLDER` environment variable, if it is set
+2. otherwise `HOME` joined with `.idsec/cache/keyring`
+
+On Windows the CLI tries the OS credential store first and falls back to that folder, which it
+does often, because a token is usually too long for Windows Credential Manager. So on Windows a
+login also belongs to the folder it was done in. Profile and login are two separate lookups: it
+is normal to find the profile and still be told the login expired.
+
 ```
 idsec configure                          # interactive; creates a profile
 idsec login                              # log in with the default profile
@@ -82,8 +93,9 @@ idsec login --force                      # re-login even if the token looks vali
 idsec profiles list                      # see what profiles exist
 ```
 
-If a command fails with an authentication error, run `idsec login` before doing anything
-else — tokens expire, and an expired token is by far the most common cause.
+If a command fails with an authentication error, a login is the first thing to try — tokens
+expire, and an expired token is by far the most common cause. Ask the user to run `idsec login`
+in their own terminal. It prompts, so it cannot succeed in yours.
 
 When a profile file has been provided for the user, do **not** run `idsec configure` — it
 would overwrite it. Go straight to `idsec login`.
@@ -107,6 +119,54 @@ does in their own terminal. Do not fix it by moving or writing a profile yoursel
 **Do not run `idsec configure`, and do not suggest it.** A user who reached you already has a
 profile, so `configure` overwrites rather than repairs, and it needs an interactive terminal
 you do not have.
+
+### "Tokens are either expired or authenticators are not logged in"
+
+Read this one carefully when the user says they have already logged in. It means this shell
+found no usable token, which is not the same as their login having lapsed. On Windows the
+likeliest cause is the folder split above: they logged in from one folder, you are in another.
+
+Report these facts before concluding anything:
+
+- the value of `IDSEC_KEYRING_FOLDER`, and whether `keyring` and `mac` exist in it
+- whether `.idsec/cache/keyring` exists in the current folder, or in a folder above it
+
+**The log tells you which half failed.** `~/.idsec/logs/idsec-cli.log` records the store lookup
+in words, and two of them mean opposite things:
+
+- `Failed to get password from OS keyring: The specified item could not be found` — the store
+  opened, and held nothing under that key. A miss, not a permission problem.
+- `Failed to open OS keyring` — the store itself was unreachable. This is the only one of the two
+  that is about access.
+
+Either way the CLI then falls back to the folder from step 2, and a following `No token found`
+means that folder holds no `keyring` file. A miss plus that fallback is the signature of a login
+saved in another folder. The login's own lines are in the same log, above yours: look for
+`Trying to save token`, then either `Saved token successfully` or `Falling back to basic keyring
+as we failed to save token`. The second one names the cause outright.
+
+**Do not conclude that your shell cannot reach the credential store.** On Windows, Credential
+Manager is readable by every process of the signed-in user, child processes included. That theory
+sends the user hunting for a problem they do not have, and it is contradicted by the log line
+above whenever the message is about a missing item.
+
+Three more things, all of which cost the user time if you get them wrong.
+
+**Never open the token cache.** Do not read, copy, decode or move `keyring`, `mac`, or anything
+in a credential store, and do not work around a tool that refuses to let you. Report where the
+token is not, and stop.
+
+**You cannot log in for them.** `idsec login` needs an interactive terminal and your shell has
+no TTY. On Windows it fails with `Failed to get isp username: Incorrect function`. Say that
+once and ask them to run it themselves. Do not retry it, and do not try `--force`.
+`--silent --refresh-auth` is not a way around it either: with no cached token to refresh it exits
+0 and leaves the next call just as unauthenticated, which reads as success and is not one.
+
+**A variable set after your session started is invisible to you.** Your process inherited its
+environment when it launched. If the user says they pinned `IDSEC_KEYRING_FOLDER` and you read
+it as empty, that is the reason: ask them to restart this session, not to set it again. A quick
+way to tell the two of you apart is to have them run the failing command in their own terminal.
+If it works there and not here, the difference is the environment, not the login.
 
 ## Rules
 

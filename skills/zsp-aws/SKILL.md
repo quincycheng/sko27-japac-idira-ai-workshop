@@ -10,19 +10,27 @@ needed and expires by itself. A key that does not exist cannot leak.
 
 This skill uses the `idsec` CLI. See the `idsec` skill for the CLI's general shape.
 
-## Step 1 — Make sure you are logged in
+## Step 1 — Make sure the user is logged in
 
 ```
 idsec login
 ```
 
+This prompts, so **the user runs it, not you.** In your shell it fails for want of a terminal.
+
 A profile should already exist. If one has been provided, do **not** run `idsec configure` —
 it would overwrite it.
 
-If this reports `No profile found`, the profile is almost certainly in another folder rather
-than missing: the CLI reads `IDSEC_PROFILES_FOLDER`, and falls back to a path that is relative
-to the current folder on Windows. Read the "No profile found" section of the `idsec` skill and
-stop there. Do not configure a profile and do not guess at targets.
+Two failures here mean the same thing on Windows, and neither is what it says:
+
+- `No profile found` — the profile is in another folder, not missing.
+- `tokens are either expired or authenticators are not logged in` — the login is in another
+  folder, even if the user just did it.
+
+Both happen because the CLI resolves those folders from `IDSEC_PROFILES_FOLDER` and
+`IDSEC_KEYRING_FOLDER`, and falls back to paths relative to the current folder on Windows. Read
+the matching section of the `idsec` skill, report what you find and stop there. Do not configure
+a profile, do not retry the login, and do not guess at targets.
 
 ## Step 2 — Find what the user is allowed to elevate into
 

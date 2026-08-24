@@ -511,9 +511,9 @@ rights.
 
 ### Profiles folder
 
-The directory holding one file per **profile**, and the answer to "am I logged in?" — a login
-the CLI cannot find a profile for is a login it cannot use. The CLI resolves it from
-`IDSEC_PROFILES_FOLDER`, falling back to `HOME` joined with `.idsec/profiles`.
+The directory holding one file per **profile**, which is what the CLI needs before it can use a
+login at all. The CLI resolves it from `IDSEC_PROFILES_FOLDER`, falling back to `HOME` joined
+with `.idsec/profiles`.
 
 Workshop vocabulary because that fallback reads the `HOME` *environment variable*, which
 Windows PowerShell does not set, making the path **relative to the current folder** there. So
@@ -524,6 +524,24 @@ attendee rather than of their working directory.
 Distinct from the **log** location, which the CLI resolves from the operating system's home
 directory instead. The two disagreeing is the recognisable symptom: a `.idsec` directory
 holding only `logs`.
+
+### Token folder
+
+The directory holding the cached login, and the actual answer to "am I logged in?" — resolved
+from `IDSEC_KEYRING_FOLDER`, falling back to `HOME` joined with `.idsec/cache/keyring`. Two
+files, `keyring` and `mac`, which travel together: the second is a checksum of the first, and a
+pair that disagrees is refused. Encrypted under the hostname, so the pair is portable between
+folders on one machine and worthless off it.
+
+A separate term from **profiles folder** because it is a separate lookup with the same Windows
+defect, and because the two failing look nothing alike. A missing profile says `No profile
+found`. A missing token says the login expired, which sends an attendee to log in again, in the
+folder that already has one.
+
+It is a fallback in the strict sense: on Windows the CLI asks Credential Manager first, and
+falls back to this folder whenever the store refuses a value, which it does for a token of any
+normal size. So "Windows keeps the token in Credential Manager" is not a safe assumption, and
+the workshop does not make it.
 
 ### Endpoint Privilege Manager (EPM)
 
