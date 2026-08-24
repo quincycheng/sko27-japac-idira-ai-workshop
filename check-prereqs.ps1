@@ -609,16 +609,20 @@ if (-not (Test-Path $VPy)) {
     # rich powers ui.py, which every lesson imports. Without checking it, a failed
     # rich install reports PASS here and then crashes on import in the room. Both
     # live in the same requirements file, so test them together and list it once.
-    if (-not (Test-Import 'anthropic') -or -not (Test-Import 'rich')) {
+    # httpx is what config.py hands the SDK as a transport, and lesson 04 is the
+    # first call that needs it -- lessons 01-03 run on boto3. Test it here or a
+    # half-finished install reports PASS and then dies in front of the room.
+    if (-not (Test-Import 'anthropic') -or -not (Test-Import 'rich') -or -not (Test-Import 'httpx')) {
         $need += 'ai-harness-app\requirements.txt'
     }
 
     if ($need.Count -eq 0) {
         Write-Good 'boto3 is ready (the sandbox app)'
         Write-Good 'anthropic is ready (the harness lessons in Part 1)'
+        Write-Good 'httpx is ready (the HTTPS transport from lesson 04 on)'
         Write-Good 'rich is ready (the terminal UI)'
         if (Test-Part1) {
-            Add-Pass 'Libraries' 'boto3 + anthropic + rich'
+            Add-Pass 'Libraries' 'boto3 + anthropic + httpx + rich'
         }
     } else {
         Write-Bad ("missing libraries from: " + ($need -join ', '))
@@ -628,8 +632,8 @@ if (-not (Test-Path $VPy)) {
                 Write-Cmd "python -m pip install -r $req"
                 & $VPy -m pip install --quiet -r (Join-Path $Project $req)
             }
-            if ((Test-Import 'boto3') -and (Test-Import 'anthropic') -and (Test-Import 'rich')) {
-                Write-Good 'boto3, anthropic and rich all import cleanly'
+            if ((Test-Import 'boto3') -and (Test-Import 'anthropic') -and (Test-Import 'httpx') -and (Test-Import 'rich')) {
+                Write-Good 'boto3, anthropic, httpx and rich all import cleanly'
                 if (Test-Part1) {
                     Add-Fixed 'Libraries' 'installed'
                 }

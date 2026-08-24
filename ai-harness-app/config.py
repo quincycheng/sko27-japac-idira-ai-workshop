@@ -99,8 +99,21 @@ def insecure_http_client(timeout=600.0):
     The anthropic SDK (Bedrock and Vertex) takes `http_client=`, and so does
     google-genai indirectly. Returning the client from here rather than building
     one per provider is what keeps `_VERIFY_TLS` a single fact.
+
+    httpx arrives with the anthropic SDK, so a machine that has one and not the
+    other has a half-finished install. Lessons 01-03 never notice, because the
+    legacy tier goes through boto3 -- lesson 04 is the first call that needs it.
+    Hence the message: the fix is to install the requirements again, in the venv.
     """
-    import httpx
+    try:
+        import httpx
+    except ImportError:
+        raise SystemExit(
+            "httpx is missing, so this app cannot open an HTTPS connection.\n"
+            "It normally arrives with the anthropic SDK, so this environment has a\n"
+            "half-finished install. Check your prompt starts with (.venv), then run:\n"
+            "    python -m pip install -r requirements.txt"
+        ) from None
 
     _hush_tls_warnings()
     return httpx.Client(verify=_VERIFY_TLS, timeout=timeout, follow_redirects=True)

@@ -221,8 +221,9 @@ or <code>--yes</code> (approve everything, no prompts).</p>
   <tr><td><code>LLM_PROVIDER</code></td><td>environment</td><td><code>bedrock</code> (default), <code>vertex</code>, <code>gemini</code>, <code>llama</code>. The loop never changes.</td></tr>
 </table>
 
-<p><code>No module named anthropic</code> → venv is off, or run
-<code>python -m pip install -r ai-harness-app/requirements.txt</code>.
+<p><code>No module named anthropic</code> or <code>No module named httpx</code> → venv is off, or run
+<code>python -m pip install -r ai-harness-app/requirements.txt</code>. The <code>httpx</code> one
+first appears at lesson 04, because lessons 01 to 03 use a different transport.
 <code>No AWS credentials in this terminal window</code> → paste the three <code>AWS_*</code> lines
 again, because they expire.</p>
 

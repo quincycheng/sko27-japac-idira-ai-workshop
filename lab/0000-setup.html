@@ -313,9 +313,9 @@ see what you are agreeing to before you agree to it.</p>
     <div class="code"><pre><code>pip install -r sandbox-app/requirements.txt
 pip install -r ai-harness-app/requirements.txt</code></pre></div>
     <p>And check them both:</p>
-    <div class="code"><pre><code>python -c "import boto3, anthropic; print('libraries ready')"</code></pre></div>
-    <p>It prints <code>libraries ready</code>. Neither library needs admin rights, and both land inside
-    <code>.venv</code>.</p>
+    <div class="code"><pre><code>python -c "import boto3, anthropic, httpx, rich; print('libraries ready')"</code></pre></div>
+    <p>It prints <code>libraries ready</code>. No library needs admin rights, and they all land inside
+    <code>.venv</code>. Lesson 04 is the first one that needs <code>httpx</code>, so check it now.</p>
 
     <div class="stop">
       <p><span class="callout-label">📌 The one thing to remember from this page.</span> A virtual

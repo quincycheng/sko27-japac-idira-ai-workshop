@@ -329,14 +329,18 @@ else
   # rich powers ui.py, which every lesson imports. Without checking it, a failed
   # rich install reports PASS here and then crashes on import in the room. Both
   # live in the same requirements file, so test them together and list it once.
-  check_import anthropic && check_import rich || NEED+=("ai-harness-app/requirements.txt")
+  # httpx is what config.py hands the SDK as a transport, and lesson 04 is the
+  # first call that needs it -- lessons 01-03 run on boto3. Test it here or a
+  # half-finished install reports PASS and then dies in front of the room.
+  check_import anthropic && check_import rich && check_import httpx || NEED+=("ai-harness-app/requirements.txt")
 
   if [ ${#NEED[@]} -eq 0 ]; then
     good "boto3 is ready (the sandbox app)"
     good "anthropic is ready (the harness lessons in Part 1)"
+    good "httpx is ready (the HTTPS transport from lesson 04 on)"
     good "rich is ready (the terminal UI)"
     if part1_ok; then
-      pass "Libraries" "boto3 + anthropic + rich"
+      pass "Libraries" "boto3 + anthropic + httpx + rich"
     fi
   else
     bad "missing libraries from: ${NEED[*]}"
@@ -347,8 +351,8 @@ else
         run "python -m pip install -r $req"
         "$VPY" -m pip install --quiet -r "$PROJECT/$req" || OK=0
       done
-      if [ "$OK" = 1 ] && check_import boto3 && check_import anthropic && check_import rich; then
-        good "boto3, anthropic and rich all import cleanly"
+      if [ "$OK" = 1 ] && check_import boto3 && check_import anthropic && check_import httpx && check_import rich; then
+        good "boto3, anthropic, httpx and rich all import cleanly"
         if part1_ok; then
           fixed "Libraries" "installed"
         fi
