@@ -1109,6 +1109,9 @@ th { background: var(--panel); font-size: 13px; text-transform: uppercase; lette
   .wrap { max-width: none; padding: 0; }
   h2 { page-break-after: avoid; }
   table, figure, .step, .check { page-break-inside: avoid; }
-  /* Nothing loads an iframe on paper. */
-  .embed { display: none; }
+  /* Nothing loads an iframe on paper. Walkthroughs go too: print forces every .os
+     block open, so both recordings would otherwise stack up, and their fallback
+     links are on the page anyway. .asciicast needs !important because asciinema
+     sets display on the container inline. */
+  .embed, .asciicast { display: none !important; }
 }

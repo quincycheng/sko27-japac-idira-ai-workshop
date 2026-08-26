@@ -54,9 +54,14 @@ Lesson 01 (`lab/0001-one-call.html`) is the reference for this style. Match it.
   page depends on an embed loading. Lesson 06's step is also marked `step-opt`.
 - The other exception is the asciinema walkthroughs: the `What it looks like` section of
   `lab/0000-setup.html`, and the `Video walkthrough` section that sits above `Your Tasks` on lessons
-  01 to 05 and 07 to 10. Each one is an asciinema `<script>` tag followed by an italic fallback line
-  that gives the plain `asciinema.org/a/<id>` link, so an offline reader loses nothing. Lesson 06 has
-  no recording. The recordings are macOS only, and each section says so.
+  01 to 05 and 07 to 10. Every one of those sections holds a `.os os-mac` block and a `.os os-win`
+  block, so the OS switch at the top of the page picks the recording as well as the commands. Each
+  block is a `<div class="cast" data-cast="<asciinema id>" data-rows="N">` placeholder followed by an
+  italic fallback line that gives the plain `asciinema.org/a/<id>` link, so an offline reader loses
+  nothing. `loadCasts` in `lab.js` injects the asciinema tag when the block is first revealed: the
+  player measures its iframe once and never again, so a tag placed straight into the hidden block
+  renders at the wrong size when the switch reveals it. `data-rows` is the rows the cast was recorded
+  at, so check the cast header before changing it. Lesson 06 has no recording.
 - **Never embed YouTube.** The player returns error 153 to a page with no referrer, which is every page
   opened from `file://`. Link to the video and give its length instead.
 - `lab/assets/lab.js` holds `PAGES`, the single source of truth for nav and pager.

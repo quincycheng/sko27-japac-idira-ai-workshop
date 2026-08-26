@@ -218,6 +218,38 @@
     all('[data-os-switch] button').forEach(function (b) {
       b.setAttribute('aria-pressed', b.getAttribute('data-os') === os ? 'true' : 'false');
     });
+    loadCasts();
+  }
+
+  /* ---------- walkthrough players -----------------------------------------
+   * Each lesson holds two recordings, one per OS, and shows the one the switch
+   * above selects:
+   *
+   *   <div class="cast" data-cast="<asciinema id>" data-rows="44"></div>
+   *
+   * The asciinema tag cannot simply sit in the hidden block. It builds its
+   * player inside an iframe, measures it once, and never measures it again, so
+   * a player created while its block is display:none renders at the wrong font
+   * size and loses the right-hand columns when the block is revealed. So the
+   * tag is injected here instead, on the first reveal, and only the recording
+   * being watched is ever downloaded.
+   */
+
+  function loadCasts() {
+    all('.cast').forEach(function (slot) {
+      if (slot.getAttribute('data-loaded')) return;
+      // Hidden blocks have no layout box. Nothing to measure yet, so wait.
+      if (!slot.offsetWidth && !slot.offsetHeight) return;
+
+      var id = slot.getAttribute('data-cast');
+      var s = document.createElement('script');
+      s.src = 'https://asciinema.org/a/' + id + '.js';
+      s.id = 'asciicast-' + id;
+      s.async = true;
+      s.setAttribute('data-rows', slot.getAttribute('data-rows'));
+      slot.setAttribute('data-loaded', '1');
+      slot.appendChild(s);
+    });
   }
 
   function initOS() {
@@ -620,6 +652,8 @@
     initChecks();
     initSource();
     initLinks();
+    // Again after initOS, for any recording that sits outside an .os block.
+    loadCasts();
   }
 
   if (document.readyState === 'loading') {

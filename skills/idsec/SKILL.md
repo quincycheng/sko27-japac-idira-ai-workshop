@@ -131,8 +131,8 @@ Report these facts before concluding anything:
 - the value of `IDSEC_KEYRING_FOLDER`, and whether `keyring` and `mac` exist in it
 - whether `.idsec/cache/keyring` exists in the current folder, or in a folder above it
 
-**The log tells you which half failed.** `~/.idsec/logs/idsec-cli.log` records the store lookup
-in words, and two of them mean opposite things:
+**The log tells you which half failed.** The log records the store lookup in words, and two of
+them mean opposite things:
 
 - `Failed to get password from OS keyring: The specified item could not be found` — the store
   opened, and held nothing under that key. A miss, not a permission problem.
@@ -177,8 +177,11 @@ If it works there and not here, the difference is the environment, not the login
    history. Prefer interactive prompts.
 3. **Read-only first.** When exploring, use `list`/`get` subcommands before anything that
    creates, updates or deletes. Confirm with the user before any write.
-4. **Diagnose with the log.** Detailed output goes to `~/.idsec/logs/idsec-cli.log`
-   regardless of terminal verbosity. Read it when a command fails opaquely.
+4. **Diagnose with the log.** Detailed output goes to `~/.idsec/logs/idsec-cli.log` regardless of
+   terminal verbosity, and on Windows to `%USERPROFILE%\.idsec\logs\idsec-cli.log`. Use that
+   second path there rather than `~`: the log folder is the only one the CLI resolves from the
+   operating system's home directory instead of the `HOME` variable, so the two can differ.
+   Read it when a command fails opaquely.
 5. **Never create or overwrite a profile.** `idsec configure` is the user's command, not
    yours, and a missing profile is a location problem far more often than a real absence.
    See "No profile found" above.
