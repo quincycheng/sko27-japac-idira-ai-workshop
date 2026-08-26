@@ -70,6 +70,25 @@ ask() {
   case "$reply" in [yY]|[yY][eE][sS]) return 0 ;; *) return 1 ;; esac
 }
 
+# ask, but Enter means yes. For the one question where saying nothing should not
+# mean skipping: the login rehearse. A profile with one wrong answer in it looks
+# perfect until someone tries to use it, and this script exists so that happens
+# this week rather than in the room.
+ask_yes() {
+  if [ "$CHECK_ONLY" = 1 ]; then
+    printf '   %s(--check-only, so not offering to fix this)%s\n' "$DIM" "$R"
+    return 1
+  fi
+  if [ "$ASSUME_YES" = 1 ]; then
+    printf '   %s🤖 %s → yes (--yes)%s\n' "$DIM" "$1" "$R"
+    return 0
+  fi
+  local reply=''
+  printf '   %s🤔 %s [Y/n] %s' "$B" "$1" "$R"
+  read -r reply </dev/tty || return 1
+  case "$reply" in [nN]|[nN][oO]) return 1 ;; *) return 0 ;; esac
+}
+
 have() { command -v "$1" >/dev/null 2>&1; }
 
 # The workshop repo is public, so the fetch below is anonymous and read-only, and
@@ -145,6 +164,105 @@ blocked() {  # blocked <command name> [path it was found at]
   info "which programs may run on a managed laptop. Please do not work around it."
   info "Offered a 'Request for authorization' button? Use it. Otherwise ask in"
   info "the 💬 #cybr-japac-ts-all Slack channel TODAY."
+}
+
+# Every tool this script installs lands in a folder inside $HOME, and every one of
+# them arrives the same way: the file exists, the command does not. There are three
+# real answers to that, and one message used to cover all of them. It appended the
+# PATH line without looking for a copy already there, and it recorded the tool as
+# fixed even when the attendee answered no. So a tool nobody could reach read as
+# sorted in the summary.
+#
+# Defined here, above every caller: a shell reads top to bottom, so a function
+# called by step 5 but written next to step 6 does not exist yet.
+#
+# The folder is a parameter because two folders need this. idsec and jq go in
+# $BINDIR, which this script owns. Claude Code goes in ~/.local/bin, which its own
+# installer owns and is supposed to add to your shell profile. When that part
+# silently does not happen, the check used to say "open a new terminal" to somebody
+# for whom no new terminal would ever work.
+#
+# Returns 0 when the program runs, whatever the PATH turned out to be, and 1 when
+# it will not start at all.
+resolve_path_tool() {  # resolve_path_tool <command> <label> <path> <folder> [version args...]
+  local name="$1" label="$2" exe="$3" dir="$4"
+  shift 4
+  # The same folder, written the three ways a shell profile spells it. Both
+  # replacements come from variables: inside ${x/#a/b} a backslash is kept rather
+  # than stripped, so a literal \$HOME or \~ in there ends up in the file.
+  local dollar='$HOME' tilde='~'
+  local dir_var="${dir/#$HOME/$dollar}" dir_tilde="${dir/#$HOME/$tilde}"
+  # Run it before saying anything about the PATH. On a managed laptop the file
+  # can be there and refuse to start, and that has no PATH fix.
+  if ! runs "$exe" "$@"; then
+    blocked "$name" "$exe"
+    fail "$label" "found but will not run" \
+         "Get $name allowed by your endpoint policy — ask in #cybr-japac-ts-all"
+    return 1
+  fi
+  good "$name runs from $exe"
+  # $dir on this PATH means the shell config every terminal reads already puts it
+  # there, so nothing needs writing. hash -r is for this terminal: zsh remembers
+  # that the command was missing.
+  case ":$PATH:" in
+    *":$dir:"*)
+      hash -r 2>/dev/null || true
+      # hash -r was the whole fix, so check rather than assume: telling somebody
+      # to open a new terminal for a command that works in this one reads as a
+      # script that does not know what it just did.
+      if have "$name"; then
+        good "$name is on your PATH, in this terminal and in new ones"
+        pass "$label" "runs"
+        return 0
+      fi
+      dim "$dir is on your PATH, so only this terminal is out of date"
+      info "Open a NEW terminal, then check it:"
+      run "$name $*"
+      manual "$label" "installed — open a new terminal"
+      return 0 ;;
+  esac
+  # Not on this PATH. A line in ~/.zshrc still counts, because that is the file a
+  # new terminal reads. Three spellings, because three different things write it:
+  # this script uses $HOME, an installer often uses the full path, and a person
+  # typing it by hand usually uses ~.
+  if grep -qF -e "$dir" -e "$dir_var" -e "$dir_tilde" "$HOME/.zshrc" 2>/dev/null; then
+    dim "the PATH line is already in ~/.zshrc, so only this terminal is out of date"
+    # ~/.zshrc is read by new terminals only, so this one is fixed by hand. The
+    # steps below run these tools, and so does the attendee, in the terminal they
+    # are already looking at.
+    export PATH="$dir:$PATH"
+    hash -r 2>/dev/null || true
+    if have "$name"; then
+      good "$name is on your PATH, in this terminal and in new ones"
+      pass "$label" "runs"
+      return 0
+    fi
+    info "Open a NEW terminal, then check it:"
+    run "$name $*"
+    manual "$label" "installed — open a new terminal"
+    return 0
+  fi
+  warn "$dir is not on the PATH a new terminal gets, so $name will not be found"
+  if ask "Add $dir to your PATH in ~/.zshrc?"; then
+    printf '\n# Added by the SKO27 Idira AI workshop prework checker\nexport PATH="%s:$PATH"\n' \
+      "$dir_var" >> "$HOME/.zshrc"
+    good "added to ~/.zshrc"
+    # And this terminal, which will never read the line that was just written.
+    export PATH="$dir:$PATH"
+    hash -r 2>/dev/null || true
+    if have "$name"; then
+      good "$name is on your PATH, in this terminal and in new ones"
+      fixed "$label" "PATH fixed"
+    else
+      info "Open a NEW terminal, then check it:"
+      run "$name $*"
+      fixed "$label" "PATH fixed (new terminal needed)"
+    fi
+  else
+    fail "$label" "installed, not on PATH" \
+         "Add to ~/.zshrc: export PATH=\"$dir_var:\$PATH\""
+  fi
+  return 0
 }
 
 cat <<BANNER
@@ -379,12 +497,18 @@ fi
 
 step "5️⃣ " "Claude Code 🤖"
 
-# The installer puts claude in ~/.local/bin and adds that folder to the PATH in
-# your shell profile. A profile change only reaches terminals opened after it, so
-# in the terminal that ran the installer `claude` is still not a command. Checking
-# the PATH alone reads that as "not installed" and offers to install it again,
-# which is a loop: the installer succeeds every time and the check fails every
-# time. So the known location is looked at before giving up.
+# The installer puts claude in ~/.local/bin and is supposed to add that folder to
+# the PATH in your shell profile. A profile change only reaches terminals opened
+# after it, so in the terminal that ran the installer `claude` is still not a
+# command. Checking the PATH alone reads that as "not installed" and offers to
+# install it again, which is a loop: the installer succeeds every time and the
+# check fails every time. So the known location is looked at before giving up.
+#
+# The PATH line is not always written. An attendee reported having to add
+# ~/.local/bin to ~/.zshrc by hand, and until then this step told him to open a new
+# terminal, which could never help: there was no line for a new terminal to read.
+# resolve_path_tool checks for the line and offers to write it, which is the same
+# thing step 6 does for idsec and jq.
 CLAUDE_EXE=''
 for c in "$HOME/.local/bin/claude" "$BINDIR/claude"; do
   [ -x "$c" ] && { CLAUDE_EXE="$c"; break; }
@@ -403,36 +527,39 @@ elif have claude; then
   blocked claude
   fail "Claude Code" "found but will not run" \
        "Get Claude Code allowed by your endpoint policy — ask in #cybr-japac-ts-all"
-elif [ -n "$CLAUDE_EXE" ] && runs "$CLAUDE_EXE" --version; then
-  good "Claude Code is installed at $CLAUDE_EXE"
-  info "It is not on your PATH in this window yet. Open a NEW terminal, then:"
-  run "claude --version"
-  manual "Claude Code" "installed — open a new terminal"
-  CLAUDE_USABLE=1
 elif [ -n "$CLAUDE_EXE" ]; then
-  # The file is there and will not start. That is application control, not a PATH
-  # problem, and installing it again cannot help.
-  bad "'claude' is at $CLAUDE_EXE but will not run"
-  info "That is endpoint application control, not a PATH problem. It decides"
-  info "which programs may run on a managed laptop. Please do not work around it."
-  info "Offered a 'Request for authorization' button? Use it. Otherwise ask in"
-  info "the 💬 #cybr-japac-ts-all Slack channel TODAY."
-  fail "Claude Code" "found but will not run" \
-       "Get Claude Code allowed by your endpoint policy — ask in #cybr-japac-ts-all"
+  # Found outside the PATH. resolve_path_tool runs it first, so a file that will
+  # not start is reported as application control rather than as a PATH problem,
+  # and it offers the ~/.zshrc line when there is no line to read.
+  resolve_path_tool claude "Claude Code" "$CLAUDE_EXE" "$(dirname "$CLAUDE_EXE")" --version \
+    && CLAUDE_USABLE=1
 else
   bad "the 'claude' command was not found"
   dim "It installs into your home folder. No admin rights, no Node.js."
   if ask "Install Claude Code now? (runs the official installer)"; then
     run "curl -fsSL https://claude.ai/install.sh | bash"
     if curl -fsSL https://claude.ai/install.sh | bash; then
-      if have claude || [ -x "$HOME/.local/bin/claude" ]; then
-        good "installed — open a NEW terminal, then run: claude --version"
-        fixed "Claude Code" "installed (new terminal needed)"
+      # Where it landed, then the same PATH check as above. The installer writes
+      # the shell profile line itself and usually gets it right; when it does not,
+      # this is where the attendee is offered the line instead of being sent to a
+      # new terminal that cannot help.
+      CLAUDE_EXE=''
+      for c in "$HOME/.local/bin/claude" "$BINDIR/claude"; do
+        [ -x "$c" ] && { CLAUDE_EXE="$c"; break; }
+      done
+      hash -r 2>/dev/null || true
+      if have claude && runs claude --version; then
+        good "claude $(claude --version 2>/dev/null | head -1)"
+        fixed "Claude Code" "installed"
+        CLAUDE_USABLE=1
+      elif [ -n "$CLAUDE_EXE" ]; then
+        resolve_path_tool claude "Claude Code" "$CLAUDE_EXE" "$(dirname "$CLAUDE_EXE")" --version \
+          && CLAUDE_USABLE=1
       else
-        warn "installed, but not on your PATH in this window yet"
-        fixed "Claude Code" "installed (open a new terminal)"
+        bad "the installer finished, but no 'claude' was left behind"
+        fail "Claude Code" "install left nothing" \
+             "Run it again: curl -fsSL https://claude.ai/install.sh | bash"
       fi
-      CLAUDE_USABLE=1
     else
       bad "the installer failed"
       fail "Claude Code" "install failed" "Try again on a network without a proxy, or ask in #cybr-japac-ts-all"
@@ -601,83 +728,6 @@ idsec_release_url() {  # echo a download URL for this machine, or nothing
     | grep -Ei '\.(tar\.gz|tgz|zip)$' | head -1
 }
 
-# idsec and jq are both a single binary in $BINDIR, and both arrive here the same
-# way: the file exists, the command does not. There are three real answers, and
-# one message used to cover all of them. It appended the PATH line without
-# looking for a copy already there, and it recorded the tool as fixed even when
-# the attendee answered no. So a tool nobody could reach read as sorted in the
-# summary. Defined above its callers: a shell reads top to bottom, so a function
-# called by the idsec block but written below it does not exist yet.
-resolve_bindir_tool() {  # resolve_bindir_tool <command> <label> <path> [version args...]
-  local name="$1" label="$2" exe="$3"
-  shift 3
-  # Run it before saying anything about the PATH. On a managed laptop the file
-  # can be there and refuse to start, and that has no PATH fix.
-  if ! runs "$exe" "$@"; then
-    blocked "$name" "$exe"
-    fail "$label" "found but will not run" \
-         "Get $name allowed by your endpoint policy — ask in #cybr-japac-ts-all"
-    return
-  fi
-  good "$name runs from $exe"
-  # Two ways a new terminal already finds it, and neither needs ~/.zshrc touched.
-  # $BINDIR on this PATH means the shell config every terminal reads puts it
-  # there; the marker means the line is in ~/.zshrc waiting for the next one.
-  # hash -r is for this terminal: zsh remembers that the command was missing.
-  case ":$PATH:" in
-    *":$BINDIR:"*)
-      hash -r 2>/dev/null || true
-      # hash -r was the whole fix, so check rather than assume: telling somebody
-      # to open a new terminal for a command that works in this one reads as a
-      # script that does not know what it just did.
-      if have "$name"; then
-        good "$name is on your PATH, in this terminal and in new ones"
-        pass "$label" "runs"
-        return
-      fi
-      dim "$BINDIR is on your PATH, so only this terminal is out of date"
-      info "Open a NEW terminal, then check it:"
-      run "$name $*"
-      manual "$label" "installed — open a new terminal"
-      return ;;
-  esac
-  if grep -q 'SKO27 Idira AI workshop prework checker' "$HOME/.zshrc" 2>/dev/null; then
-    dim "the PATH line is already in ~/.zshrc, so only this terminal is out of date"
-    # ~/.zshrc is read by new terminals only, so this one is fixed by hand. The
-    # steps below run idsec, and so does the attendee, in the terminal they are
-    # already looking at.
-    export PATH="$BINDIR:$PATH"
-    hash -r 2>/dev/null || true
-    if have "$name"; then
-      good "$name is on your PATH, in this terminal and in new ones"
-      pass "$label" "runs"
-      return
-    fi
-    info "Open a NEW terminal, then check it:"
-    run "$name $*"
-    manual "$label" "installed — open a new terminal"
-    return
-  fi
-  warn "$BINDIR is not on the PATH a new terminal gets, so $name will not be found"
-  if ask "Add $BINDIR to your PATH in ~/.zshrc?"; then
-    printf '\n# Added by the SKO27 Idira AI workshop prework checker\nexport PATH="$HOME/bin:$PATH"\n' >> "$HOME/.zshrc"
-    good "added to ~/.zshrc"
-    # And this terminal, which will never read the line that was just written.
-    export PATH="$BINDIR:$PATH"
-    hash -r 2>/dev/null || true
-    if have "$name"; then
-      good "$name is on your PATH, in this terminal and in new ones"
-      fixed "$label" "PATH fixed"
-    else
-      info "Open a NEW terminal, then check it:"
-      run "$name $*"
-      fixed "$label" "PATH fixed (new terminal needed)"
-    fi
-  else
-    fail "$label" "installed, not on PATH" 'Add to ~/.zshrc: export PATH="$HOME/bin:$PATH"'
-  fi
-}
-
 if have idsec && runs idsec version; then
   good "idsec $(idsec version 2>/dev/null | head -1)"
   pass "idsec CLI" "runs"
@@ -686,7 +736,7 @@ elif have idsec; then
   fail "idsec CLI" "found but will not run" \
        "Get idsec allowed by your endpoint policy — ask in #cybr-japac-ts-all"
 elif [ -x "$BINDIR/idsec" ]; then
-  resolve_bindir_tool idsec "idsec CLI" "$BINDIR/idsec" version
+  resolve_path_tool idsec "idsec CLI" "$BINDIR/idsec" "$BINDIR" version
 else
   bad "the 'idsec' command was not found"
   dim "It is a single file — no installer, nothing registered with macOS."
@@ -726,7 +776,7 @@ else
           good "installed to $BINDIR/idsec"
           # A file arriving is not the same as a command working, so the fresh
           # install gets the same three-way check as one that was already there.
-          resolve_bindir_tool idsec "idsec CLI" "$BINDIR/idsec" version
+          resolve_path_tool idsec "idsec CLI" "$BINDIR/idsec" "$BINDIR" version
         else
           bad "downloaded the archive, but found no idsec binary inside it"
           fail "idsec CLI" "unexpected archive" "Install idsec by hand — see setup step 5 in the lab guide"
@@ -769,7 +819,7 @@ elif have jq; then
   fail "jq" "found but will not run" \
        "Get jq allowed by your endpoint policy — ask in #cybr-japac-ts-all"
 elif [ -x "$BINDIR/jq" ]; then
-  resolve_bindir_tool jq jq "$BINDIR/jq" --version
+  resolve_path_tool jq jq "$BINDIR/jq" "$BINDIR" --version
 else
   bad "the 'jq' command was not found"
   dim "Also a single file. It reads your AWS credentials out of Idira's answer."
@@ -786,7 +836,7 @@ else
         chmod +x "$BINDIR/jq"
         xattr -d com.apple.quarantine "$BINDIR/jq" 2>/dev/null || true
         good "installed to $BINDIR/jq"
-        resolve_bindir_tool jq jq "$BINDIR/jq" --version
+        resolve_path_tool jq jq "$BINDIR/jq" "$BINDIR" --version
       else
         rm -f "$BINDIR/jq"
         bad "the download failed"
@@ -809,12 +859,71 @@ elif [ -x "$BINDIR/idsec" ] && runs "$BINDIR/idsec" version; then
   IDSEC="$BINDIR/idsec"
 fi
 
+# The three values the lab needs, and the file 'idsec configure' writes them to.
+# Nothing in this script ever writes that file: its layout is idsec's to change,
+# and a hand-written profile that is subtly wrong is harder to diagnose than a
+# wrong answer to a prompt. We read it, and we ask idsec to fix it.
+IDSEC_PROFILE_FILE="$HOME/.idsec/profiles/idsec"
+CYBRWORLD_URL='https://aam4614.my.idaptive.app'
+CYBRWORLD_SUBDOMAIN='demo'
+CYBRWORLD_DOMAIN='@cyberarklab.com'
+
 cybrworld_values() {
   info "'idsec configure' asks a few questions. Three answers matter:"
-  info "  Identity Tenant Subdomain  demo"
-  info "  Identity URL               https://aam4614.my.idaptive.app/"
-  info "  Username                   your own, ending in @cyberarklab.com"
+  info "  Identity Tenant Subdomain  $CYBRWORLD_SUBDOMAIN"
+  info "  Identity URL               $CYBRWORLD_URL/"
+  info "  Username                   your own, ending in $CYBRWORLD_DOMAIN"
   dim "That is your own CYBRWorld account. Nobody issues you a workshop login."
+}
+
+# One string value out of the profile JSON. sed rather than jq, because jq is a
+# step 6 problem and this runs whether that step went well or not. Each of the
+# three keys appears once in a profile file, so the first match is the value.
+json_value() {  # json_value <file> <key>
+  sed -n "s/.*\"$2\"[[:space:]]*:[[:space:]]*\"\([^\"]*\)\".*/\1/p" "$1" 2>/dev/null | head -1
+}
+
+# Names whatever in the default profile is not CYBRWorld, one line each. No output
+# means the values are right, or that there was no file to read.
+#
+# This is the check that was missing. A profile called 'idsec' pointing at another
+# tenant passed step 7, and then step 8 failed with nothing to explain it. An
+# attendee hit exactly that: the fix was 'idsec configure' with the CYBRWorld
+# values, and nothing in the report said so.
+profile_problems() {
+  local url subdomain username
+  [ -f "$IDSEC_PROFILE_FILE" ] || return 0
+  url="$(json_value "$IDSEC_PROFILE_FILE" identity_url)"
+  subdomain="$(json_value "$IDSEC_PROFILE_FILE" identity_tenant_subdomain)"
+  username="$(json_value "$IDSEC_PROFILE_FILE" username)"
+  # A trailing slash on the URL is a matter of taste, so it is not a problem.
+  case "${url%/}" in
+    "$CYBRWORLD_URL") ;;
+    '') echo "Identity URL          is not set. It must be $CYBRWORLD_URL/" ;;
+    *)  echo "Identity URL          is $url — it must be $CYBRWORLD_URL/" ;;
+  esac
+  case "$(printf '%s' "$subdomain" | tr '[:upper:]' '[:lower:]')" in
+    "$CYBRWORLD_SUBDOMAIN") ;;
+    '') echo "Tenant Subdomain      is not set. It must be $CYBRWORLD_SUBDOMAIN" ;;
+    *)  echo "Tenant Subdomain      is $subdomain — it must be $CYBRWORLD_SUBDOMAIN" ;;
+  esac
+  case "$(printf '%s' "$username" | tr '[:upper:]' '[:lower:]')" in
+    *"$CYBRWORLD_DOMAIN") ;;
+    '') echo "Username              is not set. It must end in $CYBRWORLD_DOMAIN" ;;
+    *)  echo "Username              is $username — it must end in $CYBRWORLD_DOMAIN" ;;
+  esac
+}
+
+# Prints each problem, then the values and the file they live in.
+report_profile_problems() {  # report_profile_problems <problems>
+  local line
+  bad "the 'idsec' profile is not pointing at CYBRWorld"
+  printf '%s\n' "$1" | while IFS= read -r line; do
+    [ -n "$line" ] && info "  $line"
+  done
+  info ""
+  cybrworld_values
+  dim "Those values live in $IDSEC_PROFILE_FILE. 'idsec configure' writes it."
 }
 
 # Every command in the lab guide, on the cheat sheet and in this script is a bare
@@ -896,12 +1005,49 @@ verify_login() {
   return 1
 }
 
+# Runs 'idsec configure', then checks the two things a configure can still get
+# wrong: values that are not CYBRWorld's, and values that are but do not log in.
+# Shared by all three branches below, because all three end the same way.
+configure_and_verify() {  # configure_and_verify <note for the summary>
+  local problems
+  if ! "$IDSEC" configure </dev/tty; then
+    bad "configure did not complete"
+    fail "idsec profile" "not configured" \
+         "Run: idsec configure — the three values are in setup step 5"
+    return 1
+  fi
+  good "configured"
+  problems="$(profile_problems)"
+  if [ -n "$problems" ]; then
+    report_profile_problems "$problems"
+    fail "idsec profile" "still not CYBRWorld" \
+         "Run: idsec configure — the three values are in setup step 5"
+    return 1
+  fi
+  if verify_login; then
+    fixed "idsec login" "$1"
+    return 0
+  fi
+  fail "idsec login" "configured, login failed" \
+       "Fix the values: idsec configure — then: idsec login"
+  return 1
+}
+
 if [ -z "$IDSEC" ]; then
   bad "skipped — idsec does not run in this window yet"
   fail "idsec login" "blocked by idsec" "Finish step 6, open a new terminal, then re-run this script"
 elif [ "$HAS_DEFAULT" = 1 ]; then
   good "the default profile, 'idsec', exists"
-  if ask "Log in now, to prove the profile actually works?"; then
+  PROFILE_PROBLEMS="$(profile_problems)"
+  if [ -n "$PROFILE_PROBLEMS" ]; then
+    report_profile_problems "$PROFILE_PROBLEMS"
+    if ask "Run 'idsec configure' now, to put the CYBRWorld values on it?"; then
+      configure_and_verify "CYBRWorld values fixed, signed in"
+    else
+      fail "idsec profile" "not CYBRWorld" \
+           "Run: idsec configure — the three values are in setup step 5"
+    fi
+  elif ask_yes "Log in now, to prove the profile actually works?"; then
     if verify_login; then
       pass "idsec login" "signed in to CYBRWorld"
     else
@@ -920,17 +1066,7 @@ elif [ -n "$(printf '%s' "$PROFILES" | tr -d '[:space:]')" ]; then
   info ""
   cybrworld_values
   if ask "Run 'idsec configure' now, to add CYBRWorld as the default profile?"; then
-    if "$IDSEC" configure </dev/tty; then
-      good "configured"
-      if verify_login; then
-        fixed "idsec login" "CYBRWorld on the default profile, signed in"
-      else
-        fail "idsec login" "configured, login failed" "Fix the values: idsec configure — then: idsec login"
-      fi
-    else
-      bad "configure did not complete"
-      fail "idsec login" "no default profile" "Run: idsec configure (CYBRWorld, as the default profile)"
-    fi
+    configure_and_verify "CYBRWorld on the default profile, signed in"
   else
     fail "idsec login" "no default profile" \
          "Run: idsec configure — CYBRWorld must be the default profile, 'idsec'"
@@ -941,17 +1077,7 @@ else
   dim "Leave --profile-name off when it asks. CYBRWorld belongs on the default"
   dim "profile, because every command in the lab guide leaves it off too."
   if ask "Run 'idsec configure' now? (it will ask you questions)"; then
-    if "$IDSEC" configure </dev/tty; then
-      good "configured"
-      if verify_login; then
-        fixed "idsec login" "configured and signed in"
-      else
-        fail "idsec login" "configured, login failed" "Fix the values: idsec configure — then: idsec login"
-      fi
-    else
-      bad "configure did not complete"
-      fail "idsec login" "not configured" "Run: idsec configure"
-    fi
+    configure_and_verify "configured and signed in"
   else
     fail "idsec login" "not configured" "Run: idsec configure (once — a second run overwrites it)"
   fi

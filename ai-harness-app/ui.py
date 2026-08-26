@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import os
 import sys
+import unicodedata
 
 from rich.columns import Columns
 from rich.console import Console
@@ -231,6 +232,39 @@ def tool_result(text: str, limit: int = 300) -> None:
     console.print(Padding(Text(f"↳ {flat}", style=style), (0, 0, 0, 2)))
 
 
+def typed(text: str) -> str:
+    """Normalise a line a human typed, before any code compares it to anything.
+
+    An input method editor is on by default for Japanese, Chinese and Korean
+    keyboards, and while it is on the letter y is the FULL-WIDTH character U+FF59,
+    not U+0079. The two look nearly identical in a terminal and compare as
+    different strings. An attendee in Japan answered the approval prompt with what
+    was, to him, y, and the harness read it as no. Same for a slash command typed
+    as `／exit`.
+
+    NFKC is the Unicode compatibility form: it maps those full-width characters
+    onto their ASCII equivalents and leaves ordinary ASCII untouched.
+    """
+    return unicodedata.normalize("NFKC", text).strip()
+
+
+def _drain_stdin() -> None:
+    """Throw away anything typed before a prompt was drawn.
+
+    A model turn takes seconds, and a keystroke during it sits in the terminal
+    buffer until something reads it. The next read is the approval prompt, so a
+    stray Enter left over from the chatbox could answer a question the attendee
+    never saw. POSIX only: on Windows there is no termios and the re-ask below
+    covers it.
+    """
+    try:
+        import termios
+
+        termios.tcflush(sys.stdin.fileno(), termios.TCIFLUSH)
+    except Exception:  # noqa: BLE001 - no tty, no termios, a pipe: all fine
+        pass
+
+
 def approve(name: str, tool_input: dict, reason: str, auto: bool | None = None) -> bool:
     """Ask a human to sign off on one tool call. Returns True to allow.
 
@@ -257,12 +291,23 @@ def approve(name: str, tool_input: dict, reason: str, auto: bool | None = None) 
             )
         )
         return auto
-    try:
-        answer = console.input("  [warn]allow this call?[/] [meta](y/N)[/] ")
-    except (EOFError, KeyboardInterrupt):
-        console.print()
-        return False
-    return answer.strip().lower() in {"y", "yes"}
+    _drain_stdin()
+    while True:
+        try:
+            answer = typed(console.input("  [warn]allow this call?[/] [meta](y/N)[/] ")).lower()
+        except (EOFError, KeyboardInterrupt):
+            console.print()
+            return False
+        if answer in {"y", "yes"}:
+            return True
+        # Nothing typed, or Ctrl-D above: the default is no, and the capital N in
+        # (y/N) is the promise that it is. That default is the lesson.
+        if answer in {"", "n", "no"}:
+            return False
+        # Anything else is a typo, not a decision. Denying it silently taught an
+        # attendee that the gate ignores him; asking again teaches him nothing
+        # except how to spell.
+        console.print(Text("  answer y or n", style="meta"))
 
 
 def compacted(folded: int, chars: int) -> None:
@@ -595,8 +640,12 @@ def chat_intro(help_text: str) -> None:
 
 
 def ask() -> str:
-    """The chatbox prompt. Raises EOFError on Ctrl-D, which the caller handles."""
-    return console.input("[brand]you ›[/] ")
+    """The chatbox prompt. Raises EOFError on Ctrl-D, which the caller handles.
+
+    Normalised for the same reason `approve` is: `／exit` typed with an input
+    method editor on should end the lesson, not go to the model as a message.
+    """
+    return typed(console.input("[brand]you ›[/] "))
 
 
 def final(text: str) -> None:

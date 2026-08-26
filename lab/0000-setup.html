@@ -363,6 +363,24 @@ source .venv/bin/activate</code></pre></div>
     <div class="code"><pre><code>claude --version</code></pre></div>
     <p>A version number means you are done. A new window has no <code>(.venv)</code>, which is
     expected.</p>
+    <div class="warn">
+      <p><span class="callout-label">⚠️ Still <code>command not found</code> in a new window?</span> The
+      installer puts <code>claude</code> in <code>~/.local/bin</code> and is supposed to add that folder
+      to your <code>PATH</code>. Sometimes it does not. Check the file is there:</p>
+      <div class="os os-mac">
+        <div class="code"><pre><code>ls ~/.local/bin/claude</code></pre></div>
+        <p>If it prints the path, add the folder yourself:</p>
+        <div class="code"><pre><code>echo 'export PATH="$HOME/.local/bin:$PATH"' &gt;&gt; ~/.zshrc</code></pre></div>
+      </div>
+      <div class="os os-win">
+        <div class="code"><pre><code>Get-Item $HOME\.local\bin\claude.exe</code></pre></div>
+        <p>If it prints the path, add the folder to your own <code>PATH</code>:</p>
+        <div class="code"><pre><code>$user = [Environment]::GetEnvironmentVariable("Path", "User")
+[Environment]::SetEnvironmentVariable("Path", "$user;$HOME\.local\bin", "User")</code></pre></div>
+      </div>
+      <p>Then open a new window and run <code>claude --version</code> again. The setup script offers
+      this same fix.</p>
+    </div>
     <div class="note">
       <p><span class="callout-label">🔐 You will not be asked to log in.</span> On the day, Claude
       Code will use <strong>Amazon Bedrock</strong> through your company's AWS account. You need no
@@ -495,6 +513,35 @@ jq --version</code></pre></div>
     <p>Where a question shows a default in brackets, press
     <span class="os os-inline os-mac"><kbd>Return</kbd></span><span class="os os-inline os-win"><kbd>Enter</kbd></span>
     to accept it.</p>
+    <div class="note">
+      <p><span class="callout-label">🔎 Check what it wrote.</span> Your answers land in one file. Read
+      it back:</p>
+      <div class="os os-mac">
+        <div class="code"><pre><code>cat ~/.idsec/profiles/idsec</code></pre></div>
+      </div>
+      <div class="os os-win">
+        <div class="code"><pre><code>Get-Content $HOME\.idsec\profiles\idsec</code></pre></div>
+      </div>
+      <p>It should look like this, with your own username:</p>
+      <div class="code"><pre><code>{
+    "profile_name": "idsec",
+    "profile_description": "",
+    "auth_profiles": {
+        "isp": {
+            "username": "&lt;your name&gt;@cyberarklab.com",
+            "auth_method": "identity",
+            "auth_method_settings": {
+                "identity_mfa_method": "",
+                "identity_mfa_interactive": true,
+                "identity_url": "https://aam4614.my.idaptive.app/",
+                "identity_tenant_subdomain": "demo"
+            }
+        }
+    }
+}</code></pre></div>
+      <p>A different <code>identity_url</code> or <code>identity_tenant_subdomain</code> is another
+      tenant, not CYBRWorld. Run <code>idsec configure</code> again with the three answers above.</p>
+    </div>
     <p>Then log in:</p>
     <div class="code"><pre><code>idsec login</code></pre></div>
     <p>Follow the prompts. Usually the sign-in happens <strong>in the terminal</strong>: your password,

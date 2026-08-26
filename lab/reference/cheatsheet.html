@@ -138,6 +138,19 @@ idsec exec sca cloud-access elevate --csp aws \
   memory.</p>
 </div>
 
+<p>An <code>elevate</code> that fails is usually a profile pointing at the wrong tenant. The values
+live in one file, and setup step 6 shows what it should hold:</p>
+
+<div class="os os-mac">
+  <div class="code"><pre><code>cat ~/.idsec/profiles/idsec</code></pre></div>
+</div>
+<div class="os os-win">
+  <div class="code"><pre><code>Get-Content $HOME\.idsec\profiles\idsec</code></pre></div>
+</div>
+
+<p>CYBRWorld is <code>identity_url</code> <code>https://aam4614.my.idaptive.app/</code> with
+<code>identity_tenant_subdomain</code> <code>demo</code>. Anything else is another tenant.</p>
+
 <p>Flags change between releases. When in doubt:
 <code>idsec exec sca cloud-access elevate --help</code>. Logs for anything that fails opaquely:
 <code>~/.idsec/logs/idsec-cli.log</code>. Full documentation:

@@ -181,7 +181,11 @@ def main() -> None:
 
     ui.note("Task 1, MCP: check flask 2.0.1 against the advisory service.")
     ui.note("Task 2, skills: ask for a formal report and watch load_skill fire.")
-    ui.note("Task 3, the LSP: ask what functions are defined in harness.py.")
+    # app.py, not harness.py. The LSP tools go through the same sandbox boundary as
+    # read_file, so they can only see ai-harness-app/sandbox. This line used to name
+    # harness.py, which sits outside it, and the task answered "that is not a file"
+    # every time it was tried.
+    ui.note("Task 3, the LSP: ask what functions are defined in app.py.")
     ui.note("Task 4, subagents: paste the audit prompt from the page, then read the token counts.")
     ui.note("Task 5, hooks: ask it to read sandbox/.env. The hook refuses, and asks nobody.")
     ui.note(f"Task 5 again: read {harness.AUDIT_LOG.name}. Every call is there, the subagent's too.")
