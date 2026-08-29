@@ -177,7 +177,7 @@ def outline_file(path=""):
     if not full.is_file():
         return f"'{path}' is not a file."
     try:
-        tree = ast.parse(full.read_text(errors="replace"))
+        tree = ast.parse(full.read_text(encoding="utf-8", errors="replace"))
     except SyntaxError as error:
         return f"Could not parse {path}: {error}"
 
@@ -198,7 +198,7 @@ def find_definition(symbol=""):
     hits = []
     for path in _python_files():
         try:
-            tree = ast.parse(path.read_text(errors="replace"))
+            tree = ast.parse(path.read_text(encoding="utf-8", errors="replace"))
         except SyntaxError:
             continue
         for node in ast.walk(tree):
@@ -255,7 +255,7 @@ def audit_every_call(name, tool_input):
         "tool": name,
         "input": tool_input,
     }
-    with AUDIT_LOG.open("a") as handle:
+    with AUDIT_LOG.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(entry) + "\n")
     return None
 

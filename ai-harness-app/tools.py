@@ -62,7 +62,7 @@ def read_file(path: str) -> str:
     full = _safe_path(path)
     if not os.path.isfile(full):
         return f"'{path}' is not a file."
-    with open(full, "r", errors="replace") as f:
+    with open(full, "r", encoding="utf-8", errors="replace") as f:
         content = f.read()
     # Number the lines: makes the model's findings citable ("secret on line 12").
     numbered = [f"{i:>4} | {line}" for i, line in enumerate(content.splitlines(), 1)]
@@ -83,7 +83,7 @@ def search_code(pattern: str, path: str = ".") -> str:
             full = os.path.join(dirpath, name)
             rel = os.path.relpath(full, SANDBOX_ROOT)
             try:
-                with open(full, "r", errors="replace") as f:
+                with open(full, "r", encoding="utf-8", errors="replace") as f:
                     for lineno, line in enumerate(f, 1):
                         if regex.search(line):
                             hits.append(f"{rel}:{lineno}: {line.rstrip()}")
