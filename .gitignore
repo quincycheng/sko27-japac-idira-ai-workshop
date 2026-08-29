@@ -188,3 +188,4 @@ credentials
 !sandbox-app/config/__init__.py
 
 !ai-harness-app/sandbox/.env
+assessment-20-questions.txt

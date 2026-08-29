@@ -49,7 +49,8 @@ Lesson 01 (`lab/0001-one-call.html`) is the reference for this style. Match it.
 
 - Pages must work from `file://` with no network: no CDN, no modules, no `fetch`. Two exceptions embed
   Google content in `.embed` iframes: lesson 06's optional step, which holds a Slides deck and a Drive
-  video, and the `The deck` section of `lab/reference/securing-agentic-ai.html`. Every embed carries a
+  video, and `lab/reference/securing-agentic-ai.html`, whose `The deck` and `SC-track mini-lab`
+  sections hold a Slides deck and a Drive video. Every embed carries a
   plain link next to it and a sentence saying corporate Google access is needed, and nothing on either
   page depends on an embed loading. Lesson 06's step is also marked `step-opt`.
 - The other exception is the asciinema walkthroughs: the `What it looks like` section of
