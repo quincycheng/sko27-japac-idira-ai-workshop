@@ -11,7 +11,9 @@ import json
 import sys
 from pathlib import Path
 
-CONFIG = json.loads((Path(__file__).parent / "config" / "integrations.json").read_text())
+CONFIG = json.loads(
+    (Path(__file__).parent / "config" / "integrations.json").read_text(encoding="utf-8")
+)
 
 
 def slack_payload(summary):
